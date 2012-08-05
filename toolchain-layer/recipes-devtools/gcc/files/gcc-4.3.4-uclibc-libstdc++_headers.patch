@@ -1,0 +1,93 @@
+Including missed header files on libstdc++ subtree.
+
+Signed-off-by: Giuseppe Condorelli <giuseppe.condorelli@st.com
+--------------------------------------------------------------------------------
+--- gcc-4.3.4/libstdc++-v3/include/c_global/cstdio.orig	2009-10-23 14:40:45.000000000 +0200
++++ gcc-4.3.4/libstdc++-v3/include/c_global/cstdio	2009-10-23 14:41:38.000000000 +0200
+@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
+ 
+ _GLIBCXX_END_NAMESPACE
+ 
+-#if _GLIBCXX_USE_C99
++#if _GLIBCXX_USE_C99 || defined __UCLIBC__
+ 
+ #undef snprintf
+ #undef vfscanf
+--- gcc-4.3.4/libstdc++-v3/config/locale/uclibc/codecvt_members.cc.orig	2009-10-26 14:33:47.000000000 +0100
++++ gcc-4.3.4/libstdc++-v3/config/locale/uclibc/codecvt_members.cc	2009-10-26 14:34:27.000000000 +0100
+@@ -34,6 +34,8 @@
+ // Written by Benjamin Kosnik <bkoz@redhat.com>
+ 
+ #include <locale>
++#include <cstdlib>  // For MB_CUR_MAX
++#include <climits>  // For MB_LEN_MAX
+ #include <bits/c++locale_internal.h>
+ 
+ namespace std
+--- gcc-4.3.4/libstdc++-v3/config/locale/uclibc/messages_members.cc.orig	2009-10-27 15:12:43.000000000 +0100
++++ gcc-4.3.4/libstdc++-v3/config/locale/uclibc/messages_members.cc	2009-10-27 15:12:56.000000000 +0100
+@@ -34,6 +34,7 @@
+ // Written by Benjamin Kosnik <bkoz@redhat.com>
+ 
+ #include <locale>
++#include <cstdlib>
+ #include <bits/c++locale_internal.h>
+ 
+ #ifdef __UCLIBC_MJN3_ONLY__
+--- gcc-4.3.4/libstdc++-v3/config/locale/uclibc/monetary_members.cc.orig	2009-10-27 15:13:15.000000000 +0100
++++ gcc-4.3.4/libstdc++-v3/config/locale/uclibc/monetary_members.cc	2009-10-27 15:13:28.000000000 +0100
+@@ -41,6 +41,7 @@
+ #else
+ #include <locale>
+ #endif
++#include <cstdlib>
+ #include <bits/c++locale_internal.h>
+ 
+ #ifdef __UCLIBC_MJN3_ONLY__
+--- gcc-4.3.4/libstdc++-v3/config/locale/uclibc/time_members.cc.orig	2009-10-27 15:13:50.000000000 +0100
++++ gcc-4.3.4/libstdc++-v3/config/locale/uclibc/time_members.cc	2009-10-27 15:14:07.000000000 +0100
+@@ -35,6 +35,7 @@
+ // Written by Benjamin Kosnik <bkoz@redhat.com>
+ 
+ #include <locale>
++#include <cstdlib>
+ #include <bits/c++locale_internal.h>
+ 
+ #ifdef __UCLIBC_MJN3_ONLY__
+--- gcc-4.3.4/libstdc++-v3/config/locale/uclibc/c_locale.cc.orig	2009-10-27 14:38:05.000000000 +0100
++++ gcc-4.3.4/libstdc++-v3/config/locale/uclibc/c_locale.cc	2009-10-27 14:38:22.000000000 +0100
+@@ -34,6 +34,7 @@
+ // Written by Benjamin Kosnik <bkoz@redhat.com>
+ 
+ #include <cerrno>  // For errno
++#include <cstdlib>
+ #include <locale>
+ #include <stdexcept>
+ #include <langinfo.h>
+--- gcc-4.3.4/libstdc++-v3/config/locale/uclibc/ctype_members.cc.orig	2009-11-05 09:40:53.000000000 +0100
++++ gcc-4.3.4/libstdc++-v3/config/locale/uclibc/ctype_members.cc	2009-11-05 09:41:00.000000000 +0100
+@@ -41,13 +41,13 @@
+ #else
+ #include <locale>
+ #endif
++#include <cstdlib>
+ #include <bits/c++locale_internal.h>
+ 
+ namespace std
+ {
+   // NB: The other ctype<char> specializations are in src/locale.cc and
+   // various /config/os/* files.
+-  template<>
+     ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
+     : ctype<char>(0, false, __refs)
+     {
+@@ -63,6 +63,9 @@ namespace std
+ 	}
+     }
+ 
++    ctype_byname<char>::~ctype_byname()
++    { }
++
+ #ifdef _GLIBCXX_USE_WCHAR_T
+   ctype<wchar_t>::__wmask_type
+   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const

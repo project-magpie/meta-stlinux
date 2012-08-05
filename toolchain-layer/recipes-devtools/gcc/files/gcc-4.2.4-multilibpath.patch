@@ -1,0 +1,13 @@
+diff -Naur gcc-4.2.1.orig/config-ml.in gcc-4.2.1-stm/config-ml.in
+--- gcc-4.2.1.orig/config-ml.in	2006-06-13 21:48:23.000000000 +0100
++++ gcc-4.2.1-stm/config-ml.in	2007-08-14 15:06:51.000000000 +0100
+@@ -552,6 +552,9 @@
+ 				ADAFLAGS="$(ADAFLAGS) $${flags}" \
+ 				prefix="$(prefix)" \
+ 				exec_prefix="$(exec_prefix)" \
++			 	infodir="$(infodir)" \
++				libdir="$(libdir)" \
++				includedir="$(includedir)" \
+ 				GCJFLAGS="$(GCJFLAGS) $${flags}" \
+ 				CXXFLAGS="$(CXXFLAGS) $${flags}" \
+ 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \

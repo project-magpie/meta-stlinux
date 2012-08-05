@@ -1,0 +1,88 @@
+diff -urbN gcc-4.3.4.orig/gcc/config/sh/lib1funcs.asm gcc-4.3.4/gcc/config/sh/lib1funcs.asm
+--- gcc-4.3.4.orig/gcc/config/sh/lib1funcs.asm	2009-07-28 15:06:26.000000000 +0200
++++ gcc-4.3.4/gcc/config/sh/lib1funcs.asm	2009-07-28 15:07:27.000000000 +0200
+@@ -2084,6 +2084,54 @@
+ #endif /* SH2E / SH3E / SH4 */
+ #endif /* __SH2A_NOFPU__ */
+ #endif /* L_set_fpscr */
++
++/* i-cache flushing
++ * For system code, we use ic_invalidate_line_i, but user code
++ * needs a different mechanism.  There are a number of ways of doing
++ * this:
++ *	1.  A kernel syscall (generally not available, slow but supports multiple arch variants)
++ *	2.  A kernel vsyscall (optimum solution, supports multiple arch variants)
++ *	3.  A jump table (supports 1 arch variant)
++ * For 3, different SH4 variants use different sizes and associativities
++ * of the Icache.  We use a small bit of dispatch code that can be put
++ * hidden in every shared object, which calls the actual processor-specific
++ * invalidation code in a separate module.
++ */
++
++/*
++ * SYSCALL method for i-cache flushing
++ */
++
++#ifdef L_ic_invalidate_syscall
++#include <asm/unistd.h>
++#include <asm/cachectl.h>
++
++	.global GLOBAL(ic_invalidate_syscall)
++	HIDDEN_FUNC(GLOBAL(ic_invalidate_syscall))
++	HIDDEN_ALIAS(ic_invalidate,ic_invalidate_syscall)
++GLOBAL(ic_invalidate_syscall):
++	mov.l	1f, r6
++	mov.l	2f, r3
++	/* Note: L1 cacheline size is not exposed to userspace
++	 *       so we use a length of 4 so it will work for
++	 *       different cacheline sizes
++	 */
++	mov	#4, r5
++	trapa	#0x13
++	rts
++	 nop
++	.balign 4
++1:	.long (CACHEFLUSH_D_WB | CACHEFLUSH_I)
++2:	.long __NR_cacheflush
++
++	ENDFUNC(GLOBAL(ic_invalidate_syscall))
++
++#endif /* L_ic_invalidate_syscall */
++
++/*
++ * Jump table method for i-cache flushing
++ */
++
+ #ifdef L_ic_invalidate
+ #if __SH5__ == 32
+ 	.mode	SHmedia
+@@ -2127,16 +2175,6 @@
+ 	icbi	@r4
+ 	ENDFUNC(GLOBAL(ic_invalidate))
+ #elif defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || (defined(__SH4_NOFPU__) && !defined(__SH5__))
+-	/* For system code, we use ic_invalidate_line_i, but user code
+-	   needs a different mechanism.  A kernel call is generally not
+-	   available, and it would also be slow.  Different SH4 variants use
+-	   different sizes and associativities of the Icache.  We use a small
+-	   bit of dispatch code that can be put hidden in every shared object,
+-	   which calls the actual processor-specific invalidation code in a
+-	   separate module.
+-	   Or if you have operating system support, the OS could mmap the
+-	   procesor-specific code from a single page, since it is highly
+-	   repetitive.  */
+ 	.global GLOBAL(ic_invalidate)
+ 	HIDDEN_FUNC(GLOBAL(ic_invalidate))
+ #ifdef	DB_ST40300_BUG_WORKAROUND
+diff -urbN gcc-4.3.4.orig/gcc/config/sh/t-linux gcc-4.3.4/gcc/config/sh/t-linux
+--- gcc-4.3.4.orig/gcc/config/sh/t-linux	2009-07-28 15:06:27.000000000 +0200
++++ gcc-4.3.4/gcc/config/sh/t-linux	2009-07-28 15:08:10.000000000 +0200
+@@ -1,5 +1,9 @@
+ LIB2FUNCS_EXTRA= $(srcdir)/config/sh/linux-atomic.asm
+ 
++# Use a syscall for i-cache flushing so that all SoCs are supported by default
++# In future we will change this to a vsyscall for efficiency
++LIB1ASMFUNCS_CACHE=_ic_invalidate_syscall
++
+ MULTILIB_DIRNAMES= 
+ MULTILIB_MATCHES = 
+ MULTILIB_EXCEPTIONS=
