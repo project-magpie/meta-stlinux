@@ -8,9 +8,6 @@ inherit kernel siteinfo
 
 RPSRC = "http://www.rpsys.net/openzaurus/patches/archive"
 
-# Enable OABI compat for people stuck with obsolete userspace
-ARM_KEEP_OABI ?= "1"
-
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
@@ -41,10 +38,10 @@ do_configure_prepend() {
 
         echo "CONFIG_CMDLINE=\"${CMDLINE}\"" >> ${S}/.config
 
-        sed -e '/CONFIG_CMDLINE=/d' \
-            -e '/CONFIG_LOCALVERSION/d' \
-            -e '/CONFIG_LOCALVERSION_AUTO/d' \
-	    < '${WORKDIR}/defconfig' >>'${S}/.config'
+       # sed -e '/CONFIG_CMDLINE=/d' \
+       #     -e '/CONFIG_LOCALVERSION/d' \
+       #     -e '/CONFIG_LOCALVERSION_AUTO/d' \
+       #    < '${WORKDIR}/defconfig' >>'${S}/.config'
 
         echo 'CONFIG_LOCALVERSION=""' >>${S}/.config
         echo '# CONFIG_LOCALVERSION_AUTO is not set' >>${S}/.config
