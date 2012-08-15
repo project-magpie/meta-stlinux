@@ -65,6 +65,15 @@ do_configure() {
         yes '' | oe_runmake oldconfig
 }
 
-do_install_prepend() {
-	install -d ${D}/lib/firmware
+do_install_append() {
+	kerneldir=${D}${KERNEL_SRC_PATH}	
+	if [ -f include/linux/bounds.h ]; then
+                cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
+        fi
+        if [ -f include/asm-sh/machtypes.h ]; then
+		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
+	fi	
 }
+
+
+
