@@ -13,9 +13,9 @@ URI: git://git.openembedded.org/openembedded-core
 branch: denzil 
 revision: HEAD
 
-#URI: git://git.openembedded.org/meta-openembedded
-#branch: master
-#revision: HEAD
+URI: git://git.openembedded.org/meta-openembedded
+branch: denzil 
+revision: HEAD
 
 It is preferred that people raise pull requests using GIThub by forking the appropriate tree:
 
@@ -27,7 +27,7 @@ How to use it:
 
 1. source openembedded-core/oe-init-build-env stlinux-build
 2. Add meta-stlinux in bblayers.conf
-3  Set MACHINE to spark in local.conf
+3.  Set MACHINE to spark in local.conf
 4. bitbake core-image-minimal 
 
 
