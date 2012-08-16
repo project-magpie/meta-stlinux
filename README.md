@@ -9,13 +9,13 @@ More information can be found at:
 
 This layer in its entirety depends on:
 
-URI: git://git.openembedded.org/openembedded-core
-branch: denzil 
-revision: HEAD
+    URI: git://git.openembedded.org/openembedded-core
+    branch: denzil 
+    revision: HEAD
 
-URI: git://git.openembedded.org/meta-openembedded
-branch: denzil 
-revision: HEAD
+    URI: git://git.openembedded.org/meta-openembedded
+    branch: denzil 
+    revision: HEAD
 
 It is preferred that people raise pull requests using GIThub by forking the appropriate tree:
 
