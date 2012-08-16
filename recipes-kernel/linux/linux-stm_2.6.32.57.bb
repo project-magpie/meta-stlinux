@@ -66,7 +66,7 @@ do_configure() {
 }
 
 do_install_append() {
-	kerneldir=${D}${KERNEL_SRC_PATH}	
+	kerneldir=${D}/kernel
 	if [ -f include/linux/bounds.h ]; then
                 cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
         fi
