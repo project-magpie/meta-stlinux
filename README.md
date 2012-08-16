@@ -45,8 +45,7 @@ Initialize the build environment
 
     source openembedded-core/oe-init-build-env stlinux-build
 
-Add meta-stlinux in bblayers.conf
-Set MACHINE to spark in local.conf
+Add meta-stlinux in bblayers.conf and set MACHINE to spark in local.conf
 
 Run bitbake: 
 
