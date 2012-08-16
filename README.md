@@ -26,14 +26,22 @@ It is preferred that people raise pull requests using GIThub by forking the appr
 How to use it:
 
 1. Clone openembedded-core
+
      git clone git://git.openembedded.org/openembedded-core oe-core
+
 2. Switch to denzil branch
+
      cd oe-core
      git checkout remotes/origin/denzil
+
 3. Clone bitbake into the oe-core folder
+
      git clone git://git.openembedded.org/bitbake bitbake
+
 4. move to top folder
+
      cd ..
+
 5. source openembedded-core/oe-init-build-env stlinux-build
 6. Add meta-stlinux in bblayers.conf
 7. Set MACHINE to spark in local.conf
