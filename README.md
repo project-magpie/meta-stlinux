@@ -4,16 +4,10 @@ OpenEmbedded BSP Layer - For STLinux sh4 based Set-Top-Boxes
 This is the general hardware specific BSP overlay for STLinux based devices.
 It should be used with openembedded-core (not old-style org.openembedded.dev).
 
-More information can be found at:
-
 
 This layer in its entirety depends on:
 
     URI: git://git.openembedded.org/openembedded-core
-    branch: denzil 
-    revision: HEAD
-
-    URI: git://git.openembedded.org/meta-openembedded
     branch: denzil 
     revision: HEAD
 
@@ -24,24 +18,25 @@ It is preferred that people raise pull requests using GIThub by forking the appr
 
 
 How to use it:
+--------------
 
-Clone openembedded-core
+Clone openembedded-core:
 
     git clone git://git.openembedded.org/openembedded-core oe-core
 
-Switch to denzil branch
+Switch to denzil branch:
 
     cd oe-core
     git checkout remotes/origin/denzil
 
-Clone bitbake into the oe-core folder
+Clone bitbake into the oe-core folder:
 
     git clone git://git.openembedded.org/bitbake bitbake
 
-Move to top folder
+Move to top folder:
 
     cd ..
-Initialize the build environment
+Initialize the build environment:
 
     source openembedded-core/oe-init-build-env stlinux-build
 
