@@ -37,6 +37,7 @@ Clone bitbake into the oe-core folder:
 Move to top folder:
 
     cd ..
+    
 ## Initialize the oe-core build environment 
     # Initialize the oe-core build environment and edit configuration files 
     # 
@@ -47,9 +48,24 @@ Move to top folder:
 
     source openembedded-core/oe-init-build-env stlinux-build
 
-Add meta-stlinux in bblayers.conf and set MACHINE to spark in local.conf
+## Add meta-stlinux in bblayers.conf and set MACHINE to spark (for example) in local.conf
+    vim vim conf/bblayers.conf
+    ...
+    BBLAYERS ?= " \
+      ${TOPDIR}/../oe-core/meta \
+      ${TOPDIR}/../meta-stlinux \
+    "
+    ...
 
-Run bitbake: 
+    
+    vim conf/local.conf
+    ...
+    MACHINE ??= "spark"
+    ...
+    
+
+    
+## Run bitbake: 
 
     bitbake core-image-minimal 
 
