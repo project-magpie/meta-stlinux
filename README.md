@@ -48,18 +48,18 @@ Move to top folder:
 
     source openembedded-core/oe-init-build-env stlinux-build
 
-## Add meta-stlinux in bblayers.conf and set MACHINE to spark (for example) in local.conf
-    vim vim conf/bblayers.conf
+## Add meta-stlinux in bblayers.conf 
+    vim conf/bblayers.conf
     ...
     BBLAYERS ?= " \
       ${TOPDIR}/../oe-core/meta \
       ${TOPDIR}/../meta-stlinux \
     "
     ...
-
-    
+## Set MACHINE to spark in local.conf
     vim conf/local.conf
     ...
+    # Currently only spark hardware is supported
     MACHINE ??= "spark"
     ...
     
