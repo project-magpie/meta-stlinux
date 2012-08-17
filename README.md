@@ -37,7 +37,13 @@ Clone bitbake into the oe-core folder:
 Move to top folder:
 
     cd ..
-Initialize the build environment:
+## Initialize the oe-core build environment 
+    # Initialize the oe-core build environment and edit configuration files 
+    # 
+    # This following command line line will create your build directory, setup your build environment,
+    # automatically place the current work directory inside the build dir and
+    # print out some useful information on how to bitbake packages.
+    # You can rerun this command every time you want to re-setup your build environment!
 
     source openembedded-core/oe-init-build-env stlinux-build
 
