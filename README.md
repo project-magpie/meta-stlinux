@@ -27,11 +27,12 @@ Clone openembedded-core:
 Switch to denzil branch:
 
     cd oe-core
-    git checkout remotes/origin/denzil
+    git checkout -b denzil remotes/origin/denzil
 
 Clone bitbake into the oe-core folder:
 
     git clone git://git.openembedded.org/bitbake bitbake
+    git checkout -b f8bf449 f8bf449
 
 Move to top folder:
 
