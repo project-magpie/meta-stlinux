@@ -2,12 +2,12 @@
 # Configuration to use external STLinux toolchain
 #
 
-EXTERNAL_TOOLCHAIN ?= "/usr/local/csl/${TARGET_ARCH}"
+EXTERNAL_TOOLCHAIN ?= "${STAGING_DIR_TARGET}"
 
 TOOLCHAIN_PATH_ADD = "${EXTERNAL_TOOLCHAIN}/bin:"
 PATH =. "${TOOLCHAIN_PATH_ADD}"
 
-STL_TARGET_SYS_sh4 ?= "sh4-linux-gnu"
+STL_TARGET_SYS_sh4 ?= "sh4-linux"
 STL_TARGET_SYS = "${TARGET_SYS}"
 
 TARGET_PREFIX = "${STL_TARGET_SYS}-"

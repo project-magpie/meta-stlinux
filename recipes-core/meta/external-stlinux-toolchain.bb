@@ -1,6 +1,7 @@
 #require recipes-core/glibc/glibc-package.inc
 
 INHIBIT_DEFAULT_DEPS = "1"
+INHIBIT_PACKAGE_STRIP = '1'
 
 # License applies to this recipe code, not the toolchain itself
 LICENSE = "MIT"
@@ -24,10 +25,6 @@ PROVIDES += "\
 	virtual/linux-libc-headers \
 "
 
-STL_VER_MAIN = "2.4"
-
-PV = "${STL_VER_MAIN}"
-PR = "r7"
 
 
 STL_ARCHIVE = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/sh4/"
@@ -39,20 +36,35 @@ STMKERNEL_VER = "2.6.32.46-45"
 STL_LIBGCC_VER = "4.5.3-100"
 STL_GLIBC_VER = "2.10.2-34"
 
+STL_VER_MAIN = "${STL_GCC_VER}"
+PV = "${STL_VER_MAIN}"
+PR = "r8"
+
+STL_RPM_BINUTILS = "stlinux24-cross-sh4-binutils-${STL_BINUTILS_VER}.i386.rpm"
+STL_RPM_BINUTILS_DEV = "stlinux24-cross-sh4-binutils-dev-${STL_BINUTILS_VER}.i386.rpm"
+STL_RPM_CROSS_SH4_CPP = "stlinux24-cross-sh4-cpp-${STL_GCC_VER}.i386.rpm"
+STL_RPM_CROSS_SH4_GCC = "stlinux24-cross-sh4-gcc-${STL_GCC_VER}.i386.rpm"
+STL_RPM_CROSS_SH4_GPP = "stlinux24-cross-sh4-g++-${STL_GCC_VER}.i386.rpm"
+STL_RPM_LINUX_HEADER = "stlinux24-sh4-linux-kernel-headers-${STMKERNEL_VER}.noarch.rpm"
+STL_RPM_LIBGCC = "stlinux24-sh4-libgcc-${STL_LIBGCC_VER}.sh4.rpm"
+STL_RPM_GLIBC = "stlinux24-sh4-glibc-${STL_GLIBC_VER}.sh4.rpm"
+STL_RPM_GLIBC_DEV = "stlinux24-sh4-glibc-dev-${STL_GLIBC_VER}.sh4.rpm"
+STL_RPM_LIBSTDC = "stlinux24-sh4-libstdc++-${STL_LIBGCC_VER}.sh4.rpm"
+STL_RPM_LIBSTDC_DEV = "stlinux24-sh4-libstdc++-dev-${STL_LIBGCC_VER}.sh4.rpm"
 
 
 SRC_URI ="\
-	${STL_ARCHIVE}/stlinux24-cross-sh4-binutils-${STL_BINUTILS_VER}.i386.rpm;name=stl-binutils \
-        ${STL_ARCHIVE}/stlinux24-cross-sh4-binutils-dev-${STL_BINUTILS_VER}.i386.rpm;name=stl-binutils-dev \
-	${STL_ARCHIVE}/stlinux24-cross-sh4-cpp-${STL_GCC_VER}.i386.rpm;name=stl-cpp \
-	${STL_ARCHIVE}/stlinux24-cross-sh4-gcc-${STL_GCC_VER}.i386.rpm;name=stl-gcc \
-	${STL_ARCHIVE}/stlinux24-cross-sh4-g++-${STL_GCC_VER}.i386.rpm;name=stl-gpp \
-	${STL_ARCHIVE}/stlinux24-sh4-linux-kernel-headers-${STMKERNEL_VER}.noarch.rpm;name=stl-headers \
-	${STL_ARCHIVE}/stlinux24-sh4-libgcc-${STL_LIBGCC_VER}.sh4.rpm;name=stl-libgcc \
-	${STL_ARCHIVE}/stlinux24-sh4-glibc-${STL_GLIBC_VER}.sh4.rpm;name=stl-glibc \
-	${STL_ARCHIVE}/stlinux24-sh4-glibc-dev-${STL_GLIBC_VER}.sh4.rpm;name=stl-glibc-dev \
-	${STL_ARCHIVE}/stlinux24-sh4-libstdc++-${STL_LIBGCC_VER}.sh4.rpm;name=stl-libstdc \
-	${STL_ARCHIVE}/stlinux24-sh4-libstdc++-dev-${STL_LIBGCC_VER}.sh4.rpm;name=stl-libstdc-dev \
+	${STL_ARCHIVE}/${STL_RPM_BINUTILS};name=stl-binutils \
+        ${STL_ARCHIVE}/${STL_RPM_BINUTILS_DEV};name=stl-binutils-dev \
+	${STL_ARCHIVE}/${STL_RPM_CROSS_SH4_CPP};name=stl-cpp \
+	${STL_ARCHIVE}/${STL_RPM_CROSS_SH4_GCC};name=stl-gcc \
+	${STL_ARCHIVE}/${STL_RPM_CROSS_SH4_GPP};name=stl-gpp \
+	${STL_ARCHIVE}/${STL_RPM_LINUX_HEADER};name=stl-headers \
+	${STL_ARCHIVE}/${STL_RPM_LIBGCC};name=stl-libgcc \
+	${STL_ARCHIVE}/${STL_RPM_GLIBC};name=stl-glibc \
+	${STL_ARCHIVE}/${STL_RPM_GLIBC_DEV};name=stl-glibc-dev \
+	${STL_ARCHIVE}/${STL_RPM_LIBSTDC};name=stl-libstdc \
+	${STL_ARCHIVE}/${STL_RPM_LIBSTDC_DEV};name=stl-libstdc-dev \
 "
 
 SRC_URI[stl-binutils.md5sum] = "70ba1bd436c2e7f46c88d42485f3c970"
@@ -79,49 +91,42 @@ SRC_URI[stl-libstdc.sha256sum] = "2b10e869a8a3da6cc12029ec5086943f8977c886af52a5
 SRC_URI[stl-libstdc-dev.md5sum] = "02a92de32fba13d9f1827f49f03c7c6d"
 SRC_URI[stl-libstdc-dev.sha256sum] = "4089117a230feedcd67dbb589198b1079cb0e1c4618897dadf0bf9d4794da67e"
 
-
+STL_CPIO_OPTS = "--extract --unconditional --preserve-modification-time --make-directories"
 
 #SRC_URI = "file://SUPPORTED"
+
+do_unpack() {
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_BINUTILS} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_BINUTILS_DEV} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_CROSS_SH4_CPP} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_CROSS_SH4_GCC} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_CROSS_SH4_GPP} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_LINUX_HEADER} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_LIBGCC} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_GLIBC} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_GLIBC_DEV} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_LIBSTDC} | cpio ${STL_CPIO_OPTS}
+	rpm2cpio.sh ${DL_DIR}/${STL_RPM_LIBSTDC_DEV} | cpio ${STL_CPIO_OPTS}
+}
+
+STL_RELOCATE = "/opt/STM/STLinux-2.4/devkit/sh4"
 
 do_install() {
 	# Use optimized files if available
 	sysroot="${EXTERNAL_TOOLCHAIN_SYSROOT}"
 
-	cp -a $sysroot${base_libdir}/. ${D}${base_libdir}
-	cp -a $sysroot/etc/. ${D}${sysconfdir}
-	cp -a $sysroot/sbin/. ${D}${base_sbindir}
-
 	install -d ${D}/usr
-	for usr_element in bin libexec sbin share ${base_libdir}; do
-		usr_path=$sysroot/usr/$usr_element
-		cp -a $usr_path ${D}/usr/
-	done
-	for datadir_element in man info; do
-		datadir_path=$sysroot/usr/$datadir_element
-		if [ -e $datadir_path ]; then
-			cp -a $datadir_path ${D}${datadir}/
-		fi
-	done
+	cp -a ${WORKDIR}/${STL_RELOCATE}/* ${D}/usr	
+	install -d  ${STAGING_DIR_TARGET}/usr
+	cp -a ${WORKDIR}/${STL_RELOCATE}/* ${STAGING_DIR_TARGET}/usr
 
-	# Some toolchains have headers under the core specific area
-	if [ -e $sysroot/usr/include ]; then
-		cp -a $sysroot/usr/include/. ${D}${includedir}
-	else
-		cp -a $sysroot/../usr/include/. ${D}${includedir}
-	fi
+	echo ${base_libdir}
 
-	rm ${D}${sysconfdir}/rpc
-	rm -r ${D}${datadir}/zoneinfo
+	#ln -s ../../bin/gdbserver ${D}${libdir}/bin/sysroot-gdbserver
 
-	mv ${D}${libdir}/bin/* ${D}${bindir}/
-	if [ -e ${D}${libdir}/bin/.debug ]; then
-		mv ${D}${libdir}/bin/.debug/* ${D}${bindir}/.debug/
-	fi
-	ln -s ../../bin/gdbserver ${D}${libdir}/bin/sysroot-gdbserver
-
-	sed -i -e 's/__packed/__attribute__ ((packed))/' ${D}${includedir}/mtd/ubi-user.h
-        sed -i -e "s# ${base_libdir}# ../..${base_libdir}#g" -e "s# ${libdir}# .#g" ${D}${libdir}/libc.so
-        sed -i -e "s# ${base_libdir}# ../..${base_libdir}#g" -e "s# ${libdir}# .#g" ${D}${libdir}/libpthread.so
+	#sed -i -e 's/__packed/__attribute__ ((packed))/' ${D}${includedir}/mtd/ubi-user.h
+        #sed -i -e "s# ${base_libdir}# ../..${base_libdir}#g" -e "s# ${libdir}# .#g" ${D}${libdir}/libc.so
+        #sed -i -e "s# ${base_libdir}# ../..${base_libdir}#g" -e "s# ${libdir}# .#g" ${D}${libdir}/libpthread.so
 }
 
 SYSROOT_PREPROCESS_FUNCS += "external_toolchain_sysroot_adjust"
@@ -147,6 +152,8 @@ INSANE_SKIP_${PN}-utils += "ldflags"
 INSANE_SKIP_libstdc++ += "ldflags"
 INSANE_SKIP_libgcc += "ldflags"
 INSANE_SKIP_gdbserver += "ldflags"
+INSANE_SKIP_${PN} = "arch"
+
 
 PKG_${PN} = "glibc"
 PKG_${PN}-dev = "glibc-dev"
