@@ -1,0 +1,31 @@
+Index: git/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
+===================================================================
+--- git.orig/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
++++ git/sysdeps/unix/sysv/linux/x86_64/ldconfig.h
+@@ -20,8 +20,8 @@
+ 
+ #define SYSDEP_KNOWN_INTERPRETER_NAMES \
+   { "/lib/ld-linux.so.2", FLAG_ELF_LIBC6 }, \
+-  { "/libx32/ld-linux-x32.so.2", FLAG_ELF_LIBC6 }, \
+-  { "/lib64/ld-linux-x86-64.so.2", FLAG_ELF_LIBC6 },
++  { "/lib/ld-linux-x32.so.2", FLAG_ELF_LIBC6 }, \
++  { "/lib/ld-linux-x86-64.so.2", FLAG_ELF_LIBC6 },
+ #define SYSDEP_KNOWN_LIBRARY_NAMES \
+   { "libc.so.6", FLAG_ELF_LIBC6 },	\
+   { "libm.so.6", FLAG_ELF_LIBC6 },
+Index: git/sysdeps/x86_64/preconfigure
+===================================================================
+--- git.orig/sysdeps/x86_64/preconfigure
++++ git/sysdeps/x86_64/preconfigure
+@@ -4,9 +4,9 @@ x86_64)
+   case "$CC $CFLAGS $CPPFLAGS " in
+   *" -mx32"*)
+     machine=x86_64/x32
+-    libc_cv_slibdir="/libx32"
++    libc_cv_slibdir="/lib"
+     if test "$libdir" = '${exec_prefix}/lib'; then
+-      libdir='${exec_prefix}/libx32';
++      libdir='${exec_prefix}/lib';
+       # Locale data can be shared.
+       libc_cv_localedir='${exec_prefix}/lib/locale'
+     fi

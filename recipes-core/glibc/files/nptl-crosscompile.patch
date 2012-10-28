@@ -1,0 +1,30 @@
+Upstream-Status: Inappropriate [not used]
+
+Index: git/nptl/sysdeps/pthread/configure.in
+===================================================================
+--- git.orig/nptl/sysdeps/pthread/configure.in
++++ git/nptl/sysdeps/pthread/configure.in
+@@ -45,5 +45,6 @@ libc_cv_c_cleanup=yes, libc_cv_c_cleanup
+     AC_MSG_ERROR([the compiler must support C cleanup handling])
+   fi
+ else
+-  AC_MSG_ERROR(forced unwind support is required)
++  AC_MSG_WARN([forced unwind support is required, can't be verified while crosscompiling])
++  AC_DEFINE(HAVE_FORCED_UNWIND)
+ fi
+Index: git/nptl/sysdeps/pthread/configure
+===================================================================
+--- git.orig/nptl/sysdeps/pthread/configure
++++ git/nptl/sysdeps/pthread/configure
+@@ -215,5 +215,10 @@ $as_echo "$libc_cv_c_cleanup" >&6; }
+     as_fn_error $? "the compiler must support C cleanup handling" "$LINENO" 5
+   fi
+ else
+-  as_fn_error $? "forced unwind support is required" "$LINENO" 5
++  { $as_echo "$as_me:$LINENO: WARNING: forced unwind support is required, can't be verified while crosscompiling" >&5
++    $as_echo "$as_me: WARNING: forced unwind support is required, can't be verified while crosscompiling" >&2;}
++    cat >>confdefs.h <<\_ACEOF
++#define HAVE_FORCED_UNWIND 1
++_ACEOF
++  }
+ fi
