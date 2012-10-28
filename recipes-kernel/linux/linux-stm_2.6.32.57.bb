@@ -68,9 +68,11 @@ do_configure() {
 do_install_append() {
 	kerneldir=${D}/kernel
 	if [ -f include/linux/bounds.h ]; then
+		mkdir -p $kerneldir/include/linux
                 cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
         fi
         if [ -f include/asm-sh/machtypes.h ]; then
+		mkdir -p $kerneldir/include/asm-sh
 		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
 	fi	
 }
