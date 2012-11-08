@@ -2,6 +2,9 @@ require conf/machine/include/tune-sh4.inc
 
 TARGET_ARCH = "sh4"
 
+STLINUX_SH_UPD_SRPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/SRPMS"
+
+
 PREFERRED_VERSION_linux-${MACHINE} = "2.6.32.57-stm24-0210"
 PREFERRED_VERSION_linux-libc-headers = "2.6.32"
 PREFERRED_PROVIDER_virtual/kernel = "linux-stm"
