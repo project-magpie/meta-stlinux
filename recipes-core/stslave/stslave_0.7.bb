@@ -9,6 +9,8 @@ DESCRIPTION = "The Linux stslave command loads an ST2x ST2xx application in the 
 memory and trigger its execution. The program can handle different types of \
 target devices (slaves from now on) and different slaves of the same type"
 
+LICENSE = "Proprietary"
+
 SECTION = "console/utils"
 
 PR = "r1"
