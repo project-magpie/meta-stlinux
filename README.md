@@ -17,8 +17,23 @@ It is preferred that people raise pull requests using GIThub by forking the appr
                    (More info on achieving this can be found at http://help.github.com/send-pull-requests/)
 
 
-How to use it:
---------------
+How to use it with yocto (preferred) 
+-----------------------------------
+
+## Clone poky:
+   git clone http://git.yoctoproject.org/git/poky poky
+
+## Switch to denzil branch:
+
+   cd poky
+   git checkout -b denzil remotes/origin/denzil
+
+## Move to top folder:
+
+   cd ..
+
+How to use it with openembedded core 
+------------------------------------
 
 ## Clone openembedded-core:
 
@@ -37,6 +52,9 @@ How to use it:
 ## Move to top folder:
 
     cd ..
+
+Independent Steps from poky/oe-core
+-----------------------------------
 
 ## Clone meta-stlinux
 
@@ -61,12 +79,15 @@ How to use it:
     "
     ...
 
-## Set MACHINE to spark in local.conf
+## Set MACHINE to spark and package type to ipk in local.conf
     vim conf/local.conf
     ...
     # Currently only spark hardware is supported
     MACHINE ??= "spark"
     ...
+    PACKAGE_CLASSES ?= "package_ipk"
+    ...
+   
 
 ## Run bitbake: 
 
