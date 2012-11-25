@@ -36,6 +36,7 @@ file://linux-sh4-cifs-unaligned-mem-access-kernel_stm24.patch;patch=1 \
 file://linux-sh4-linux_yaffs2_stm24_${STM_PATCH_STR}.patch;patch=1 \
 file://linux-sh4-lirc_stm24_${STM_PATCH_STR}.patch;patch=1 \
 file://${MACHINE}_defconfig \
+file://st-coprocessor.h \
 "
 
 
@@ -74,7 +75,10 @@ do_install_append() {
         if [ -f include/asm-sh/machtypes.h ]; then
 		mkdir -p $kerneldir/include/asm-sh
 		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
-	fi	
+	fi
+	echo "DIR:" ${D}${includedir}/linux 
+	install -d ${D}${includedir}/linux	
+   	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
 }
 
 
