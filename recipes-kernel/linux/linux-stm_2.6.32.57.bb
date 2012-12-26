@@ -54,6 +54,8 @@ CMDLINE_spark = "console=ttyAMA0,115200 rootfstype=ext4 rootwait"
 
 S = "${WORKDIR}/git"
 
+#FILES_${PN}-dev = ""
+
 #do_configure_prepend() {
 #	install -m 0644 ${WORKDIR}/${MACHINE}_defconfig ${WORKDIR}/defconfig || die "No default configuration for ${MACHINE} / ${KERNEL_DEFCONFIG} available."
 #	oe_machinstall -m 0644 ${WORKDIR}/${MACHINE}_defconfig ${WORKDIR}/defconfig 
@@ -67,7 +69,7 @@ do_configure() {
 }
 
 do_install_append() {
-	kerneldir=${D}/kernel
+	kerneldir=${STAGING_KERNEL_DIR}
 	if [ -f include/linux/bounds.h ]; then
 		mkdir -p $kerneldir/include/linux
                 cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
