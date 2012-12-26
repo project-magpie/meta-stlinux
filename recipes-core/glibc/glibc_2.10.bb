@@ -4,7 +4,7 @@ SRCREV = "3e94272e370a13e6e1754fde578b2c44165ebcaa"
 PV = "2.10"
 
 DEPENDS += "gperf-native"
-PR = "r0"
+PR = "r1"
 PR_append = "+git${SRCPV}"
 FILESPATHPKG =. "glibc-git:"
 
@@ -15,6 +15,7 @@ SRC_URI = " \
 	   git://git.stlinux.com/stm/glibc.git;protocol=git;branch=${GLIBC_BRANCH} \
            file://etc/ld.so.conf \
 	   file://generate-supported.mk \
+           file://fallocate64-backport.patch;patch=1 \
 	   file://glibc-ports-${GLIBC_PORTS_VER}.tar.bz2 \
 	   "
 SRC_URI[md5sum] = "05c85905b43021a81318c3aa81718019"
