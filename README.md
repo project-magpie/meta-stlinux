@@ -20,31 +20,31 @@ It is preferred that people raise pull requests using GIThub by forking the appr
 How to use it with yocto (preferred) 
 -----------------------------------
 
-## Clone poky:
-   git clone http://git.yoctoproject.org/git/poky poky
+## Clone poky
+    git clone http://git.yoctoproject.org/git/poky poky
 
-## Switch to denzil branch:
-   cd poky 
-   git checkout -b denzil remotes/origin/denzil
+## Switch to denzil branch
+    cd poky 
+    git checkout -b denzil remotes/origin/denzil
 
-## Move to top folder:
-   cd ..
-
+## Move to top folder
+    cd ..
+        
 How to use it with openembedded core 
 ------------------------------------
 
-## Clone openembedded-core:
+## Clone openembedded-core
     git clone git://git.openembedded.org/openembedded-core oe-core
 
-## Switch to denzil branch:
+## Switch to denzil branch
     cd oe-core
     git checkout -b denzil remotes/origin/denzil
 
-## Clone bitbake into the oe-core folder:
+## Clone bitbake into the oe-core folder
     git clone git://git.openembedded.org/bitbake bitbake
     git checkout -b f8bf449 f8bf449
 
-## Move to top folder:
+## Move to top folder
     cd ..
 
 Independent Steps from poky/oe-core
