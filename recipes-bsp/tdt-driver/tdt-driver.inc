@@ -1,39 +1,57 @@
-SUMMARY = "Player2 Module from TDT "
 HOMEPAGE = "http://gitorious.org/open-duckbox-project-sh4"
 SECTION = "kernel/modules"
-LICENSE = " GPLv2"
-#RDEPENDS_${PN} = ""
-LIC_FILES_CHKSUM = "file://player/player/player_playback.cpp;endline=33;md5=6b5c84c5d98af78c7a0bc53d1b3e1282"
 
+LICENSE = " GPLv2"
+LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 inherit module
 
-PR = "r1"
+PR = "r5"
 
-SRCREV = "f5159041295774ef5bbb338c7f5d831bc2620d03"
+SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 
+# using seifes tdt drivers because this has less overhead
 SRC_URI = " \
-	git://gitorious.org/open-duckbox-project-sh4/tdt.git \
+	git://gitorious.org/neutrino-mp/tdt-driver.git \
+        file://COPYING \
 "
 
+PV = "0.1+git${SRCPV}"
 
-S = "${WORKDIR}/git/tdt/cvs/driver/${PN}_${PV}"
+
+S = "${WORKDIR}/git"
 
 do_configure_prepend () {
-	if [ -L ${WORKDIR}/git/tdt/cvs/driver/include/stmfb ]; then
-		rm ${WORKDIR}/git/tdt/cvs/driver/include/stmfb
+	if [ -L include/stmfb ]; then
+		rm include/stmfb
 	fi
-	if [ -L ${WORKDIR}/git/tdt/cvs/driver/player2 ]; then
-                rm ${WORKDIR}/git/tdt/cvs/driver/player2
+	if [ -L include/player2 ]; then
+		rm include/player2
+	fi
+	if [ -L include/multicom ]; then
+		rm include/multicom
+	fi
+	if [ -L player2 ]; then
+                rm player2
         fi
-	if [ -L ${WORKDIR}/git/tdt/cvs/driver/stgfb/stmfb ]; then
-                rm ${WORKDIR}/git/tdt/cvs/driver/stgfb/stmfb
+	if [ -L stgfb/stmfb ]; then
+                rm stgfb/stmfb
         fi
-	
-	ln -s ${WORKDIR}/git/tdt/cvs/driver/include/stmfb-3.1_stm24_0102 ${WORKDIR}/git/tdt/cvs/driver/include/stmfb
-	ln -s ${WORKDIR}/git/tdt/cvs/driver/include/player2_179 ${WORKDIR}/git/tdt/cvs/driver/include/player2
-	ln -s ${WORKDIR}/git/tdt/cvs/driver/player2_191 ${WORKDIR}/git/tdt/cvs/driver/player2
-	ln -s ${WORKDIR}/git/tdt/cvs/driver/stgfb/stmfb-3.1_stm24_0102/ ${WORKDIR}/git/tdt/cvs/driver/stgfb/stmfb
+	if [ -L multicom ]; then
+                rm multicom 
+        fi
+	ln -s ${S}/include/stmfb-3.1_stm24_0102 ${S}/include/stmfb
+	ln -s ${S}/include/player2_179 ${S}/include/player2
+	ln -s ${S}/multicom-3.2.4/include ${S}/include/multicom
+	ln -s ${S}/player2_191 ${S}/player2
+	ln -s ${S}/multicom-3.2.4 ${S}/multicom
+	ln -s ${S}/stgfb/stmfb-3.1_stm24_0102 ${S}/stgfb/stmfb
+	rm -f .config 
+        printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
+	# disable wireless build
+	sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
+	# disable led and button - it's not for spark
+	sed -i 's@^\(obj-y.*+= \(led\|button\)/\)@# \1@' Makefile
 }
 
 
@@ -44,21 +62,47 @@ do_compile() {
                    KERNEL_SRC=${STAGING_KERNEL_DIR}    \
                    KERNEL_VERSION=${KERNEL_VERSION}    \
 		   -C ${STAGING_KERNEL_DIR}   \
-	           SPARK=spark \
-                   M=$PWD V=1\
+	           ${@d.getVar('MACHINE',1).upper()}=1 \
+                   M=${S} V=1 \
+                   ARCH=sh \
 		   PLAYER191=player191 \
-        	   DRIVER_TOPDIR="${WORKDIR}/git/tdt/cvs/driver" \
+        	   DRIVER_TOPDIR="${S}" \
 	           KERNEL_LOCATION="${STAGING_KERNEL_DIR}" \
 	           CONFIG_KERNEL_BUILD="${STAGING_KERNEL_DIR}" \
 	           CONFIG_KERNEL_PATH="${STAGING_KERNEL_DIR}" \
-	           CONFIG_MODULES_PATH="${WORKDIR}/git/tdt/cvs/driver" \
+	           CONFIG_MODULES_PATH="${D}" \
 		   CONFIG_PLAYER_191=y \
-                   CCFLAGSY="-D__TDT__ -D__LINUX__ -D__SH4__ -D__KERNEL__ -DMODULE -DEXPORT_SYMTAB -I${STAGING_DIR}/${MACHINE}/usr/include" \
+		   CCFLAGSY="-I${STAGING_DIR_HOST}/usr/include" \
                    modules 
-	
 }
 
 do_install() {
-        install -d ${D}${base_libdir}/modules/${KERNEL_VERSION}/kernel/drivers/net
-#        install -m 0644 ${S}/zd1211*${KERNEL_OBJECT_SUFFIX} ${D}${base_libdir}/modules/${KERNEL_VERSION}/kernel/drivers/net
+        unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
+        oe_runmake KERNEL_PATH=${STAGING_KERNEL_DIR}   \
+                   KERNEL_SRC=${STAGING_KERNEL_DIR}    \
+                   KERNEL_VERSION=${KERNEL_VERSION}    \
+		   -C ${STAGING_KERNEL_DIR}   \
+	           ${@d.getVar('MACHINE',1).upper()}=1 \
+                   M=${S} V=1 \
+                   ARCH=sh \
+		   PLAYER191=player191 \
+        	   DRIVER_TOPDIR="${S}" \
+	           KERNEL_LOCATION="${STAGING_KERNEL_DIR}" \
+	           CONFIG_KERNEL_BUILD="${STAGING_KERNEL_DIR}" \
+	           CONFIG_KERNEL_PATH="${STAGING_KERNEL_DIR}" \
+	           CONFIG_MODULES_PATH="${D}" \
+		   CONFIG_PLAYER_191=y \
+		   CCFLAGSY="-I${STAGING_DIR_HOST}/usr/include" \
+		   INSTALL_MOD_PATH=${D} modules_install
+
+        # install header files
+	install -d ${D}/${includedir}/linux/dvb
+        
+	install -m 644 bpamem/bpamem.h ${D}/${includedir}
+ 	install -m 644 frontcontroller/aotom/aotom_main.h ${D}/${includedir}
+ 	install -m 644 player2/linux/include/linux/dvb/stm_ioctls.h ${D}/${includedir}/linux/dvb
+ 	install -m 644 stgfb/stmfb/linux/drivers/video/stmfb.h ${D}/${includedir}/linux
 }
+
+FILES_${PN}-dev += "${includedir}"
+
