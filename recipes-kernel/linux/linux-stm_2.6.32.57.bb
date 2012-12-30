@@ -78,7 +78,6 @@ do_install_append() {
 		mkdir -p $kerneldir/include/asm-sh
 		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
 	fi
-	echo "DIR:" ${D}${includedir}/linux 
 	install -d ${D}${includedir}/linux	
    	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
 }
