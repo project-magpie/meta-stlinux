@@ -23,7 +23,7 @@ PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
 
 
 
-MACHINE_FEATURES = "alsa usbhost serial"
+MACHINE_FEATURES = "kernel26 alsa usbhost serial"
 
 SERIAL_CONSOLE = "115200 ttyAS0"
 
@@ -44,6 +44,11 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "stlinux24-sh4-stx7111-fdma-firmware \
 	                             stlinux24-sh4-stmfb-firmware-stx7111 \
                                      u-boot-fw-utils \
 				     tdt-driver \
-                                     fp-control stfbcontrol ustslave \
+                                     stslave-fw \
+				     fp-control stfbcontrol ustslave \
 "
+
+#Spark Boxes have no hardware clock
+MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
+
 
