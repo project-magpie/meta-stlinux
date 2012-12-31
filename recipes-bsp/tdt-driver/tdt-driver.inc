@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882b
 
 inherit module
 
-PR = "r5"
+PR = "r8"
 
 SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 
@@ -14,7 +14,10 @@ SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 SRC_URI = " \
 	git://gitorious.org/neutrino-mp/tdt-driver.git \
         file://COPYING \
-"
+        file://aotom_udev.rules \
+	file://${MACHINE}/tdt-driver_load.conf \
+        file://${MACHINE}/tdt-driver_options.conf \
+" 
 
 PV = "0.1+git${SRCPV}"
 
@@ -102,6 +105,16 @@ do_install() {
  	install -m 644 frontcontroller/aotom/aotom_main.h ${D}/${includedir}
  	install -m 644 player2/linux/include/linux/dvb/stm_ioctls.h ${D}/${includedir}/linux/dvb
  	install -m 644 stgfb/stmfb/linux/drivers/video/stmfb.h ${D}/${includedir}/linux
+
+	#install modutils config
+	install -d ${D}/${sysconfdir}/modules-load.d
+	install -d ${D}/${sysconfdir}/modprobe.d
+	install -d ${D}/${sysconfdir}/udev/rules.d/
+	
+	cp ${WORKDIR}/${MACHINE}/tdt-driver_load.conf ${D}/${sysconfdir}/modules-load.d/tdt-driver.conf
+	cp ${WORKDIR}/${MACHINE}/tdt-driver_options.conf ${D}/${sysconfdir}/modprobe.d/tdt-driver.conf
+	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
+
 }
 
 FILES_${PN}-dev += "${includedir}"
