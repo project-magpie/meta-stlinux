@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 DEPENDS = "tdt-driver"
 
-PR = "r2"
+PR = "r3"
 
 SRCREV = "f5159041295774ef5bbb338c7f5d831bc2620d03"
 

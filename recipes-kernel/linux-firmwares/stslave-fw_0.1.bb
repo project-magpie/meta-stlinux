@@ -6,7 +6,7 @@ PACKAGE_ARCH = "all"
 # fix architecture mismatch QA error
 INSANE_SKIP_${PN} = "arch"
 
-PR = "r2"
+PR = "r3"
 
 BINARY_STSLAVE_FW_PATH ?= "/data/stslave_fw"
 
