@@ -1,12 +1,13 @@
 HOMEPAGE = "http://gitorious.org/open-duckbox-project-sh4"
 SECTION = "kernel/modules"
+RDEPENDS = "ustslave"
 
 LICENSE = " GPLv2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
 inherit module
 
-PR = "r8"
+PR = "r11"
 
 SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 
