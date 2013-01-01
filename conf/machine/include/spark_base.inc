@@ -22,8 +22,8 @@ PREFERRED_VERSION_glibc-initial           ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
 
 
-
-MACHINE_FEATURES = "kernel26 alsa usbhost serial"
+USE_VT = "0"
+MACHINE_FEATURES = "kernel26 ext2 alsa usbhost serial"
 
 SERIAL_CONSOLE = "115200 ttyAS0"
 
@@ -50,5 +50,4 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "stlinux24-sh4-stx7111-fdma-firmware \
 
 #Spark Boxes have no hardware clock
 MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
-
 
