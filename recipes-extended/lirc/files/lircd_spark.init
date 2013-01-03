@@ -1,0 +1,66 @@
+#!/bin/sh
+PID=/var/run/lirc/lircd.pid
+
+boxver()
+{
+	if test -z "$STB_ID"; then
+		eval $(sed 's/^.* \(STB_ID[^[:space:]]*\).*$/\1/' /proc/cmdline)
+	fi
+	BOX_ID=${STB_ID:0:8}	# 09:00:07
+	BOX_ID=${BOX_ID//:/_}	# 09_00_07
+	export BOX_ID
+}
+
+makelink()
+{
+	FOUND=false
+	while read A B C; do
+		case $A in
+			N:)	eval $B $C
+				test x"$Name" = xlircd && FOUND=true
+				;;
+			H:)	if $FOUND; then
+					ln -sf $C /dev/input/nevis_ir
+					break;
+				fi
+				;;
+		esac
+	done < /proc/bus/input/devices
+}
+
+# LIRCD_OPTS can be set in /etc/profile.local if needed...
+case $1 in
+	start)
+		read dummy dummy KVER dummy < /proc/version
+		grep -q uinput /lib/modules/${KVER}/modules.dep || depmod -a
+		modprobe uinput
+		# if /var/run does not exist, we are screwed anyway...
+		test -d /var/run/lirc || mkdir /var/run/lirc
+		# wait for uinput device, takes a short time to show up...
+		for i in `seq 40`; do
+			test -e /dev/uinput && break
+			usleep 100000	# 100ms
+		done
+		boxver	# determine boxtype
+		# if a /etc/lircd.conf.$BOX_ID exists, use it...
+		test -z "$LIRCD_OPTS" && test -e /etc/lircd.conf.$BOX_ID && LIRCD_OPTS=/etc/lircd.conf.$BOX_ID
+		/sbin/lircd -u $LIRCD_OPTS
+		makelink
+		;;
+	stop)
+		kill -TERM `cat $PID`
+		;;
+	status)
+		if test -e $PID && kill -0 `cat $PID` 2>/dev/null; then
+			echo "lircd is running"
+			exit 0
+		else
+			echo "lircd is not running"
+			exit 1
+		fi
+		;;
+	*)
+		echo   "usage:	$0 <start|stop|status>"
+		exit 1
+		;;
+esac
