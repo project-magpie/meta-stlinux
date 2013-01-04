@@ -9,12 +9,15 @@ HOMEPAGE = "http://www.lirc.org"
 LICENSE = "GPLv2"
 DEPENDS = "virtual/kernel"
 DEPENDS_nslu2 = "virtual/kernel lirc-modules"
-RDEPENDS_${PN} = "lirc-modules"
 RDEPENDS_lirc-exec = "lirc"
 RDEPENDS_lirc-nslu2example = "lirc lirc-exec"
-RRECOMMENDS_lirc = "lirc-exec"
+RRECOMMENDS_${PN} = "lirc-exec "
+RRECOMMENDS_${PN}_spark += "kernel-module-uinput"
 
 PR = "${INCPR}.0"
+
+EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER}"
+EXTRA_OECONF_spark += "--without-x --with-driver=userspace"
 
 inherit autotools module-base update-rc.d
 SRC_URI_append = " file://lircd.init \
@@ -24,6 +27,14 @@ SRC_URI_append = " file://lircd.init \
 SRC_URI_append_nslu2 = " file://lircd.conf_nslu2 \
                          file://lircrc_nslu2 \
                        "
+
+SRC_URI_append_spark += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
+			 file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
+			 file://lirc-0.9.0-uinput-repeat-fix.diff;patch=1 \
+                         file://lircd_spark.conf \
+                         file://lircd_spark.init \
+                         file://lircd_spark.conf.09_00_0A \
+"
 
 INITSCRIPT_PACKAGES = "lirc lirc-exec"
 INITSCRIPT_NAME = "lircd"
@@ -48,6 +59,14 @@ do_install_append_nslu2() {
 	install -d ${D}${sysconfdir}
 	install ${WORKDIR}/lircd.conf_nslu2 ${D}${sysconfdir}/lircd.conf
 	install ${WORKDIR}/lircrc_nslu2 ${D}${sysconfdir}/lircrc
+}
+
+do_install_append_spark() {
+
+	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
+        install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_0A ${D}${sysconfdir}/lircd.conf.09_00_0A
+        install -m 0755 ${WORKDIR}/lircd_spark.init ${D}${sysconfdir}/init.d/lircd
+        rm -rf  ${D}/bin/pronto2lirc 
 }
 
 PACKAGES =+ "lirc-exec lirc-remotes"

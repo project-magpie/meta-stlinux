@@ -1,5 +1,10 @@
 #!/bin/sh
-PID=/var/run/lirc/lircd.pid
+
+test -f /usr/sbin/lircd || exit 0
+test -f /etc/lircd.conf || exit 0
+
+# if /var/run does not exist, we are screwed anyway...
+test -d /var/run/lirc || mkdir /var/run/lirc
 
 boxver()
 {
@@ -11,56 +16,34 @@ boxver()
 	export BOX_ID
 }
 
-makelink()
-{
-	FOUND=false
-	while read A B C; do
-		case $A in
-			N:)	eval $B $C
-				test x"$Name" = xlircd && FOUND=true
-				;;
-			H:)	if $FOUND; then
-					ln -sf $C /dev/input/nevis_ir
-					break;
-				fi
-				;;
-		esac
-	done < /proc/bus/input/devices
-}
-
-# LIRCD_OPTS can be set in /etc/profile.local if needed...
-case $1 in
-	start)
-		read dummy dummy KVER dummy < /proc/version
-		grep -q uinput /lib/modules/${KVER}/modules.dep || depmod -a
-		modprobe uinput
-		# if /var/run does not exist, we are screwed anyway...
-		test -d /var/run/lirc || mkdir /var/run/lirc
-		# wait for uinput device, takes a short time to show up...
-		for i in `seq 40`; do
-			test -e /dev/uinput && break
-			usleep 100000	# 100ms
-		done
-		boxver	# determine boxtype
-		# if a /etc/lircd.conf.$BOX_ID exists, use it...
-		test -z "$LIRCD_OPTS" && test -e /etc/lircd.conf.$BOX_ID && LIRCD_OPTS=/etc/lircd.conf.$BOX_ID
-		/sbin/lircd -u $LIRCD_OPTS
-		makelink
-		;;
-	stop)
-		kill -TERM `cat $PID`
-		;;
-	status)
-		if test -e $PID && kill -0 `cat $PID` 2>/dev/null; then
-			echo "lircd is running"
-			exit 0
-		else
-			echo "lircd is not running"
-			exit 1
-		fi
-		;;
-	*)
-		echo   "usage:	$0 <start|stop|status>"
-		exit 1
-		;;
+case "$1" in
+  start)
+    echo -n "Starting lirc daemon: lircd"
+    boxver	# determine boxtype
+    # if a /etc/lircd.conf.$BOX_ID exists, use it...
+    test -z "$LIRCD_OPTS" && test -e /etc/lircd.conf.$BOX_ID && LIRCD_OPTS=/etc/lircd.conf.$BOX_ID
+    start-stop-daemon --start --quiet --exec /usr/sbin/lircd -- -u --device=/dev/lirc0 $LIRCD_OPTS
+    echo "."
+    ;;
+  stop)
+    echo -n "Stopping lirc daemon: lircd"
+    start-stop-daemon --stop --quiet --exec /usr/sbin/lircd
+    echo "."
+    ;;
+  reload|force-reload)
+    start-stop-daemon --stop --quiet --signal 1 --exec /usr/sbin/lircd
+    ;;
+  restart)
+    echo -n "Stopping lirc daemon: lircd"
+    $0 stop
+    sleep 1
+    echo -n "Starting lirc daemon: lircd"
+    $0 start
+    echo "."
+    ;;
+  *)
+    echo "Usage: /etc/init.d/lircd {start|stop|reload|restart|force-reload}"
+    exit 1
 esac
+
+exit 0
