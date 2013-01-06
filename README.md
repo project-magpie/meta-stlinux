@@ -86,4 +86,10 @@ Independent Steps from poky/oe-core
 
     bitbake core-image-minimal 
 
+Caution!
+--------
 
+Currently the only supported boot mechanism is booting a USB Stick. Fore more information 
+have a look at this wiki page: [Boot-from-USB-Stick](https://github.com/project-magpie/meta-stlinux/wiki/Boot-from-USB-Stick)
+
+Layer maintainer: Christian Ege (graugans) k4230r6 at googlemail.com 
