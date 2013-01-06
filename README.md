@@ -86,6 +86,16 @@ Independent Steps from poky/oe-core
 
     bitbake core-image-minimal 
 
+
+Prerequisite
+------------
+
+For the coprocessor firmware loading you have to provide the coprocessor firmware. Put the files either in the folder /data/stslave_fw/${MACHINE} or overwrite the variable  "BINARY_STSLAVE_FW_PATH" in your conf/local.conf file. These files are audio.elf and video.elf. For spark this looks like this: 
+-   /data/stslave_fw/spark/video.elf
+-   /data/stslave_fw/spark/audio.elf
+
+These files can be extracted from a alternative image and are not part of this repository.
+
 Caution!
 --------
 
