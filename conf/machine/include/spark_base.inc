@@ -43,8 +43,8 @@ INITRAMFS_FSTYPES = "ext2.gz spark-updt"
 MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "stlinux24-sh4-stx7111-fdma-firmware \
 	                             stlinux24-sh4-stmfb-firmware-stx7111 \
                                      u-boot-fw-utils \
-				     tdt-driver \
                                      stslave-fw \
+				     lirc \
 				     fp-control stfbcontrol ustslave \
 "
 

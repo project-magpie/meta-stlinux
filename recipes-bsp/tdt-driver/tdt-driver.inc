@@ -7,13 +7,15 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882b
 
 inherit module
 
-PR = "r11"
+PACKAGES = "${PN} ${PN}-dev"
+PACKAGES_DYNAMIC += "kernel-module-*"
 
 SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 
 # using seifes tdt drivers because this has less overhead
 SRC_URI = " \
 	git://gitorious.org/neutrino-mp/tdt-driver.git \
+        file://0001-added-pm_power_off-registration.patch;patch=1 \
         file://COPYING \
         file://aotom_udev.rules \
 	file://${MACHINE}/tdt-driver_load.conf \
@@ -22,6 +24,8 @@ SRC_URI = " \
 
 PV = "0.1+git${SRCPV}"
 
+FILES_${PN} = "/etc/udev/rules.d "
+FILES = ""
 
 S = "${WORKDIR}/git"
 
@@ -115,6 +119,217 @@ do_install() {
 	cp ${WORKDIR}/${MACHINE}/tdt-driver_load.conf ${D}/${sysconfdir}/modules-load.d/tdt-driver.conf
 	cp ${WORKDIR}/${MACHINE}/tdt-driver_options.conf ${D}/${sysconfdir}/modprobe.d/tdt-driver.conf
 	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
+	echo ${KERNEL_VERSION}
+	echo "/lib/modules/${KERNEL_VERSION}/extra"
+}
+
+pkg_postinst_modules () {
+if [ -z "$D" ]; then
+	depmod -a ${KERNEL_VERSION}
+	update-modules || true
+fi
+}
+
+pkg_postrm_modules () {
+update-modules || true
+}
+
+autoload_postinst_fragment() {
+if [ x"$D" = "x" ]; then
+	modprobe %s || true
+fi
+}
+
+
+pkg_postinst_kernel-modules-tdt () {
+     #!/bin/sh -e
+     if [ x"$D" = "x" ]; then
+          # Actions to carry out on the device go here
+	  depmod -a ${KERNEL_VERSION}
+          update-modules || true
+     else
+          exit 1
+     fi
+}
+
+
+python populate_packages_prepend () {
+	def extract_modinfo(file):
+		import tempfile, re
+		tempfile.tempdir = d.getVar("WORKDIR", True)
+		tf = tempfile.mkstemp()
+		tmpfile = tf[1]
+		cmd = "PATH=\"%s\" %sobjcopy -j .modinfo -O binary %s %s" % (d.getVar("PATH", True), d.getVar("HOST_PREFIX", True) or "", file, tmpfile)
+		os.system(cmd)
+		f = open(tmpfile)
+		l = f.read().split("\000")
+		f.close()
+		os.close(tf[0])
+		os.unlink(tmpfile)
+		exp = re.compile("([^=]+)=(.*)")
+		vals = {}
+		for i in l:
+			m = exp.match(i)
+			if not m:
+				continue
+			vals[m.group(1)] = m.group(2)
+		return vals
+	
+	def parse_depmod():
+		import re
+
+		dvar = d.getVar('PKGD', True)
+		if not dvar:
+			bb.error("PKGD not defined")
+			return
+
+		kernelver = d.getVar('KERNEL_VERSION', True)
+		kernelver_stripped = kernelver
+		m = re.match('^(.*-hh.*)[\.\+].*$', kernelver)
+		if m:
+			kernelver_stripped = m.group(1)
+		path = d.getVar("PATH", True)
+		host_prefix = d.getVar("HOST_PREFIX", True) or ""
+
+		cmd = "PATH=\"%s\" %sdepmod -n -a -r -b %s -F %s/boot/System.map-%s %s" % (path, host_prefix, dvar, dvar, kernelver, kernelver_stripped)
+		f = os.popen(cmd, 'r')
+
+		deps = {}
+		pattern0 = "^(.*\.k?o):..*$"
+		pattern1 = "^(.*\.k?o):\s*(.*\.k?o)\s*$"
+		pattern2 = "^(.*\.k?o):\s*(.*\.k?o)\s*\\\$"
+		pattern3 = "^\t(.*\.k?o)\s*\\\$"
+		pattern4 = "^\t(.*\.k?o)\s*$"
+
+		line = f.readline()
+		while line:
+			if not re.match(pattern0, line):
+				line = f.readline()
+				continue
+			m1 = re.match(pattern1, line)
+			if m1:
+				deps[m1.group(1)] = m1.group(2).split()
+			else:
+				m2 = re.match(pattern2, line)
+				if m2:
+					deps[m2.group(1)] = m2.group(2).split()
+					line = f.readline()
+					m3 = re.match(pattern3, line)
+					while m3:
+						deps[m2.group(1)].extend(m3.group(1).split())
+						line = f.readline()
+						m3 = re.match(pattern3, line)
+					m4 = re.match(pattern4, line)
+					deps[m2.group(1)].extend(m4.group(1).split())
+			line = f.readline()
+		f.close()
+		return deps
+	
+	def get_dependencies(file, pattern, format):
+                # file no longer includes PKGD
+		file = file.replace(d.getVar('PKGD', True) or '', '', 1)
+                # instead is prefixed with /lib/modules/${KERNEL_VERSION}
+                file = file.replace("/lib/modules/%s/" % d.getVar('KERNEL_VERSION', True) or '', '', 1)
+
+		if module_deps.has_key(file):
+			import re
+			dependencies = []
+			for i in module_deps[file]:
+				m = re.match(pattern, os.path.basename(i))
+				if not m:
+					continue
+				on = legitimize_package_name(m.group(1))
+				dependency_pkg = format % on
+				dependencies.append(dependency_pkg)
+			return dependencies
+		return []
+
+	def frob_metadata(file, pkg, pattern, format, basename):
+		import re
+		vals = extract_modinfo(file)
+
+		dvar = d.getVar('PKGD', True)
+
+		# If autoloading is requested, output /etc/modules-load.d/<name>.conf and append
+		# appropriate modprobe commands to the postinst
+		autoload = d.getVar('module_autoload_%s' % basename, True)
+		if autoload:
+			name = '%s/etc/modules-load.d/%s.conf' % (dvar, basename)
+			f = open(name, 'w')
+			for m in autoload.split():
+				f.write('%s\n' % m)
+			f.close()
+			postinst = d.getVar('pkg_postinst_%s' % pkg, True)
+			if not postinst:
+				bb.fatal("pkg_postinst_%s not defined" % pkg)
+			postinst += d.getVar('autoload_postinst_fragment', True) % autoload
+			d.setVar('pkg_postinst_%s' % pkg, postinst)
+
+		# Write out any modconf fragment
+		modconf = d.getVar('module_conf_%s' % basename, True)
+		if modconf:
+			name = '%s/etc/modprobe.d/%s.conf' % (dvar, basename)
+			f = open(name, 'w')
+			f.write("%s\n" % modconf)
+			f.close()
+
+		files = d.getVar('FILES_%s' % pkg, True)
+		files = "%s /etc/modules-load.d/%s.conf /etc/modprobe.d/%s.conf" % (files, basename, basename)
+		d.setVar('FILES_%s' % pkg, files)
+
+		if vals.has_key("description"):
+			old_desc = d.getVar('DESCRIPTION_' + pkg, True) or ""
+			d.setVar('DESCRIPTION_' + pkg, old_desc + "; " + vals["description"])
+
+		rdepends_str = d.getVar('RDEPENDS_' + pkg, True)
+		if rdepends_str:
+			rdepends = rdepends_str.split()
+		else:
+			rdepends = []
+		rdepends.extend(get_dependencies(file, pattern, format))
+		d.setVar('RDEPENDS_' + pkg, ' '.join(rdepends))
+
+	module_deps = parse_depmod()
+	module_regex = '^(.*)\.k?o$'
+	module_pattern = 'kernel-module-%s'
+        postinst = d.getVar('pkg_postinst_modules', True)
+        postrm = d.getVar('pkg_postrm_modules', True)
+
+	do_split_packages(d, root='/lib/modules', file_regex=module_regex, output_pattern=module_pattern, description='%s kernel module', postinst=postinst, postrm=postrm, recursive=True, hook=frob_metadata, extra_depends='update-modules kernel-%s' % d.getVar("KERNEL_VERSION", True))
+
+	# If modules-load.d and modprobe.d are empty at this point, remove them to
+	# avoid warnings. removedirs only raises an OSError if an empty
+	# directory cannot be removed.
+	dvar = d.getVar('PKGD', True)
+	for dir in ["%s/etc/modprobe.d" % (dvar), "%s/etc/modules-load.d" % (dvar), "%s/etc" % (dvar)]:
+		if len(os.listdir(dir)) == 0:
+			os.rmdir(dir)
+
+	import re
+	metapkg = "kernel-modules-tdt"
+	d.setVar('ALLOW_EMPTY_' + metapkg, "1")
+	d.setVar('FILES_' + metapkg, "")
+	blacklist = [ 'kernel-dev', 'kernel-image', 'kernel-base', 'kernel-vmlinux', 'perf', 'perf-dbg' ]
+	for l in module_deps.values():
+		for i in l:
+			pkg = module_pattern % legitimize_package_name(re.match(module_regex, os.path.basename(i)).group(1))
+			blacklist.append(pkg)
+	metapkg_rdepends = []
+	packages = d.getVar('PACKAGES', True).split()
+	for pkg in packages[1:]:
+		if not pkg in blacklist and not pkg in metapkg_rdepends:
+			metapkg_rdepends.append(pkg)
+	d.setVar('RDEPENDS_' + metapkg, ' '.join(metapkg_rdepends))
+	d.setVar('DESCRIPTION_' + metapkg, 'Kernel modules meta package')
+	packages.append(metapkg)
+	d.setVar('PACKAGES', ' '.join(packages))
+}
+
+
+do_populate_packages_append () {
+        echo "-------------------------------------------------------------------------------------------------------------"
+        echo "-------------------------------------------------------------------------------------------------------------"
+	echo ${PACKAGES}
 
 }
 

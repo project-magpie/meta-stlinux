@@ -1,4 +1,48 @@
 require tdt-driver.inc
 SUMMARY = "Driver modules from TDT"
+DESCRIPTION = "Driver modules from TDT"
+
+MAINTAINER = "Christian Ege (graugans) <ka@gmail.com>"
+
+PR = "r18"
+
+module_autoload_aotom = "aotom"
+module_autoload_e2_proc ="e2_proc"
+module_autoload_stmcore_display_sti7111 = "stmcore_display_sti7111"
+module_autoload_stmfb = "stmfb"
+module_autoload_cpu_frequ = "cpu_frequ"
+module_autoload_embxshell = "embxshell"
+module_autoload_embxmailbox = "embxmailbox"
+module_autoload_embxshm = "embxshm"
+module_autoload_mme_host = "mme_host"
+module_autoload_avs = "avs"
+module_autoload_mmelog = "mmelog"
+module_autoload_ksound = "ksound"
+module_autoload_p2div64 = "p2div64"
+module_autoload_stm_v4l2 = "stm_v4l2"
+module_autoload_stmvout = "stmvout"
+module_autoload_stmvbi = "stmvbi"
+module_autoload_pseudocard = "pseudocard"
+module_autoload_stv090x = "stv090x"
+module_autoload_pti = "pti"
+module_autoload_stm_monitor = "stm_monitor"
+module_autoload_stmsysfs = "stmsysfs"
+module_autoload_stmdvb = "stmdvb"
+module_autoload_player2 = "player2"
+module_autoload_sth264pp = "sth264pp"
+module_autoload_stmalloc = "stmalloc"
+module_autoload_platform = "platform"
+module_autoload_silencegen = "silencegen"
+module_autoload_bpamem = "bpamem"
+module_autoload_smartcard = "smartcard"
+
+
+module_conf_stmfb = "options stmfb display0=1280x720-32@50:8m:pal:yuv:yuv"
+module_conf_embxmailbox = "options embxmailbox mailbox0=0xfe211000:136:set2 mailbox1=0xfe212000:0"
+module_conf_embxshm = "options embxshm mailbox0=shm:0:7:0x60000000:0:256:256:0:512:0x40000000:0x10000000"
+module_conf_mme_host = "options mme_host transport0=shm"
+module_conf_avs = "options avs type=avs_pio"
+module_conf_pti = "options pti waitMS=20 videoMem=4096"
+module_conf_player2 = "options player2 discardlateframe=0"
 
 
