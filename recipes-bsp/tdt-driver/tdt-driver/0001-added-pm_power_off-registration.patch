@@ -1,0 +1,89 @@
+From 21f44e4860602f69ab9f95e1d6271ebe0cb5ee3f Mon Sep 17 00:00:00 2001
+From: graugans <k4230r6@gmail.com>
+Date: Sat, 5 Jan 2013 18:52:01 +0100
+Subject: [PATCH] added pm_power_off registration
+
+---
+ frontcontroller/aotom/aotom_main.c |   34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+
+diff --git a/frontcontroller/aotom/aotom_main.c b/frontcontroller/aotom/aotom_main.c
+index 7768a05..9ad6c5b 100644
+--- a/frontcontroller/aotom/aotom_main.c
++++ b/frontcontroller/aotom/aotom_main.c
+@@ -44,10 +44,15 @@
+ #include <linux/time.h>
+ #include <linux/poll.h>
+ #include <linux/workqueue.h>
++#include <linux/pm.h>
+ 
+ #include "aotom_main.h"
+ #include "utf.h"
+ 
++
++void aotom_standby(void);
++
++
+ static short paramDebug = 0;
+ #define TAGDEBUG "[aotom] "
+ 
+@@ -719,6 +724,9 @@ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int c
+ 	return res;
+ }
+ 
++
++
++
+ static unsigned int AOTOMdev_poll(struct file *filp, poll_table *wait)
+ {
+ 	unsigned int mask = 0;
+@@ -876,6 +884,16 @@ static int __init aotom_init_module(void)
+ 	dprintk(5, "%s >\n", __func__);
+ 
+ 	printk("Fulan front panel driver\n");
++	printk("Registering pm_power_off\n");
++
++        if(NULL != pm_power_off)
++        {
++		printk("pm_power_off hook already applied! Do not register anything\n");
++        }
++	 else
++	 {
++		pm_power_off = 	aotom_standby;
++	 }	
+ 
+ 	if(YWPANEL_VFD_Init()) {
+ 		printk("unable to init module\n");
+@@ -926,6 +944,11 @@ static void __exit aotom_cleanup_module(void)
+ {
+ 	int i;
+ 
++	if(aotom_standby == pm_power_off)
++	{
++		pm_power_off = NULL;
++	}
++
+ 	if(!draw_thread_stop && draw_task)
+ 		kthread_stop(draw_task);
+ 
+@@ -946,6 +969,17 @@ static void __exit aotom_cleanup_module(void)
+ 	printk("Fulan front panel module unloading\n");
+ }
+ 
++void aotom_standby(void)
++{
++	if(down_interruptible (&write_sem))
++		return -ERESTARTSYS;
++	printk(KERN_EMERG "Initiating standby with pm_power_off hook.\n");  
++	clear_display();
++	YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_STANDBY);
++	up(&write_sem);
++
++}
++
+ module_init(aotom_init_module);
+ module_exit(aotom_cleanup_module);
+ 
+-- 
+1.7.9.5
+

@@ -1,7 +1,7 @@
 require recipes-kernel/linux/linux-stm.inc
 
 STM_PATCH_STR = "0210"
-PR = "r3"
+PR = "r9"
 PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 
 DESCRIPTION = "Linux kernel from stlinux"
@@ -35,6 +35,7 @@ file://linux-sh4-spark_setup_stm24_${STM_PATCH_STR}_multi_yaffs2.patch;patch=1 \
 file://linux-sh4-cifs-unaligned-mem-access-kernel_stm24.patch;patch=1 \
 file://linux-sh4-linux_yaffs2_stm24_${STM_PATCH_STR}.patch;patch=1 \
 file://linux-sh4-lirc_stm24_${STM_PATCH_STR}.patch;patch=1 \
+file://0001-added-pm_power_off-hoock-for-machine_halt.patch;patch=1 \
 file://${MACHINE}_defconfig \
 file://st-coprocessor.h \
 "
@@ -83,4 +84,5 @@ do_install_append() {
 }
 
 
+FILES_${PN}-dev += "${includedir}/linux/st-coprocessor.h"
 
