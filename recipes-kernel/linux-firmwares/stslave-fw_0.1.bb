@@ -22,8 +22,8 @@ do_install () {
 	install -d ${D}/boot
 	install -d ${D}/${sysconfdir}/udev/rules.d
         cp ${WORKDIR}/30-stm-stslave-firmware.rules ${D}/${sysconfdir}/udev/rules.d
-	install -m 644 ${BINARY_STSLAVE_FW_PATH}/audio.elf  ${D}/boot
-	install -m 644 ${BINARY_STSLAVE_FW_PATH}/video.elf  ${D}/boot
+	install -m 644 ${BINARY_STSLAVE_FW_PATH}/${MACHINE}/audio.elf  ${D}/boot
+	install -m 644 ${BINARY_STSLAVE_FW_PATH}/${MACHINE}/video.elf  ${D}/boot
 }
 
 
