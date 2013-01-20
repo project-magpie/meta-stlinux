@@ -1,0 +1,47 @@
+From 3c068dbba50038fb9234dfa6ff1c622931c07926 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Sun, 15 Apr 2012 14:54:15 +0200
+Subject: [PATCH 2/2] aotom: add ioctl to set time + date
+
+---
+ frontcontroller/aotom/aotom_main.c |   11 +++++++++++
+ frontcontroller/aotom/aotom_main.h |    1 +
+ 2 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/frontcontroller/aotom/aotom_main.c b/frontcontroller/aotom/aotom_main.c
+index 383bbc5..a2afd10 100644
+--- a/frontcontroller/aotom/aotom_main.c
++++ b/frontcontroller/aotom/aotom_main.c
+@@ -618,6 +618,17 @@ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int c
+ #endif
+ 	   break;
+ 	}
++	case VFDSETTIME2:
++	{
++		u32 uTime = 0;
++		res = get_user(uTime, (int *)arg);
++		if (! res)
++		{
++			res = YWPANEL_FP_SetTime(uTime);
++			YWPANEL_FP_ControlTimer(true);
++		}
++		break;
++	}
+ 	case VFDSETTIME:
+ 		res = aotomSetTime(aotom_data.u.time.time);
+ 		break;
+diff --git a/frontcontroller/aotom/aotom_main.h b/frontcontroller/aotom/aotom_main.h
+index 9b3c161..494f868 100644
+--- a/frontcontroller/aotom/aotom_main.h
++++ b/frontcontroller/aotom/aotom_main.h
+@@ -34,6 +34,7 @@ typedef unsigned long u64;
+ #define VFDGETTIME            0xc0425afa
+ #define VFDSETTIME            0xc0425afb
+ #define VFDSTANDBY            0xc0425afc
++#define VFDSETTIME2           0xc0425afd	// seife, set 'complete' time...
+ 
+ #define VFDSETLED             0xc0425afe
+ #define VFDSETMODE            0xc0425aff
+-- 
+1.7.7
+

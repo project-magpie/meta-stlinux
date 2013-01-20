@@ -1,0 +1,29 @@
+From a02fc80b725ff4ddeccd4cc39165ba2d077631d1 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Sun, 4 Nov 2012 17:43:42 +0100
+Subject: [PATCH 5/6] aotom: speed up softi2c, lowering CPU load of aotom
+ driver
+
+this doubles the i2c speed on spark7162, lowering the CPU load
+of the aotom driver significantly (less busy-waiting).
+Still works well with my box.
+---
+ frontcontroller/aotom/aotom_i2csoft.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/frontcontroller/aotom/aotom_i2csoft.c b/frontcontroller/aotom/aotom_i2csoft.c
+index 44e1812..518a3cf 100644
+--- a/frontcontroller/aotom/aotom_i2csoft.c
++++ b/frontcontroller/aotom/aotom_i2csoft.c
+@@ -123,7 +123,7 @@ typedef struct YWI2C_SoftParam_s
+ 
+ static void iic_delay(int micros)
+ {
+-    udelay(micros * 4);
++    udelay(micros * 2);
+ }
+ 
+ 
+-- 
+1.7.7
+

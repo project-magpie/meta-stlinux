@@ -1,0 +1,2975 @@
+From 45bc3e888ec3be99a618b1eeac1c674c983b7a53 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Fri, 6 Jul 2012 14:43:09 +0200
+Subject: [PATCH 1/2] import aotom from pinky's git
+
+git://gitorious.org/~pinky1981/open-duckbox-project-sh4/pingulux-git.git
+commit f631d5c2889f7273621ee6d2e62fffff08b4a5f5
+---
+ frontcontroller/aotom/aotom_i2csoft.c |    8 +-
+ frontcontroller/aotom/aotom_i2csoft.h |    8 +-
+ frontcontroller/aotom/aotom_main.c    |  793 +++++++++++++++------------------
+ frontcontroller/aotom/aotom_main.h    |   89 +++--
+ frontcontroller/aotom/aotom_vfd.c     |  792 +++++++++++++-------------------
+ 5 files changed, 759 insertions(+), 931 deletions(-)
+
+diff --git a/frontcontroller/aotom/aotom_i2csoft.c b/frontcontroller/aotom/aotom_i2csoft.c
+index ee4e949..44e1812 100644
+--- a/frontcontroller/aotom/aotom_i2csoft.c
++++ b/frontcontroller/aotom/aotom_i2csoft.c
+@@ -1060,7 +1060,7 @@ int softi2c_init(void)
+     return ret;
+ }
+ 
+-bool isofti2c_write(U8 *Buffer_p, U32 MaxLen)
++int isofti2c_write(U8 *Buffer_p, U32 MaxLen)
+ {
+ 	U32 ActLen = 0;
+ 	YW_ErrorType_T	errType = YW_NO_ERROR;
+@@ -1078,7 +1078,7 @@ bool isofti2c_write(U8 *Buffer_p, U32 MaxLen)
+ 	return TRUE;
+ }
+ 
+-bool isofti2c_read(U8 *Buffer_p, U32 MaxLen)
++int isofti2c_read(U8 *Buffer_p, U32 MaxLen)
+ {
+ 	U32 ActLen = 0;
+ 
+@@ -1087,9 +1087,9 @@ bool isofti2c_read(U8 *Buffer_p, U32 MaxLen)
+ 	return TRUE;
+ }
+ 
+-bool softi2c_online(void)
++int softi2c_online(void)
+ {
+-	bool bRet = FALSE;
++	int bRet = FALSE;
+ 	U8 aBuffer[2] = { 0xff, 0xff};
+ 
+ 	bRet = isofti2c_write(aBuffer, 2);
+diff --git a/frontcontroller/aotom/aotom_i2csoft.h b/frontcontroller/aotom/aotom_i2csoft.h
+index 3422334..4a38c80 100644
+--- a/frontcontroller/aotom/aotom_i2csoft.h
++++ b/frontcontroller/aotom/aotom_i2csoft.h
+@@ -5,7 +5,7 @@ typedef unsigned int YWI2CSoft_Handle_t;
+ 
+ typedef struct  YWI2cSoft_InitParam_s
+ {
+-	bool IsSlaveDevice;
++	int IsSlaveDevice;
+ 	unsigned int SCLPioIndex;
+ 	unsigned int SDAPioIndex;
+ 	unsigned int Speed;
+@@ -18,8 +18,8 @@ typedef struct YWI2cSoft_OpenParams_s
+ 
+ int  softi2c_init(void);
+ void softi2c_cleanup(void);
+-bool softi2c_online(void);
+-bool isofti2c_write(unsigned char *Buffer_p, u32 MaxLen);
+-bool isofti2c_read(unsigned char *Buffer_p, u32 MaxLen);
++int softi2c_online(void);
++int isofti2c_write(unsigned char *Buffer_p, u32 MaxLen);
++int isofti2c_read(unsigned char *Buffer_p, u32 MaxLen);
+ 
+ #endif /* __AOTOM_I2CSOFT_H__ */
+diff --git a/frontcontroller/aotom/aotom_main.c b/frontcontroller/aotom/aotom_main.c
+index 4d9ef0b..bf32af7 100644
+--- a/frontcontroller/aotom/aotom_main.c
++++ b/frontcontroller/aotom/aotom_main.c
+@@ -1,5 +1,5 @@
+ /*
+- * aotom.c
++ * aotom_main.c
+  *
+  * (c) 2010 Spider-Team
+  * (c) 2011 oSaoYa
+@@ -55,37 +55,40 @@ static short paramDebug = 0;
+ if ((paramDebug) && (paramDebug > level)) printk(TAGDEBUG x); \
+ } while (0)
+ 
++#define DISPLAYWIDTH_MAX 8
++
+ #define INVALID_KEY    	-1
+-#define LOG_OFF     	0
+-#define LOG_ON      	1
+ 
+ #define NO_KEY_PRESS    -1
+ #define KEY_PRESS_DOWN 	1
+ #define KEY_PRESS_UP   	0
+ 
+-#define REC_NEW_KEY 	34
+-#define REC_NO_KEY  	0
+-#define REC_REPEAT_KEY  2
+-
+ static char *gmt = "+0000";
+ 
+-typedef struct
+-{
+-	struct file*      fp;
+-	int               read;
+-	struct semaphore  sem;
+-
++typedef struct {
++	int	minor;
++	int	open_count;
+ } tFrontPanelOpen;
+ 
+-#define FRONTPANEL_MINOR_RC             1
+-#define LASTMINOR                 	    2
++#define FRONTPANEL_MINOR_VFD	0
++#define FRONTPANEL_MINOR_RC	1
++#define LASTMINOR 		2
+ 
+ static tFrontPanelOpen FrontPanelOpen [LASTMINOR];
+ 
++typedef struct {
++	int	state;
++	int	period;
++	int	stop;
++	struct task_struct *led_task;
++	struct semaphore led_sem;
++} tLedState;
++
++static tLedState led_state[LASTLED];
++
+ #define BUFFERSIZE                256     //must be 2 ^ n
+ 
+-struct receive_s
+-{
++struct receive_s {
+    int           len;
+    unsigned char buffer[BUFFERSIZE];
+ };
+@@ -93,30 +96,12 @@ struct receive_s
+ #define cMaxReceiveQueue	100
+ static wait_queue_head_t   wq;
+ 
+-struct receive_s receive[cMaxReceiveQueue];
++static struct receive_s receive[cMaxReceiveQueue];
+ static int receiveCount = 0;
+ 
+-struct semaphore 	   write_sem;
+-struct semaphore 	   rx_int_sem; /* unused until the irq works */
+-struct semaphore 	   transmit_sem;
+-struct semaphore 	   receive_sem;
+-struct semaphore 	   key_mutex;
+-
+-static struct semaphore  display_sem;
+-
+-struct saved_data_s
+-{
+-	int   length;
+-	char  data[BUFFERSIZE];
+-};
+-
+-static struct saved_data_s lastdata;
+-
+-/* last received ioctl command. we dont queue answers
+- * from "getter" requests to the fp. they are protected
+- * by a semaphore and the threads goes to sleep until
+- * the answer has been received or a timeout occurs.
+- */
++static struct semaphore 	   write_sem;
++static struct semaphore 	   receive_sem;
++static struct semaphore 	   draw_thread_sem;
+ 
+ unsigned char ASCII[48][2] =
+ {
+@@ -190,8 +175,9 @@ static int VFD_Show_Ico(LogNum_T log_num, int log_stat)
+ 	return YWPANEL_VFD_ShowIco(log_num, log_stat);
+ }
+ 
+-static struct task_struct *thread;
+-static int thread_stop  = 1;
++static struct task_struct *draw_task = 0;
++static int draw_thread_stop  = 1;
++
+ int aotomSetIcon(int which, int on);
+ 
+ void clear_display(void)
+@@ -209,157 +195,178 @@ static void VFD_clr(void)
+ 		aotomSetIcon(i, 0);
+ }
+ 
+-void draw_thread(void *arg)
++static int draw_thread(void *arg)
+ {
+-  struct vfd_ioctl_data *data;
+-  struct vfd_ioctl_data draw_data;
+-  unsigned char buf[9];
+-  int count = 0;
+-  int pos = 0;
+-
+-
+-  data = (struct vfd_ioctl_data *)arg;
++  struct vfd_ioctl_data *data = (struct vfd_ioctl_data *) arg;
++  char buf[sizeof(data->data) + 2 * DISPLAYWIDTH_MAX];
++  int len = data->length;
++  int off = 0;
+ 
+-  draw_data.length = data->length;
+-  memset(draw_data.data, 0, sizeof(draw_data.data));
+-  memcpy(draw_data.data,data->data,data->length);
++  if (len > YWPANEL_width) {
++  	memset(buf, ' ', sizeof(buf));
++	off = YWPANEL_width - 1;
++  	memcpy(buf + off, data->data, len);
++	len += off;
++	buf[len + YWPANEL_width] = 0;
++  } else {
++  	memcpy(buf, data->data, len);
++	buf[len] = 0;
++  }
+ 
+-  thread_stop = 0;
++  draw_thread_stop = 0;
+ 
+-  count = draw_data.length;
+-#if defined(SPARK)
+-  if(count > 4)
+-#else
+-  if(count > 8)
+-#endif
+-  {
+-    while(pos < count)
+-    {
+-       if(kthread_should_stop())
+-       {
+-    	   thread_stop = 1;
+-    	   return;
++  if(len > YWPANEL_width) {
++    int pos;
++    for(pos = 0; pos < len; pos++) {
++       int i;
++       if(kthread_should_stop()) {
++    	   draw_thread_stop = 1;
++    	   return 0;
+        }
+ 
+-       clear_display();
+-       memset(buf,0, sizeof(buf));
+-       memcpy(buf, &draw_data.data[pos], 8);
+-       YWPANEL_VFD_ShowString(buf);
+-       msleep(200);
+-       pos++;
+-#if defined(SPARK)
+-       if((count - pos) < 4)
+-#else
+-       if((count - pos) < 8)
+-#endif
+-    	   break;
++       YWPANEL_VFD_ShowString(buf + pos);
++
++	// sleep 200 ms
++	for (i = 0; i < 5; i++) {
++		if(kthread_should_stop()) {
++			draw_thread_stop = 1;
++			return 0;
++		}
++		msleep(40);
++	}
+     }
+   }
+ 
+-  if(count > 0)
+-  {
+-      clear_display();
+-      memset(buf,0, sizeof(buf));
+-      memcpy(buf, draw_data.data, 8);
+-      YWPANEL_VFD_ShowString(buf);
+-  }
++  clear_display();
++  if(len > 0)
++      YWPANEL_VFD_ShowString(buf + off);
++
++  draw_thread_stop = 1;
++  return 0;
++}
++
++static int led_thread(void *arg)
++{
++	int led = (int) arg;
++	// toggle LED status for a given time period
+ 
+-  thread_stop = 1;
++	led_state[led].stop = 0;
++
++	while(!kthread_should_stop()) {
++		if (!down_interruptible(&led_state[led].led_sem)) {
++			if (kthread_should_stop())
++				break;
++			while (!down_trylock(&led_state[led].led_sem)); // make sure semaphore is at 0
++			YWPANEL_VFD_SetLed(led, led_state[led].state ? LOG_OFF : LOG_ON);
++			while ((led_state[led].period > 0) && !kthread_should_stop()) {
++				msleep(10);
++				led_state[led].period -= 10;
++			}
++			// switch LED back to manually set state
++			YWPANEL_VFD_SetLed(led, led_state[led].state);
++		}
++	}
++	led_state[led].stop = 1;
++    	led_state[led].led_task = 0;
++	return 0;
+ }
+ 
++static struct vfd_ioctl_data last_draw_data;
++
+ int run_draw_thread(struct vfd_ioctl_data *draw_data)
+ {
+-    if(!thread_stop)
+-      kthread_stop(thread);
++    if(down_interruptible (&draw_thread_sem))
++	return -ERESTARTSYS;
++
++    // return if there's already a draw task running for the same text
++    if(!draw_thread_stop && draw_task && (last_draw_data.length == draw_data->length)
++	&& !memcmp(&last_draw_data.data, draw_data->data, draw_data->length)) {
++    	up(&draw_thread_sem);
++	return 0;
++    }
++
++    memcpy(&last_draw_data, draw_data, sizeof(struct vfd_ioctl_data));
+ 
+-    //wait thread stop
+-    while(!thread_stop)
+-    {msleep(1);}
++    // stop existing thread, if any
++    if(!draw_thread_stop && draw_task) {
++	kthread_stop(draw_task);
++	while(!draw_thread_stop)
++		msleep(1);
++	draw_task = 0;
++    }
+ 
++    if (draw_data->length < YWPANEL_width) {
++	char buf[DISPLAYWIDTH_MAX];
++	memset(buf, ' ', sizeof(buf));
++	if (draw_data->length)
++		memcpy(buf, draw_data->data, draw_data->length);
++	YWPANEL_VFD_ShowString(buf);
++    } else {
++	draw_thread_stop = 2;
++	draw_task = kthread_run(draw_thread,draw_data,"draw thread");
+ 
+-    thread_stop = 2;
+-    thread=kthread_run(draw_thread,draw_data,"draw thread",NULL,true);
++	//wait until thread has copied the argument
++	while(draw_thread_stop == 2)
++		msleep(1);
++    }
+ 
+-    //wait thread run
+-    while(thread_stop == 2)
+-    {msleep(1);}
++    up(&draw_thread_sem);
+ 
+     return 0;
+ }
+ 
+ static int AOTOMfp_Get_Key_Value(void)
+ {
+-	int ret, key_val = INVALID_KEY;
++	int ret, key_val;
+ 
+ 	ret =  YWPANEL_VFD_GetKeyValue();
+ 
+-	switch(ret)
+-	{
+-        case 105:
+-        {
+-            key_val = KEY_LEFT;
+-            break;
+-        }
+-        case 103:
+-        {
+-            key_val = KEY_UP;
+-            break;
+-        }
+-        case 28:
+-        {
+-            key_val = KEY_OK;
+-            break;
+-        }
+-        case 106:
+-        {
+-            key_val = KEY_RIGHT;
+-            break;
+-        }
+-        case 108:
+-        {
+-            key_val = KEY_DOWN;
+-            break;
+-        }
+-        case 88:
+-        {
+-            key_val = KEY_POWER;
+-            break;
+-        }
+-        case 102:
+-        {
+-            key_val = KEY_MENU;
+-            break;
+-        }
+-        case 48:
+-        {
+-            key_val = KEY_EXIT;
+-            break;
+-        }
+-        default :
+-        {
+-            key_val = INVALID_KEY;
+-            break;
+-        }
+-    }
++	switch(ret) {
++	case 105:
++		key_val = KEY_LEFT;
++		break;
++	case 103:
++		key_val = KEY_UP;
++		break;
++	case 28:
++		key_val = KEY_OK;
++		break;
++	case 106:
++		key_val = KEY_RIGHT;
++		break;
++	case 108:
++		key_val = KEY_DOWN;
++		break;
++	case 88:
++		key_val = KEY_POWER;
++		break;
++	case 102:
++		key_val = KEY_MENU;
++		break;
++	case 48:
++		key_val = KEY_EXIT;
++		break;
++        default:
++		key_val = INVALID_KEY;
++		break;
++	}
+ 
+ 	return key_val;
+ }
+ 
+ int aotomSetTime(char* time)
+ {
+-   int res = 0;
++	int res = 0;
+ 
+ 	dprintk(5, "%s >\n", __func__);
+-
+ 	dprintk(5, "%s time: %02d:%02d\n", __func__, time[2], time[3]);
+-	res= VFD_Show_Time(time[2], time[3]);
+-	dprintk(5, "%s <\n", __func__);
++
++	res = VFD_Show_Time(time[2], time[3]);
+ #if defined(SPARK) || defined(SPARK7162)
+-	{
+-		YWPANEL_FP_ControlTimer(true);
+-	}
++	YWPANEL_FP_ControlTimer(true);
+ #endif
+-   return res;
++	dprintk(5, "%s <\n", __func__);
++	return res;
+ }
+ 
+ int vfd_init_func(void)
+@@ -385,7 +392,7 @@ int aotomSetIcon(int which, int on)
+ 
+ 	dprintk(10, "%s <\n", __func__);
+ 
+-   return res;
++	return res;
+ }
+ 
+ /* export for later use in e2_proc */
+@@ -394,177 +401,112 @@ EXPORT_SYMBOL(aotomSetIcon);
+ static ssize_t AOTOMdev_write(struct file *filp, const char *buff, size_t len, loff_t *off)
+ {
+ 	char* kernel_buf;
+-	int minor, vLoop, res = 0;
++	int res = 0;
+ 
+ 	struct vfd_ioctl_data data;
+ 
+ 	dprintk(5, "%s > (len %d, offs %d)\n", __func__, len, (int) *off);
+ 
+-	minor = -1;
+-  	for (vLoop = 0; vLoop < LASTMINOR; vLoop++)
+-  	{
+-    	if (FrontPanelOpen[vLoop].fp == filp)
+-    	{
+-			minor = vLoop;
+-		}
+-	}
+-
+-	if (minor == -1)
+-	{
++	if (((tFrontPanelOpen *)(filp->private_data))->minor != FRONTPANEL_MINOR_VFD) {
+ 		printk("Error Bad Minor\n");
+-		return -1; //FIXME
+-	}
+-
+-	dprintk(1, "minor = %d\n", minor);
+-
+-	if (minor == FRONTPANEL_MINOR_RC)
+ 		return -EOPNOTSUPP;
++	}
+ 
+ 	kernel_buf = kmalloc(len, GFP_KERNEL);
+ 
+-	if (kernel_buf == NULL)
+-	{
++	if (kernel_buf == NULL) {
+ 	   printk("%s return no mem<\n", __func__);
+ 	   return -ENOMEM;
+ 	}
+ 	copy_from_user(kernel_buf, buff, len);
+ 
+-	if(down_interruptible (&write_sem))
+-      return -ERESTARTSYS;
++	if (len > sizeof(data.data))
++		data.length = sizeof(data.data);
++	else
++      		data.length = len;
+ 
+-      	data.length = len;
+-	if (kernel_buf[len-1] == '\n')
+-	{
+-	  kernel_buf[len-1] = 0;
++	while ((data.length > 0) && (kernel_buf[data.length - 1 ] == '\n'))
+ 	  data.length--;
+-	}
+ 
+-	if(len <0)
+-	{
+-	  res = -1;
+-	  dprintk(2, "empty string\n");
+-	}
+-	else
+-	{
+-	  memcpy(data.data,kernel_buf,len);
+-	  res=run_draw_thread(&data);
+-	}
++	if (data.length > sizeof(data.data))
++		len = data.length = sizeof(data.data);
+ 
+-	kfree(kernel_buf);
++	memcpy(data.data, kernel_buf, data.length);
++	res = run_draw_thread(&data);
+ 
+-	up(&write_sem);
++	kfree(kernel_buf);
+ 
+ 	dprintk(10, "%s < res %d len %d\n", __func__, res, len);
+ 
+ 	if (res < 0)
+ 	   return res;
+-	else
+-	   return len;
++	return len;
++}
++
++static void flashLED(int led, int ms) {
++	if (!led_state[led].led_task || ms < 1)
++		return;
++	led_state[led].period = ms;
++	up(&led_state[led].led_sem);
+ }
+ 
+ static ssize_t AOTOMdev_read(struct file *filp, char __user *buff, size_t len, loff_t *off)
+ {
+-	int minor, vLoop;
+-
+ 	dprintk(5, "%s > (len %d, offs %d)\n", __func__, len, (int) *off);
+ 
+-	minor = -1;
+-  	for (vLoop = 0; vLoop < LASTMINOR; vLoop++)
+-  	{
+-    		if (FrontPanelOpen[vLoop].fp == filp)
+-    		{
+-			    minor = vLoop;
+-		   }
+-	}
+-
+-	if (minor == -1)
+-	{
+-		printk("Error Bad Minor\n");
+-		return -EUSERS;
+-	}
+-
+-	dprintk(1, "minor = %d\n", minor);
+-
+-	if (minor == FRONTPANEL_MINOR_RC)
++	if (((tFrontPanelOpen*)(filp->private_data))->minor == FRONTPANEL_MINOR_RC)
+ 	{
++		while (receiveCount == 0)
++		{
++			if (wait_event_interruptible(wq, receiveCount > 0))
++				return -ERESTARTSYS;
++		}
+ 
+-     while (receiveCount == 0)
+-	  {
+-	    if (wait_event_interruptible(wq, receiveCount > 0))
+-		    return -ERESTARTSYS;
+-	  }
++		flashLED(LED_GREEN, 100);
+ 
+-	  /* 0. claim semaphore */
+-	  down_interruptible(&receive_sem);
++		/* 0. claim semaphore */
++		if (down_interruptible(&receive_sem))
++			return -ERESTARTSYS;
+ 
+-	  /* 1. copy data to user */
+-     copy_to_user(buff, receive[0].buffer, receive[0].len);
++		/* 1. copy data to user */
++		copy_to_user(buff, receive[0].buffer, receive[0].len);
+ 
+-	  /* 2. copy all entries to start and decreas receiveCount */
+-	  receiveCount--;
+-	  memmove(&receive[0], &receive[1], 99 * sizeof(struct receive_s));
++		/* 2. copy all entries to start and decrease receiveCount */
++		receiveCount--;
++		memmove(&receive[0], &receive[1], (cMaxReceiveQueue - 1) * sizeof(struct receive_s));
+ 
+-	  /* 3. free semaphore */
+-	  up(&receive_sem);
++		/* 3. free semaphore */
++		up(&receive_sem);
+ 
+-     return 8;
++		return receive[0].len;
+ 	}
+-
+-	/* copy the current display string to the user */
+- 	if (down_interruptible(&FrontPanelOpen[minor].sem))
+-	{
+-	   printk("%s return erestartsys<\n", __func__);
+-   	return -ERESTARTSYS;
+-	}
+-
+-	if (FrontPanelOpen[minor].read == lastdata.length)
+-	{
+-	    FrontPanelOpen[minor].read = 0;
+-
+-	    up (&FrontPanelOpen[minor].sem);
+-	    printk("%s return 0<\n", __func__);
+-	    return 0;
+-	}
+-
+-	if (len > lastdata.length)
+-		len = lastdata.length;
+-
+-	/* fixme: needs revision because of utf8! */
+-	if (len > 16)
+-		len = 16;
+-
+-	FrontPanelOpen[minor].read = len;
+-	copy_to_user(buff, lastdata.data, len);
+-
+-	up (&FrontPanelOpen[minor].sem);
+-
+-	dprintk(10, "%s < (len %d)\n", __func__, len);
+-	return len;
++	return -EOPNOTSUPP;
+ }
+ 
+-int AOTOMdev_open(struct inode *inode, struct file *filp)
++static int AOTOMdev_open(struct inode *inode, struct file *filp)
+ {
+ 	int minor;
+ 
+ 	dprintk(5, "%s >\n", __func__);
+ 
+-    minor = MINOR(inode->i_rdev);
++	minor = MINOR(inode->i_rdev);
+ 
+ 	dprintk(1, "open minor %d\n", minor);
+ 
+-  	if (FrontPanelOpen[minor].fp != NULL)
+-  	{
++	if (minor == FRONTPANEL_MINOR_RC && FrontPanelOpen[minor].open_count) {
+ 		printk("EUSER\n");
+-    		return -EUSERS;
+-  	}
+-  	FrontPanelOpen[minor].fp = filp;
+-  	FrontPanelOpen[minor].read = 0;
++		return -EUSERS;
++	}
++
++	FrontPanelOpen[minor].open_count++;
++
++	filp->private_data = &FrontPanelOpen[minor];
+ 
+ 	dprintk(5, "%s <\n", __func__);
+ 	return 0;
+ }
+ 
+-int AOTOMdev_close(struct inode *inode, struct file *filp)
++static int AOTOMdev_close(struct inode *inode, struct file *filp)
+ {
+ 	int minor;
+ 
+@@ -574,24 +516,20 @@ int AOTOMdev_close(struct inode *inode, struct file *filp)
+ 
+ 	dprintk(1, "close minor %d\n", minor);
+ 
+-  	if (FrontPanelOpen[minor].fp == NULL)
+-	{
+-		printk("EUSER\n");
+-		return -EUSERS;
+-  	}
+-	FrontPanelOpen[minor].fp = NULL;
+-  	FrontPanelOpen[minor].read = 0;
++	if (FrontPanelOpen[minor].open_count > 0)
++		FrontPanelOpen[minor].open_count--;
+ 
+ 	dprintk(5, "%s <\n", __func__);
+ 	return 0;
+ }
+ 
++static struct aotom_ioctl_data aotom_data;
++static struct vfd_ioctl_data vfd_data;
++
+ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int cmd, unsigned long arg)
+ {
+    static int mode = 0;
+-   struct aotom_ioctl_data * aotom = (struct aotom_ioctl_data *)arg;
+-   int res = 0;
+-
++   int res = -EINVAL;
+    dprintk(5, "%s > 0x%.8x\n", __func__, cmd);
+ 
+    if(down_interruptible (&write_sem))
+@@ -599,45 +537,56 @@ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int c
+ 
+ 	switch(cmd) {
+ 	case VFDSETMODE:
+-		mode = aotom->u.mode.compat;
++	case VFDSETLED:
++	case VFDICONDISPLAYONOFF:
++	case VFDSETTIME:
++	case VFDBRIGHTNESS:
++		if (copy_from_user(&aotom_data, (void *) arg, sizeof(aotom_data)))
++			return -EFAULT;
++	}
++
++	switch(cmd) {
++	case VFDSETMODE:
++		mode = aotom_data.u.mode.compat;
+ 		break;
+ 	case VFDSETLED:
+-	{
+ #if defined(SPARK) || defined(SPARK7162)
+-		res = YWPANEL_VFD_SetLed(aotom->u.led.led_nr, aotom->u.led.on);
+-		//printk("res = %d\n", res);
++		if (aotom_data.u.led.led_nr > -1 && aotom_data.u.led.led_nr < LED_MAX) {
++			switch (aotom_data.u.led.on) {
++			case LOG_OFF:
++			case LOG_ON:
++				res = YWPANEL_VFD_SetLed(aotom_data.u.led.led_nr, aotom_data.u.led.on);
++				led_state[aotom_data.u.led.led_nr].state = aotom_data.u.led.on;
++				break;
++			default: // toggle (for aotom_data.u.led.on * 10) ms
++				flashLED(aotom_data.u.led.led_nr, aotom_data.u.led.on * 10);
++			}
++		}
+ #endif
+ 		break;
+-	}
+ 	case VFDBRIGHTNESS:
++		if (aotom_data.u.brightness.level < 0)
++			aotom_data.u.brightness.level = 0;
++		else if (aotom_data.u.brightness.level > 7)
++			aotom_data.u.brightness.level = 7;
++		res = YWPANEL_VFD_SetBrightness(aotom_data.u.brightness.level);
+ 		break;
+ 	case VFDICONDISPLAYONOFF:
+ 	{
+-	 	//struct vfd_ioctl_data *data = (struct vfd_ioctl_data *) arg;
+-		//res = aotomSetIcon(aotom->u.icon.icon_nr, aotom->u.icon.on);
+ #if defined(SPARK) || defined(SPARK7162)
+-		switch (aotom->u.icon.icon_nr)
+-		{
+-			case 0:
+-			{
+-   				struct vfd_ioctl_data * vfd = (struct vfd_ioctl_data *)arg;
+-				if (5 == vfd->length)
+-				{
+-					if ((0x1e & 0xf) == vfd->data[0])
+-					{
+-						res = YWPANEL_VFD_SetLed(0, vfd->data[4]);
+-					}
+-				}
+-				break;
+-			}
+-			case 35:
+-				res = YWPANEL_VFD_SetLed(1, aotom->u.led.on);
+-				break;
+-			default:
+-				break;
++		switch (aotom_data.u.icon.icon_nr) {
++		case 0:
++			res = YWPANEL_VFD_SetLed(LED_RED, aotom_data.u.icon.on);
++			led_state[LED_RED].state = aotom_data.u.icon.on;
++			break;
++		case 35:
++			res = YWPANEL_VFD_SetLed(LED_GREEN, aotom_data.u.icon.on);
++			led_state[LED_GREEN].state = aotom_data.u.icon.on;
++			break;
++		default:
++			break;
+ 		}
+ #endif
+-
+ 		mode = 0;
+ 		break;
+ 	}
+@@ -645,17 +594,17 @@ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int c
+ 	{
+ #if defined(SPARK) || defined(SPARK7162)
+ 		u32 uTime = 0;
+-		u32 uStandByKey = 0;
+-		u32 uPowerOnTime = 0;
++		//u32 uStandByKey = 0;
++		//u32 uPowerOnTime = 0;
+ 		get_user(uTime, (int *) arg);
+ 		//printk("uTime = %d\n", uTime);
+ 
+-		uPowerOnTime = YWPANEL_FP_GetPowerOnTime();
++		//uPowerOnTime = YWPANEL_FP_GetPowerOnTime();
+ 		//printk("1uPowerOnTime = %d\n", uPowerOnTime);
+ 
+ 		YWPANEL_FP_SetPowerOnTime(uTime);
+ 
+-		uPowerOnTime = YWPANEL_FP_GetPowerOnTime();
++		//uPowerOnTime = YWPANEL_FP_GetPowerOnTime();
+ 		//printk("2uPowerOnTime = %d\n", uPowerOnTime);
+ 		#if 0
+ 		uStandByKey = YWPANEL_FP_GetStandByKey(0);
+@@ -669,24 +618,34 @@ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int c
+ 		uStandByKey = YWPANEL_FP_GetStandByKey(4);
+ 		printk("uStandByKey = %d\n", uStandByKey);
+ 		#endif
++		clear_display();
+ 		YWPANEL_FP_ControlTimer(true);
+-		YWPANEL_FP_SetCpuStatus(0x02);
+-
++		YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_STANDBY);
++		res = 0;
+ #endif
+ 	   break;
+ 	}
++	case VFDSETTIME2:
++	{
++		u32 uTime = 0;
++		res = get_user(uTime, (int *)arg);
++		if (! res)
++		{
++			res = YWPANEL_FP_SetTime(uTime);
++			YWPANEL_FP_ControlTimer(true);
++		}
++		break;
++	}
+ 	case VFDSETTIME:
+-		//struct set_time_s *data2 = (struct set_time_s *) arg;
+-		res = aotomSetTime((char *)arg);
++		res = aotomSetTime(aotom_data.u.time.time);
+ 		break;
+ 	case VFDGETTIME:
+ 	{
+ #if defined(SPARK) || defined(SPARK7162)
+ 		u32 uTime = 0;
+-		char cTime[5];
+ 		uTime = YWPANEL_FP_GetTime();
+ 		//printk("uTime = %d\n", uTime);
+-		put_user(uTime, (int *) arg);
++		res = put_user(uTime, (int *) arg);
+ #endif
+ 		break;
+ 	}
+@@ -695,36 +654,38 @@ static int AOTOMdev_ioctl(struct inode *Inode, struct file *File, unsigned int c
+ 	case VFDDISPLAYCHARS:
+ 		if (mode == 0)
+ 		{
+-	 	  struct vfd_ioctl_data *data = (struct vfd_ioctl_data *) arg;
+-		  if(data->length <0)
+-	            {
+-	              res = -1;
+-	              dprintk(2, "empty string\n");
+-	            }
+-		    else
+-		     res = run_draw_thread(data);
++		   if (copy_from_user(&vfd_data, (void *) arg, sizeof(vfd_data)))
++			return -EFAULT;
++		   if (vfd_data.length > sizeof(vfd_data.data))
++			vfd_data.length = sizeof(vfd_data.data);
++		   while ((vfd_data.length > 0) && (vfd_data.data[vfd_data.length - 1 ] == '\n'))
++			  vfd_data.length--;
++	     	   res = run_draw_thread(&vfd_data);
+ 		} else
+-		{
+-			//not supported
+-		}
+-		mode = 0;
++			mode = 0;
+ 		break;
+ 	case VFDDISPLAYWRITEONOFF:
+ 		break;
+ 	case VFDDISPLAYCLR:
+-		if(!thread_stop)
+-		  kthread_stop(thread);
+-		//wait thread stop
+-		while(!thread_stop)
+-		  {msleep(1);}
+-		VFD_clr();
++		vfd_data.length = 0;
++	   	res = run_draw_thread(&vfd_data);
+ 		break;
+ #if defined(SPARK)
+ 	case 0x5305:
++		res = 0;
+ 		break;
+ #endif
+ 	case 0x5401:
++		res = 0;
++		break;
++	case VFDGETSTARTUPSTATE:
++	{
++		YWPANEL_STARTUPSTATE_t State;
++		if (YWPANEL_FP_GetStartUpState(&State))
++			res = put_user(State, (int *) arg);
+ 		break;
++	}
++
+ 	default:
+ 		printk("VFD/AOTOM: unknown IOCTL 0x%x\n", cmd);
+ 		mode = 0;
+@@ -744,9 +705,7 @@ static unsigned int AOTOMdev_poll(struct file *filp, poll_table *wait)
+   poll_wait(filp, &wq, wait);
+ 
+   if(receiveCount > 0)
+-  {
+     mask = POLLIN | POLLRDNORM;
+-  }
+ 
+   return mask;
+ }
+@@ -757,7 +716,7 @@ static struct file_operations vfd_fops =
+ 	.ioctl = AOTOMdev_ioctl,
+ 	.write = AOTOMdev_write,
+ 	.read  = AOTOMdev_read,
+-  	.poll  = (void*) AOTOMdev_poll,
++  	.poll  = AOTOMdev_poll,
+ 	.open  = AOTOMdev_open,
+ 	.release  = AOTOMdev_close
+ };
+@@ -766,11 +725,10 @@ static struct file_operations vfd_fops =
+ 
+ static char *button_driver_name = "fulan front panel buttons";
+ static struct input_dev *button_dev;
+-static int button_value = -1;
+ static int bad_polling = 1;
+ static struct workqueue_struct *fpwq;
+ 
+-void button_bad_polling(void)
++static void button_bad_polling(struct work_struct *work)
+ {
+ 	int btn_pressed = 0;
+ 
+@@ -778,83 +736,52 @@ void button_bad_polling(void)
+ 
+ 	while(bad_polling == 1)
+ 	{
++		int button_value;
+ 		msleep(50);
+ 		button_value = AOTOMfp_Get_Key_Value();
+ 		if (button_value != INVALID_KEY) {
+ 			dprintk(5, "got button: %X\n", button_value);
+-	        VFD_Show_Ico(DOT2,LOG_ON);
+-			YWPANEL_VFD_SetLed(1, LOG_ON);
+-			if (1 == btn_pressed)
+-			{
+-				if (report_key != button_value)
+-				{
+-					input_report_key(button_dev, report_key, 0);
+-					input_sync(button_dev);
+-				}
+-				else
+-				{
+-				    continue;
+-				}
++			flashLED(LED_GREEN, 100);
++			//VFD_Show_Ico(DOT2,LOG_ON);
++			//YWPANEL_VFD_SetLed(1, LOG_ON);
++			if (1 == btn_pressed) {
++				if (report_key == button_value)
++					continue;
++				input_report_key(button_dev, report_key, 0);
++				input_sync(button_dev);
+ 			}
+ 			report_key = button_value;
+-	        btn_pressed = 1;
++			btn_pressed = 1;
+ 			switch(button_value) {
+-				case KEY_LEFT: {
+-					input_report_key(button_dev, KEY_LEFT, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+-				case KEY_RIGHT: {
+-					input_report_key(button_dev, KEY_RIGHT, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+-				case KEY_UP: {
+-					input_report_key(button_dev, KEY_UP, 1);
++				case KEY_LEFT:
++				case KEY_RIGHT:
++				case KEY_UP:
++				case KEY_DOWN:
++				case KEY_OK:
++				case KEY_MENU:
++				case KEY_EXIT:
++				case KEY_POWER:
++					input_report_key(button_dev, button_value, 1);
+ 					input_sync(button_dev);
+ 					break;
+-				}
+-				case KEY_DOWN: {
+-					input_report_key(button_dev, KEY_DOWN, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+-				case KEY_OK: {
+-					input_report_key(button_dev, KEY_OK, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+-				case KEY_MENU: {
+-					input_report_key(button_dev, KEY_MENU, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+-				case KEY_EXIT: {
+-					input_report_key(button_dev, KEY_EXIT, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+-				case KEY_POWER: {
+-					input_report_key(button_dev, KEY_POWER, 1);
+-					input_sync(button_dev);
+-					break;
+-				}
+ 				default:
+-					dprintk(5, "[BTN] unknown button_value?\n");
++					dprintk(5, "[BTN] unknown button_value %d\n", button_value);
+ 			}
+ 		}
+ 		else {
+ 			if(btn_pressed) {
+ 				btn_pressed = 0;
+-				msleep(80);
+-				VFD_Show_Ico(DOT2,LOG_OFF);
+-				YWPANEL_VFD_SetLed(1, LOG_OFF);
++				//msleep(80);
++				//VFD_Show_Ico(DOT2,LOG_OFF);
++				//YWPANEL_VFD_SetLed(1, LOG_OFF);
+ 				input_report_key(button_dev, report_key, 0);
+-			input_sync(button_dev);
++				input_sync(button_dev);
+ 			}
+ 		}
+ 	}
++	bad_polling = 2;
+ }
++
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,17)
+ static DECLARE_WORK(button_obj, button_bad_polling);
+ #else
+@@ -863,27 +790,22 @@ static DECLARE_WORK(button_obj, button_bad_polling, NULL);
+ static int button_input_open(struct input_dev *dev)
+ {
+ 	fpwq = create_workqueue("button");
+-	if(queue_work(fpwq, &button_obj))
+-	{
++	if(queue_work(fpwq, &button_obj)) {
+ 		dprintk(5, "[BTN] queue_work successful ...\n");
++		return 0;
+ 	}
+-	else
+-	{
+-		dprintk(5, "[BTN] queue_work not successful, exiting ...\n");
+-		return 1;
+-	}
+-
+-	return 0;
++	dprintk(5, "[BTN] queue_work not successful, exiting ...\n");
++	return 1;
+ }
+ 
+ static void button_input_close(struct input_dev *dev)
+ {
+ 	bad_polling = 0;
+-	msleep(55);
++	while (bad_polling != 2)
++		msleep(1);
+ 	bad_polling = 1;
+ 
+-	if (fpwq)
+-	{
++	if (fpwq) {
+ 		destroy_workqueue(fpwq);
+ 		dprintk(5, "[BTN] workqueue destroyed\n");
+ 	}
+@@ -903,7 +825,6 @@ int button_dev_init(void)
+ 	button_dev->open = button_input_open;
+ 	button_dev->close= button_input_close;
+ 
+-
+ 	set_bit(EV_KEY		, button_dev->evbit );
+ 	set_bit(KEY_UP		, button_dev->keybit);
+ 	set_bit(KEY_DOWN	, button_dev->keybit);
+@@ -915,12 +836,10 @@ int button_dev_init(void)
+ 	set_bit(KEY_EXIT	, button_dev->keybit);
+ 
+ 	error = input_register_device(button_dev);
+-	if (error) {
++	if (error)
+ 		input_free_device(button_dev);
+-		return error;
+-	}
+ 
+-	return 0;
++	return error;
+ }
+ 
+ void button_dev_exit(void)
+@@ -937,8 +856,6 @@ static int __init aotom_init_module(void)
+ 
+ 	printk("Fulan front panel driver\n");
+ 
+-	sema_init(&display_sem,1);
+-
+ 	if(YWPANEL_VFD_Init()) {
+ 		printk("unable to init module\n");
+ 		return -1;
+@@ -952,10 +869,21 @@ static int __init aotom_init_module(void)
+ 		printk("unable to get major %d for VFD\n",VFD_MAJOR);
+ 
+ 	sema_init(&write_sem, 1);
+-	sema_init(&key_mutex, 1);
++	sema_init(&receive_sem, 1);
++	sema_init(&draw_thread_sem, 1);
+ 
+-	for (i = 0; i < LASTMINOR; i++)
+-	    sema_init(&FrontPanelOpen[i].sem, 1);
++	for (i = 0; i < LASTMINOR; i++) {
++	    FrontPanelOpen[i].open_count = 0;
++	    FrontPanelOpen[i].minor = i;
++	}
++
++	for (i = 0; i < LASTLED; i++) {
++		led_state[i].state = LOG_OFF;
++		led_state[i].period = 0;
++		led_state[i].stop = 1;
++		sema_init(&led_state[i].led_sem, 0);
++		led_state[i].led_task = kthread_run(led_thread, (void *) i, "led thread");
++	}
+ 
+ 
+ 	dprintk(5, "%s <\n", __func__);
+@@ -963,13 +891,34 @@ static int __init aotom_init_module(void)
+ 	return 0;
+ }
+ 
++static int led_thread_active(void) {
++	int i;
++
++	for (i = 0; i < LASTLED; i++)
++		if(!led_state[i].stop && led_state[i].led_task)
++			return -1;
++	return 0;
++}
++
+ static void __exit aotom_cleanup_module(void)
+ {
++	int i;
++
++	if(!draw_thread_stop && draw_task)
++		kthread_stop(draw_task);
++
++	for (i = 0; i < LASTLED; i++)
++		if(!led_state[i].stop && led_state[i].led_task) {
++			up(&led_state[i].led_sem);
++			kthread_stop(led_state[i].led_task);
++		}
++
++	while(!draw_thread_stop && !led_thread_active())
++		msleep(1);
++
+ 	dprintk(5, "[BTN] unloading ...\n");
+ 	button_dev_exit();
+ 
+-	//kthread_stop(time_thread);
+-
+ 	unregister_chrdev(VFD_MAJOR,"VFD");
+ 	printk("Fulan front panel module unloading\n");
+ }
+diff --git a/frontcontroller/aotom/aotom_main.h b/frontcontroller/aotom/aotom_main.h
+index ebb6f23..c82e36c 100644
+--- a/frontcontroller/aotom/aotom_main.h
++++ b/frontcontroller/aotom/aotom_main.h
+@@ -1,18 +1,40 @@
+ #ifndef __AOTOM_MAIN_H__
+ #define __AOTOM_MAIN_H__
+ 
++#ifndef __KERNEL__
++typedef signed char s8;
++typedef unsigned char u8;
++
++typedef signed short s16;
++typedef unsigned short u16;
++
++typedef signed int s32;
++typedef unsigned int u32;
++
++typedef signed long s64;
++typedef unsigned long u64;
++#endif
++
+ #define VFD_MAJOR				147
+ 
++#define LOG_OFF     	0
++#define LOG_ON      	1
++#define LED_RED		0
++#define LED_GREEN	1
++#define LASTLED		2
++
+ #define VFDBRIGHTNESS         0xc0425a03
+ #define VFDDRIVERINIT         0xc0425a08
+ #define VFDICONDISPLAYONOFF   0xc0425a0a
+ #define VFDDISPLAYWRITEONOFF  0xc0425a05
+ #define VFDDISPLAYCHARS       0xc0425a00
+ 
++#define VFDGETSTARTUPSTATE    0xc0425af8
+ #define VFDGETWAKEUPMODE      0xc0425af9
+ #define VFDGETTIME            0xc0425afa
+ #define VFDSETTIME            0xc0425afb
+ #define VFDSTANDBY            0xc0425afc
++#define VFDSETTIME2           0xc0425afd	// seife, set 'complete' time...
+ 
+ #define VFDSETLED             0xc0425afe
+ #define VFDSETMODE            0xc0425aff
+@@ -65,7 +87,7 @@ struct set_time_s {
+ 	char time[5];
+ };
+ 
+-/* this setups the mode temporarily (for one ioctl)
++/* this changes the mode temporarily (for one ioctl)
+  * to the desired mode. currently the "normal" mode
+  * is the compatible vfd mode
+  */
+@@ -438,12 +460,12 @@ typedef struct YWPANEL_Time_s
+ 
+ typedef struct YWPANEL_ControlTimer_s
+ {
+-	bool	startFlag;	  // 0 - stop  1-start
++	int	startFlag;	  // 0 - stop  1-start
+ } YWPANEL_ControlTimer_t;
+ 
+ typedef struct YWPANEL_VfdStandbyState_s
+ {
+-	bool	On; 		  // 0 - off  1-on
++	int	On; 		  // 0 - off  1-on
+ } YWPANEL_VfdStandbyState_T;
+ 
+ typedef struct YWPANEL_BlueKey_s
+@@ -465,21 +487,21 @@ typedef struct YWVFD_Time_s
+ 
+ typedef enum YWPANEL_CPUSTATE_s
+ {
+-    YWPANEL_CPUSTATE_UNKNOW,
++    YWPANEL_CPUSTATE_UNKNOWN,
+     YWPANEL_CPUSTATE_RUNNING = 0x01,
+     YWPANEL_CPUSTATE_STANDBY
+ } YWPANEL_CPUSTATE_t;
+ 
+ typedef enum YWPANEL_VFDSTATE_e
+ {
+-    YWPANEL_VFDSTATE_UNKNOW,
++    YWPANEL_VFDSTATE_UNKNOWN,
+     YWPANEL_VFDSTATE_STANDBYOFF = 0x01,
+     YWPANEL_VFDSTATE_STANDBYON
+ } YWPANEL_VFDSTATE_t;
+ 
+ typedef enum YWPANEL_POWERONSTATE_e
+ {
+-    YWPANEL_POWERONSTATE_UNKNOW,
++    YWPANEL_POWERONSTATE_UNKNOWN,
+     YWPANEL_POWERONSTATE_RUNNING = 0x01,
+     YWPANEL_POWERONSTATE_CHECKPOWERBIT
+ } YWPANEL_POWERONSTATE_t;
+@@ -493,7 +515,7 @@ typedef enum YWPANEL_LBDStatus_e
+ 
+ typedef enum YWPANEL_STARTUPSTATE_e
+ {
+-    YWPANEL_STARTUPSTATE_UNKNOW,
++    YWPANEL_STARTUPSTATE_UNKNOWN,
+     YWPANEL_STARTUPSTATE_ELECTRIFY =0x01,
+     YWPANEL_STARTUPSTATE_STANDBY,
+     YWPANEL_STARTUPSTATE_TIMER
+@@ -501,7 +523,7 @@ typedef enum YWPANEL_STARTUPSTATE_e
+ 
+ typedef enum YWPANEL_LOOPSTATE_e
+ {
+-    YWPANEL_LOOPSTATE_UNKNOW,
++    YWPANEL_LOOPSTATE_UNKNOWN,
+     YWPANEL_LOOPSTATE_LOOPOFF =0x01,
+     YWPANEL_LOOPSTATE_LOOPON
+ } YWPANEL_LOOPSTATE_t;
+@@ -519,7 +541,7 @@ typedef struct YWVFD_FuncKey_s
+ 
+ typedef enum YWVFD_TYPE_s
+ {
+-  YWVFD_UNKNOW,
++  YWVFD_UNKNOWN,
+   YWVFD_COMMON,
+   YWVFD_STAND_BY
+ } YWVFD_TYPE_t;
+@@ -554,7 +576,7 @@ typedef enum YWPANEL_LBDType_e
+ 
+ typedef enum YWPAN_FP_MCUTYPE_E
+ {
+-	YWPANEL_FP_MCUTYPE_UNKNOW = 0x00,
++	YWPANEL_FP_MCUTYPE_UNKNOWN = 0x00,
+ 	YWPANEL_FP_MCUTYPE_AVR_ATTING48,	   //AVR MCU
+ 	YWPANEL_FP_MCUTYPE_AVR_ATTING88,
+ 	YWPAN_FP_MCUTYPE_MAX
+@@ -608,13 +630,13 @@ typedef struct YWPANEL_FPData_s
+ 		YWPANEL_LoopState_t 		LoopState;
+ 	} data;
+ 
+-	bool	ack;
++	int	ack;
+ 
+ } YWPANEL_FPData_t;
+ 
+ #define BASE_VFD_PRIVATE 0x00
+ 
+-#define VFD_GetRevision         _IOWR('s',(BASE_VFD_PRIVATE+0),char*)
++// #define VFD_GetRevision         _IOWR('s',(BASE_VFD_PRIVATE+0),char*)
+ #define VFD_ShowLog             _IOWR('s',(BASE_VFD_PRIVATE+1),YWVFD_Format_T)
+ #define VFD_ShowTime            _IOWR('s',(BASE_VFD_PRIVATE+2),YWVFD_Time_T)
+ #define VFD_ShowStr             _IOWR('s',(BASE_VFD_PRIVATE+3),char*)
+@@ -638,37 +660,42 @@ typedef struct YWPANEL_FPData_s
+ #define VFD_SetPowerOnTime      _IOWR('s',(BASE_VFD_PRIVATE+21),u32)
+ #define VFD_ControlLBD          _IOWR('s',(BASE_VFD_PRIVATE+22),YWPANEL_LBDStatus_T)
+ 
+-int YWPANEL_VFD_DETECT(void);
+-int	YWPANEL_VFD_Init(void);
+-int	YWPANEL_VFD_Term(void);
++int YWPANEL_VFD_Init(void);
++extern int (*YWPANEL_VFD_Term)(void);
++extern int (*YWPANEL_VFD_Initialize)(void);
++extern int (*YWPANEL_VFD_ShowIco)(LogNum_T, int);
++extern int (*YWPANEL_VFD_ShowTime)(u8 hh,u8 mm);
++extern int (*YWPANEL_VFD_ShowTimeOff)(void);
++extern int (*YWPANEL_VFD_SetBrightness)(int);
++extern u8 (*YWPANEL_VFD_ScanKeyboard)(void);
++extern int (*YWPANEL_VFD_ShowString)(char *);
++
++extern int YWPANEL_width;
+ 
+-int YWPANEL_VFD_GetRevision(char * version);
+-int YWPANEL_VFD_ShowIco(LogNum_T log_num,int log_stat);
+-int YWPANEL_VFD_ShowString(char* str);
+-int YWVFD_LED_ShowString(const char *str); //lwj add
+-int YWPANEL_VFD_ShowTime(u8 hh,u8 mm);
+-int YWPANEL_VFD_ShowTimeOff(void);
+-int YWPANEL_VFD_SetBrightness(int level);
++//int YWPANEL_VFD_GetRevision(char * version);
+ YWPANEL_VFDSTATE_t YWPANEL_FP_GetVFDStatus(void);
+-bool  YWPANEL_FP_SetVFDStatus(YWPANEL_VFDSTATE_t state);
++int  YWPANEL_FP_SetVFDStatus(YWPANEL_VFDSTATE_t state);
+ YWPANEL_CPUSTATE_t YWPANEL_FP_GetCpuStatus(void);
+-bool  YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_t state);
+-bool  YWPANEL_FP_ControlTimer(bool on);
++int  YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_t state);
++int  YWPANEL_FP_ControlTimer(int on);
+ YWPANEL_POWERONSTATE_t YWPANEL_FP_GetPowerOnStatus(void);
+-bool  YWPANEL_FP_SetPowerOnStatus(YWPANEL_POWERONSTATE_t state);
++int  YWPANEL_FP_SetPowerOnStatus(YWPANEL_POWERONSTATE_t state);
+ u32  YWPANEL_FP_GetTime(void);
+-bool  YWPANEL_FP_SetTime(u32 value);
++int  YWPANEL_FP_SetTime(u32 value);
+ u32  YWPANEL_FP_GetStandByKey(u8 index);
+-bool  YWPANEL_FP_SetStandByKey(u8 index,u8 key);
++int  YWPANEL_FP_SetStandByKey(u8 index,u8 key);
+ u32  YWPANEL_FP_GetBlueKey(u8 index);
+-bool  YWPANEL_FP_SetBlueKey(u8 index,u8 key);
++int  YWPANEL_FP_SetBlueKey(u8 index,u8 key);
+ int YWPANEL_LBD_SetStatus(YWPANEL_LBDStatus_T  LBDStatus );
+-bool YWPANEL_FP_GetStartUpState(YWPANEL_STARTUPSTATE_t *State);
++int YWPANEL_FP_GetStartUpState(YWPANEL_STARTUPSTATE_t *State);
++int  YWPANEL_FP_GetVersion(YWPANEL_Version_t *version);
+ 
+ //u32  YWPANEL_FP_GetIRKey(void);
+-bool YWPANEL_FP_SetPowerOnTime(u32 Value);
++int YWPANEL_FP_SetPowerOnTime(u32 Value);
+ u32  YWPANEL_FP_GetPowerOnTime(void);
+ int YWPANEL_VFD_GetKeyValue(void);
+ int YWPANEL_VFD_SetLed(int which, int on);
+ 
+ #endif /* __AOTOM_MAIN_H__ */
++
++// vim:ts=4
+diff --git a/frontcontroller/aotom/aotom_vfd.c b/frontcontroller/aotom/aotom_vfd.c
+index 11ee9ea..3b5eaae 100644
+--- a/frontcontroller/aotom/aotom_vfd.c
++++ b/frontcontroller/aotom/aotom_vfd.c
+@@ -437,9 +437,9 @@ int  YWPANEL_TranslateKeyCode(u8  KeyPress)
+ 	return iUSIF_Key;
+ }
+ 
+-bool to_primitive_key(u8 key,	u32 *prim_key_p)
++int to_primitive_key(u8 key,	u32 *prim_key_p)
+ {
+-	bool ret = false;
++	int ret = false;
+ 	int i;
+ 	u32 tmp = 0;
+ 
+@@ -528,7 +528,7 @@ u16 YWPANEL_GenerateCRC16( u8 * buffer, u32 bufLength )
+ 		nAccum = ( nAccum << 8 ) ^ ( u16 )Table_CRC[( nAccum >> 8 ) ^ *buffer++];
+ 	return nAccum;
+ }
+-bool YWPANEL_FP_SetI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t   *I2CData)
++int YWPANEL_FP_SetI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t   *I2CData)
+ {
+ 	u16 			usCRC16 = 0;
+ 
+@@ -604,6 +604,7 @@ bool YWPANEL_FP_SetI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t   *I2CData)
+ 			I2CData->writeBuff[0] = YWPANEL_INIT_INSTR_GETSTARTUPSTATE;
+ 		}
+ 		break;
++
+ 		case  YWPANEL_DATATYPE_GETVFDSTATE:
+ 		{
+ 			I2CData->writeBuff[0] = YWPANEL_INIT_INSTR_GETVFDSTANDBYSTATE;
+@@ -839,19 +840,19 @@ bool YWPANEL_FP_SetI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t   *I2CData)
+ 
+ 		case YWPANEL_DATATYPE_GETSTARTUPSTATE:
+ 		{
+-			I2CData->writeBuff[2] = data->data.CpuState.state;
++			I2CData->writeBuff[2] = data->data.StartUpState.State;
+ 		}
+ 		break;
+ 
+ 		case YWPANEL_DATATYPE_SETVFDSTATE:
+ 		{
+-		   I2CData->writeBuff[2] = data->data.CpuState.state;
++		   I2CData->writeBuff[2] = data->data.VfdStandbyState.On;
+ 		}
+ 		break;
+ 
+ 		case YWPANEL_DATATYPE_SETPOWERONSTATE:
+ 		{
+-			I2CData->writeBuff[2] = data->data.CpuState.state;
++			I2CData->writeBuff[2] = data->data.PowerOnState.state;
+ 		}
+ 		break;
+ 
+@@ -970,7 +971,7 @@ bool YWPANEL_FP_SetI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t   *I2CData)
+ 	return true;
+ }
+ 
+-bool YWPANEL_FP_ParseI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t	 *I2CData)
++int YWPANEL_FP_ParseI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t	 *I2CData)
+ {
+ 	u16 	crc16Code = 0;
+ 	u16 	receiveCode = 0;
+@@ -1209,15 +1210,16 @@ bool YWPANEL_FP_ParseI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t	 *I2CData
+ 
+ 		case YWPANEL_INIT_INSTR_GETVFDSTANDBYSTATE: /*get vfd state*/
+ 		{
+-			   data->data.CpuState.state= I2CData->readBuff[2];
++			   data->data.VfdStandbyState.On = I2CData->readBuff[2];
+ 			   data->ack = true;
+ 		}
+ 		break;
++
+ 		case YWPANEL_INIT_INSTR_GETPOWERONSTATE: /*get power on  state*/
+ 		{
+ 		   if(data->dataType == YWPANEL_DATATYPE_GETPOWERONSTATE)
+ 		   {
+-			   data->data.CpuState.state= I2CData->readBuff[2];
++			   data->data.PowerOnState.state= I2CData->readBuff[2];
+ 			   data->ack = true;
+ 		   }
+ 		   else
+@@ -1228,6 +1230,12 @@ bool YWPANEL_FP_ParseI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t	 *I2CData
+ 		}
+ 		break;
+ 
++		case YWPANEL_INIT_INSTR_GETSTARTUPSTATE: /*get vfd state*/
++		{
++			   data->data.StartUpState.State = I2CData->readBuff[2];
++			   data->ack = true;
++		}
++		break;
+ 
+ 		case YWPANEL_INIT_INSTR_GETSTBYKEY1: /*get standby key*/
+ 		case YWPANEL_INIT_INSTR_GETSTBYKEY2: /*get standby key*/
+@@ -1301,7 +1309,7 @@ bool YWPANEL_FP_ParseI2cData(YWPANEL_FPData_t  *data,YWPANEL_I2CData_t	 *I2CData
+ }
+ 
+ #ifdef CONFIG_CPU_SUBTYPE_STX7105
+-static bool YWPANEL_FPWriteDataToI2c(	struct i2c_adapter* I2CHandle,
++static int YWPANEL_FPWriteDataToI2c(	struct i2c_adapter* I2CHandle,
+ 										u8 * writeBufer,
+ 										u32 writeBufLen,
+ 										u8 *readBuffer,
+@@ -1320,7 +1328,7 @@ static bool YWPANEL_FPWriteDataToI2c(	struct i2c_adapter* I2CHandle,
+ 	return true;
+ }
+ #else
+-static bool YWPANEL_FPWriteDataToI2c(	struct i2c_adapter* I2CHandle,
++static int YWPANEL_FPWriteDataToI2c(	struct i2c_adapter* I2CHandle,
+ 										u8 * writeBufer,
+ 										u32 writeBufLen,
+ 										u8 *readBuffer,
+@@ -1358,9 +1366,9 @@ static bool YWPANEL_FPWriteDataToI2c(	struct i2c_adapter* I2CHandle,
+ }
+ #endif  /* 0 */
+ 
+-bool YWPANEL_FP_SendData(YWPANEL_FPData_t  *data)
++int YWPANEL_FP_SendData(YWPANEL_FPData_t  *data)
+ {
+-	bool				ret = false;
++	int				ret = false;
+ 	YWPANEL_I2CData_t	I2CData;
+ 	if (down_interruptible(&vfd_sem_rw))
+ 	{
+@@ -1415,29 +1423,29 @@ YWPANEL_VFDSTATE_t YWPANEL_FP_GetVFDStatus(void)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d] \n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d] \n",__LINE__);
+ 		return false;
+ 	}
+-	if((data.data.CpuState.state < YWPANEL_VFDSTATE_STANDBYOFF) ||(data.data.CpuState.state > YWPANEL_VFDSTATE_STANDBYON) )
++	if((data.data.VfdStandbyState.On < YWPANEL_VFDSTATE_STANDBYOFF) ||(data.data.VfdStandbyState.On > YWPANEL_VFDSTATE_STANDBYON) )
+ 	{
+-		return YWPANEL_VFDSTATE_UNKNOW;
++		return YWPANEL_VFDSTATE_UNKNOWN;
+ 	}
+ 
+-	return data.data.CpuState.state;
++	return data.data.VfdStandbyState.On;
+ }
+ 
+-bool  YWPANEL_FP_SetVFDStatus(YWPANEL_VFDSTATE_t state)
++int  YWPANEL_FP_SetVFDStatus(YWPANEL_VFDSTATE_t On)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+ 
+ 	memset(&data, 0, sizeof(YWPANEL_FPData_t));
+ 	data.dataType = YWPANEL_DATATYPE_SETVFDSTATE;
+-	data.data.CpuState.state = state;
++	data.data.VfdStandbyState.On = On;
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+@@ -1452,35 +1460,35 @@ YWPANEL_POWERONSTATE_t YWPANEL_FP_GetPowerOnStatus(void)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+-	if((data.data.CpuState.state < YWPANEL_POWERONSTATE_RUNNING) ||(data.data.CpuState.state > YWPANEL_POWERONSTATE_CHECKPOWERBIT) )
++	if((data.data.PowerOnState.state < YWPANEL_POWERONSTATE_RUNNING) ||(data.data.PowerOnState.state > YWPANEL_POWERONSTATE_CHECKPOWERBIT) )
+ 	{
+-		return YWPANEL_POWERONSTATE_UNKNOW;
++		return YWPANEL_POWERONSTATE_UNKNOWN;
+ 	}
+ 
+-	return data.data.CpuState.state;
++	return data.data.PowerOnState.state;
+ }
+ 
+-bool  YWPANEL_FP_SetPowerOnStatus(YWPANEL_POWERONSTATE_t state)
++int  YWPANEL_FP_SetPowerOnStatus(YWPANEL_POWERONSTATE_t state)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+ 
+ 	memset(&data, 0, sizeof(YWPANEL_FPData_t));
+ 	data.dataType = YWPANEL_DATATYPE_SETPOWERONSTATE;
+-	data.data.CpuState.state = state;
++	data.data.PowerOnState.state = state;
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+ }
+ 
+-bool YWPANEL_FP_GetStartUpState(YWPANEL_STARTUPSTATE_t *State)
++int YWPANEL_FP_GetStartUpState(YWPANEL_STARTUPSTATE_t *State)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+@@ -1489,11 +1497,11 @@ bool YWPANEL_FP_GetStartUpState(YWPANEL_STARTUPSTATE_t *State)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-	  ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++	  ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 	  return false;
+ 	}
+ 
+-	*State = data.data.CpuState.state;
++	*State = data.data.StartUpState.State;
+ 	return true;
+ }
+ 
+@@ -1506,18 +1514,18 @@ YWPANEL_CPUSTATE_t YWPANEL_FP_GetCpuStatus(void)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	if((data.data.CpuState.state <YWPANEL_CPUSTATE_RUNNING) ||(data.data.CpuState.state> YWPANEL_CPUSTATE_STANDBY) )
+ 	{
+-		return YWPANEL_CPUSTATE_UNKNOW;
++		return YWPANEL_CPUSTATE_UNKNOWN;
+ 	}
+ 
+ 	return data.data.CpuState.state;
+ }
+ 
+-bool  YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_t state)
++int  YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_t state)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+@@ -1528,13 +1536,13 @@ bool  YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_t state)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+ }
+ 
+-bool  YWPANEL_FP_GetVersion(YWPANEL_Version_t *version)
++int  YWPANEL_FP_GetVersion(YWPANEL_Version_t *version)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+@@ -1545,7 +1553,7 @@ bool  YWPANEL_FP_GetVersion(YWPANEL_Version_t *version)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	//printk("%s:%d\n", __FUNCTION__, __LINE__);
+@@ -1563,7 +1571,7 @@ u32  YWPANEL_FP_GetIRKey(void)
+ 	data.dataType = YWPANEL_DATATYPE_IRKEY;
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return (data.data.IrkeyData.dataCode|data.data.IrkeyData.customCode);
+@@ -1580,7 +1588,7 @@ u32  YWPANEL_FP_GetStandByKey(u8 index)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	key = (u8)(data.data.stbyKey.key>>8);
+@@ -1588,7 +1596,7 @@ u32  YWPANEL_FP_GetStandByKey(u8 index)
+ 	return YWPANEL_TranslateKeyCode(key);
+ }
+ 
+-bool  YWPANEL_FP_SetStandByKey(u8 index,u8 key)
++int  YWPANEL_FP_SetStandByKey(u8 index,u8 key)
+ {
+ 	YWPANEL_FPData_t   data;
+ 	u32 value;
+@@ -1606,7 +1614,7 @@ bool  YWPANEL_FP_SetStandByKey(u8 index,u8 key)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+@@ -1622,14 +1630,14 @@ u32  YWPANEL_FP_GetBlueKey(u8 index)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	key = (u8)(data.data.stbyKey.key>>8);
+ 	return YWPANEL_TranslateKeyCode(key);
+ }
+ 
+-bool  YWPANEL_FP_SetBlueKey(u8 index,u8 key)
++int  YWPANEL_FP_SetBlueKey(u8 index,u8 key)
+ {
+ 	YWPANEL_FPData_t   data;
+ 	u32 value;
+@@ -1647,7 +1655,7 @@ bool  YWPANEL_FP_SetBlueKey(u8 index,u8 key)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+@@ -1662,13 +1670,13 @@ u32  YWPANEL_FP_GetTime(void)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return data.data.time.second;
+ }
+ 
+-bool  YWPANEL_FP_SetTime(u32 value)
++int  YWPANEL_FP_SetTime(u32 value)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+@@ -1678,13 +1686,13 @@ bool  YWPANEL_FP_SetTime(u32 value)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+ }
+ 
+-bool  YWPANEL_FP_SetPowerOnTime(u32 Value)
++int  YWPANEL_FP_SetPowerOnTime(u32 Value)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+@@ -1694,7 +1702,7 @@ bool  YWPANEL_FP_SetPowerOnTime(u32 Value)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 	}
+ 	return true;
+ }
+@@ -1708,13 +1716,13 @@ u32  YWPANEL_FP_GetPowerOnTime(void)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		return 0;
+ 	}
+ 	return data.data.time.second;
+ }
+ 
+-bool  YWPANEL_FP_ControlTimer(bool on)
++int  YWPANEL_FP_ControlTimer(int on)
+ {
+ 	YWPANEL_FPData_t   data;
+ 
+@@ -1724,7 +1732,7 @@ bool  YWPANEL_FP_ControlTimer(bool on)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]",__LINE__);
+ 		return false;
+ 	}
+ 	return true;
+@@ -1750,7 +1758,7 @@ int YWPANEL_LBD_SetStatus(YWPANEL_LBDStatus_T  LBDStatus )
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		ErrorCode = -ETIME;
+ 	}
+ 	return ErrorCode;
+@@ -1797,7 +1805,7 @@ int YWPANEL_VFD_SetLed(int which, int on)
+ 
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+-		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++		ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 		ErrorCode = -ETIME;
+ 	}
+ 	return ErrorCode;
+@@ -1953,28 +1961,33 @@ void YWPANEL_VFD_ClearAll(void)
+ 	}
+ }
+ 
++static u8 ywpanel_vfd_map[0x80] =
++{
++	0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f,
++	0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f,
++	0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x1f, 0x2f, 0x21, 0x22, 0x23, 0x24,
++	0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f,
++	0x2f, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
++	0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1f,
++	0x2f, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
++	0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f
++};
++
+ void YWPANEL_VFD_DrawChar(char c, u8 position)
+ {
+-	if(position < 1 || position > 8)
+-	{
++	u8 u;
++
++	if(position < 1 || position > 8) {
+ 		PANEL_PRINT((TRACE_ERROR, "char position error! %d\n", position));
+ 		return;
+ 	}
+-	if(c >= 65 && c <= 95)
+-		c = c - 65;
+-	else if(c >= 97 && c <= 122)
+-		c = c - 97;
+-	else if(c >= 42 && c <= 57)
+-		c = c - 11;
+-	else if(c == 32)
+-		c = 47;
++	if (c & 0x80)
++		u = 47;
+ 	else
+-	{
+-		PANEL_PRINT((TRACE_ERROR, "unknown char! make it as space!!\n"));
+-		c = 47;
+-	}
+-	YWPANEL_VFD_SegDigSeg(position, SEGNUM1, CharLib[(u8)c][0]);
+-	YWPANEL_VFD_SegDigSeg(position, SEGNUM2, CharLib[(u8)c][1]);
++		u = ywpanel_vfd_map[(int)c];
++
++	YWPANEL_VFD_SegDigSeg(position, SEGNUM1, CharLib[u][0]);
++	YWPANEL_VFD_SegDigSeg(position, SEGNUM2, CharLib[u][1]);
+ 
+ }
+ 
+@@ -2028,7 +2041,7 @@ void YWPANEL_Seg_Addr_Init(void)
+ 	}
+ }
+ 
+-int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
++static int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
+ {
+ 	int 				ErrorCode = 0;
+ 	YWPANEL_FPData_t	data;
+@@ -2059,7 +2072,7 @@ int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
+ 
+ 		if(YWPANEL_FP_SendData(&data) != true)
+ 		{
+-			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 			ErrorCode = -ETIME;
+ 		}
+ 
+@@ -2070,7 +2083,7 @@ int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
+ 
+ 		if(YWPANEL_FP_SendData(&data) != true)
+ 		{
+-			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 			ErrorCode = -ETIME;
+ 		}
+ 	}
+@@ -2093,7 +2106,7 @@ int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
+ 
+ 		if(YWPANEL_FP_SendData(&data) != true)
+ 		{
+-			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 			ErrorCode = -ETIME;
+ 		}
+ 
+@@ -2104,7 +2117,7 @@ int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
+ 
+ 		if(YWPANEL_FP_SendData(&data) != true)
+ 		{
+-			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not seccussfully!![%d]\n",__LINE__);
++			ywtrace_print(TRACE_ERROR,"YWPANEL_FP_SendData not successfully!![%d]\n",__LINE__);
+ 			ErrorCode = -ETIME;
+ 		}
+ 	}
+@@ -2112,7 +2125,7 @@ int YWPANEL_VFD_ShowTime_StandBy(u8 hh,u8 mm)
+ 	return ErrorCode;
+ }
+ 
+-int YWPANEL_VFD_ShowTime_Common(u8 hh,u8 mm)
++static int YWPANEL_VFD_ShowTime_Common(u8 hh,u8 mm)
+ {
+ 	int  ErrorCode = 0;
+ 	if (down_interruptible(&vfd_sem))
+@@ -2133,32 +2146,17 @@ int YWPANEL_VFD_ShowTime_Common(u8 hh,u8 mm)
+ }
+ 
+ 
+-int YWPANEL_VFD_ShowTime(u8 hh,u8 mm)
++static int YWPANEL_VFD_ShowTime_Unknown(u8 hh,u8 mm)
+ {
+-	int ErrorCode = 0 ;
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_ShowTime_StandBy(hh,mm);
+-			break;
+-		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_ShowTime_Common(hh,mm);
+-			break;
+-		default:
+-			ErrorCode = -ENODEV;
+-			break;
+-	}
+-	return ErrorCode;
++	return -ENODEV;
+ }
+ 
+-int YWPANEL_VFD_ShowTimeOff_StandBy(void)
++static int YWPANEL_VFD_ShowTimeOff_StandBy(void)
+ {
+-	int   ST_ErrCode = 0;
+-	ST_ErrCode = YWPANEL_VFD_ShowTime(0,0);
+-	return ST_ErrCode;
++	return YWPANEL_VFD_ShowTime(0,0);
+ }
+ 
+-int YWPANEL_VFD_ShowTimeOff_Common(void)
++static int YWPANEL_VFD_ShowTimeOff_Common(void)
+ {
+ 	int   ST_ErrCode = 0;
+ 	if (down_interruptible(&vfd_sem))
+@@ -2174,27 +2172,16 @@ int YWPANEL_VFD_ShowTimeOff_Common(void)
+ 	return ST_ErrCode;
+ }
+ 
+-int YWPANEL_VFD_ShowTimeOff(void)
++static int YWPANEL_VFD_ShowTimeOff_Unknown(void)
+ {
+-	int ErrorCode = 0 ;
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_ShowTimeOff_StandBy();
+-			break;
+-
+-		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_ShowTimeOff_Common();
+-			break;
+-		default:
+-			ErrorCode = -ENODEV;
+-			break;
+-	}
+-	return ErrorCode;
++	return -ENODEV;
+ }
+ 
+ int YWPANEL_VFD_SetBrightness_StandBy(int level)
+ {
++#if 1 // Doesn't work currently. Disabled to avoid side effects. --martii
++	return 0;
++#else
+ 	int 		ST_ErrCode = 0;
+ 	YWPANEL_FPData_t	data;
+ 	if (down_interruptible(&vfd_sem))
+@@ -2202,56 +2189,47 @@ int YWPANEL_VFD_SetBrightness_StandBy(int level)
+ 	   ST_ErrCode =-EBUSY;
+ 	   return ST_ErrCode;
+ 	}
+-	if(level <=0)
++	if(level < 0)
+ 		level = 0;
+-	else if(level >= 7)
++	else if(level > 7)
+ 		level = 7;
+ 	data.dataType = YWPANEL_DATATYPE_VFD;
+ 	data.data.vfdData.type = YWPANEL_VFD_SETTING;
+-	data.data.vfdData.setValue = level+0x88;
++	data.data.vfdData.setValue = level | 0x78;
+ 	if(YWPANEL_FP_SendData(&data) != true)
+ 	{
+ 		ywtrace_print(TRACE_ERROR,"SetBrightness wrong!!\n");
+ 		ST_ErrCode = -ETIME;
+ 	}
+ 	up(&vfd_sem);
+-	return ST_ErrCode ;
++	return ST_ErrCode;
++#endif
+ }
+ 
+-int YWPANEL_VFD_SetBrightness_Common(int level)
++static int YWPANEL_VFD_SetBrightness_Common(int level)
+ {
++#if 1 // Doesn't work currently. Disabled to avoid side effects. --martii
++	return 0;
++#else
+ 	int 		ST_ErrCode = 0;
+-	if(level <=0)
++	if(level < 0)
+ 		level = 0;
+-	else if(level >= 7)
++	else if(level > 7)
+ 		level = 7;
+ 
+ 	VFD_CS_CLR();
+-	YWPANEL_VFD_WR(0x88+level);
++	YWPANEL_VFD_WR(0x78 | level);
+ 	VFD_CS_SET();
+-	return ST_ErrCode ;
++	return ST_ErrCode;
++#endif
+ }
+ 
+-int YWPANEL_VFD_SetBrightness(int level)
++static int YWPANEL_VFD_SetBrightness_Unknown(int level)
+ {
+-	int ErrorCode = 0 ;
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_SetBrightness_StandBy(level);
+-			break;
+-
+-		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_SetBrightness_Common(level);
+-			break;
+-		default:
+-			ErrorCode = -ENODEV;
+-			break;
+-	}
+-	return ErrorCode;
++	return -ENODEV;
+ }
+ 
+-u8 YWPANEL_VFD_ScanKeyboard_StandBy(void)
++static u8 YWPANEL_VFD_ScanKeyboard_StandBy(void)
+ {
+ 	YWPANEL_FPData_t		data;
+ 
+@@ -2293,11 +2271,17 @@ u8 YWPANEL_VFD_ScanKeyboard_StandBy(void)
+ 	}
+ 	else
+ 	{
+-		printk("YWPANEL_FP_SendData FALSE\n");
++	//	printk("YWPANEL_FP_SendData FALSE\n");
+ 	}
+ 	return INVALID_KEY;
+ }
+-u8 YWPANEL_VFD_ScanKeyboard_Common(void)
++
++static u8 YWPANEL_VFD_ScanKeyboard_Unknown(void)
++{
++  return INVALID_KEY;
++}
++
++static u8 YWPANEL_VFD_ScanKeyboard_Common(void)
+ {
+ 	int   ST_ErrCode = 0;
+ 	u8 key_val[6] ;
+@@ -2305,14 +2289,12 @@ u8 YWPANEL_VFD_ScanKeyboard_Common(void)
+ 
+ 	VFD_CS_CLR();
+ 	ST_ErrCode = YWPANEL_VFD_SetMode(VFDREADMODE);
+-	if(ST_ErrCode != 0)
+-	{
++	if(ST_ErrCode != 0) {
+ 		PANEL_DEBUG(ST_ErrCode);
+ 		return INVALID_KEY;
+ 	}
+ 
+-	for (i = 0; i < 6; i++)
+-	{
++	for (i = 0; i < 6; i++) {
+ 		key_val[i] = YWPANEL_VFD_RD();
+ 	}
+ 	VFD_CS_SET();
+@@ -2330,75 +2312,49 @@ int YWPANEL_VFD_GetKeyValue(void)
+ {
+ 	int byte = 0;
+ 	int key_val = INVALID_KEY;
++
+ 	if (down_interruptible(&vfd_sem))
+-	{
+ 	   return key_val;
+-	}
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			byte = YWPANEL_VFD_ScanKeyboard_StandBy();
+-			break;
+ 
++	switch (YWVFD_INFO.vfd_type) {
++		case YWVFD_STAND_BY:
+ 		case YWVFD_COMMON:
+-			byte = YWPANEL_VFD_ScanKeyboard_Common();
++			byte = YWPANEL_VFD_ScanKeyboard();
+ 			break;
+ 		default:
+ 			break;
+ 	}
+-	switch(byte)
+-	{
++
++	switch(byte) {
+ 		case 0x01:
+-		{
+ 			key_val = EXIT_KEY;
+ 			break;
+-		}
+ 		case 0x02:
+-		{
+ 			key_val = LEFT_KEY;
+ 			break;
+-		}
+ 		case 0x04:
+-		{
+ 			key_val = UP_KEY;
+ 			break;
+-		}
+ 		case 0x08:
+-		{
+ 			key_val = SELECT_KEY;
+ 			break;
+-		}
+ 		case 0x10:
+-		{
+ 			key_val = RIGHT_KEY;
+ 			break;
+-		}
+ 		case 0x20:
+-		{
+ 			key_val = DOWN_KEY;
+ 			break;
+-		}
+ 		case 0x40:
+-		{
+ 			key_val = POWER_KEY;
+ 			break;
+-		}
+ 		case 0x80:
+-		{
+ 			key_val = MENU_KEY;
+ 			break;
+-		}
++		default:
++			PANEL_PRINT((TRACE_ERROR,"Key 0x%s is INVALID\n",byte));
+ 		case 0x00:
+-		{
+-			key_val = INVALID_KEY;
+-			break;
+-		}
+-		default :
+-		{
+-			PANEL_PRINT((TRACE_ERROR,"The key is INVALID or somekeys [0x%x]\n",byte));
+ 			key_val = INVALID_KEY;
+ 			break;
+-		}
+ 	}
+ 	up(&vfd_sem);
+ 	return key_val;
+@@ -2407,72 +2363,62 @@ int YWPANEL_VFD_GetKeyValue(void)
+ 
+ //lwj add begin  for LED panel
+ 
+-#define YWPANEL_MAX_LED_LEGNTH	4
+-#define YWPANEL_LOWER_START	10
+-#define YWPANEL_UPPER_START	36
+-
+-//   a
+-//f     b
+-//   g
+-//e     c
+-//   d      h
+-//a b c d e f g h
++//  aaaaa 
++// f     b
++// f     b
++//  ggggg
++// e     c
++// e     c
++//  ddddd   h
++//
++// a    b    c    d    e    f    g    h
++// 0x80 0x40 0x20 0x10 0x08 0x04 0x02 0x01
++#if 0
+ u8 YWPANEL_LedCharArray[]=
+ {
+-	0xfc,0x60,0xda,0xf2,0x66,0xb6,0xbe,0xe0,0xfe,0xf6,/* 0~9*/
+-	0xee,0x3e,0x1a,0x7a,0xde,0x8e,0xf6,0x2e,0x60,0x70,/*a~j*/
+-	0x0e,0x1c,0xec,0x2a,0x3a,0xce,0xe6,0x0a,0xb6,0x1e,/* k~t*/
+-	0x38,0x46,0x56,0x6e,0x76,0xda, /*u-z*/
+-	0xee,0x3e,0x9c,0x7a,0x9e,0x8e,0xf6,0x2e,0x60,0x70,/*A-J*/
+-	0x0e,0x1c,0xec,0x2a,0x3a,0xce,0xe6,0x0a,0xb6,0x1e,/*K-T*/
+-	0x38,0x46,0x56,0x6e,0x76,0xda/*U-Z*/
++	0xfc, 0x60, 0xda, 0xf2, 0x66, 0xb6, 0xbe, 0xe0, 0xfe, 0xf6,  /*0~9*/
++	0xee, 0x3e, 0x1a, 0x7a, 0xde, 0x8e, 0xf6, 0x2e, 0x60, 0x70, /*a~j*/
++	0x0e, 0x1c, 0xec, 0x2a, 0x3a, 0xce, 0xe6, 0x0a, 0xb6, 0x1e,  /*k~t*/
++	0x38, 0x46, 0x56, 0x6e, 0x76, 0xda,  /*u-z*/
++	0xee, 0x3e, 0x9c, 0x7a, 0x9e, 0x8e, 0xf6, 0x2e, 0x60, 0x70, /*A-J*/
++	0x0e, 0x1c, 0xec, 0x2a, 0x3a, 0xce, 0xe6, 0x0a, 0xb6, 0x1e, /*K-T*/
++	0x38, 0x46, 0x56, 0x6e, 0x76, 0xda/*U-Z*/
+ };	//d48zm modify
+-
+-u8  YWPANEL_LedDisplayData[YWPANEL_MAX_LED_LEGNTH];
+-
+-void YWPANEL_LEDSetString(const char *LEDStrBuf)
++#else
++// ... and about the same, ordered sequentially by ASCII code:
++static u8 ywpanel_led_map[0x80] =
+ {
+-	int             i;
+-	char		tempData;
+-	char 		c;
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x9c, 0xf0, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
++	0xfc, 0x60, 0xda, 0xf2, 0x66, 0xb6, 0xbe, 0xe0, 0xfe, 0xf6, 0x00, 0x00, 0x00, 0x12, 0x00, 0xca,
++	0x00, 0xee, 0x3e, 0x9c, 0x7a, 0x9e, 0x8e, 0xf6, 0x2e, 0x60, 0x70, 0x0e, 0x1c, 0xec, 0x2a, 0x3a,
++	0xce, 0xe6, 0x0a, 0xb6, 0x1e, 0x38, 0x46, 0x56, 0x6e, 0x76, 0xda, 0x9c, 0x00, 0xf0, 0x00, 0x10,
++	0x00, 0xee, 0x3e, 0x1a, 0x7a, 0xde, 0x8e, 0xf6, 0x2e, 0x60, 0x70, 0x0e, 0x1c, 0xec, 0x2a, 0x3a,
++	0xce, 0xe6, 0x0a, 0xb6, 0x1e, 0x38, 0x46, 0x56, 0x6e, 0x76, 0xda, 0x9c, 0x00, 0xf0, 0x00, 0x00
++};
++#endif
+ 
+-	u16 StrLen = strlen(LEDStrBuf);
+-	for(i=0; i<YWPANEL_MAX_LED_LEGNTH; i++)
+-	{
+-		c = LEDStrBuf[i];
++#define YWPANEL_MAX_LED_LENGTH 4
++static u8  YWPANEL_LedDisplayData[YWPANEL_MAX_LED_LENGTH];
+ 
+-		if(c>='0' && c<='9')
+-		{
+-			tempData = YWPANEL_LedCharArray[(LEDStrBuf[i]-'0')];
+-		}
+-		else if(c>='A' && c<='Z')
+-		{
+-			tempData = YWPANEL_LedCharArray[(c-'A'+YWPANEL_UPPER_START)];
+-		}
+-		else if(c>='a' && c<='z')
+-		{
+-			tempData = YWPANEL_LedCharArray[(c-'a'+YWPANEL_LOWER_START)];
+-		}
+-		else if(c == '-')
+-		{
+-			tempData = 0x02;
+-		}
+-		else
+-		{
+-			tempData = 0;
+-		}
++static void YWPANEL_LEDSetString(char *LEDStrBuf)
++{
++	int i, c, len = strlen(LEDStrBuf);
+ 
+-		if(i<StrLen)
+-		{
+-			YWPANEL_LedDisplayData[i] = tempData;
+-		}
+-		else
+-		{
+-			YWPANEL_LedDisplayData[i] = 0;
++	for(i = 0; i < YWPANEL_MAX_LED_LENGTH; i++) {
++		if(i < len) {
++			c = (int) LEDStrBuf[i];
++			if (!(c & 0x80)) {
++				YWPANEL_LedDisplayData[i] = ywpanel_led_map[c];
++				continue;
++			}
+ 		}
++		YWPANEL_LedDisplayData[i] = 0;
+     }
+ }
+-int YWPANEL_LEDDisplayString(void)
++
++static int YWPANEL_LEDDisplayString(void)
+ {
+ 	int ret = 0;
+ 	YWPANEL_FPData_t    data;
+@@ -2484,8 +2430,7 @@ int YWPANEL_LEDDisplayString(void)
+     data.data.ledData.led3 = YWPANEL_LedDisplayData[2];
+     data.data.ledData.led4 = YWPANEL_LedDisplayData[3];
+ 
+-    if(YWPANEL_FP_SendData(&data)!= true)
+-    {
++    if(YWPANEL_FP_SendData(&data)!= true) {
+ 		ret = -1;
+         ywtrace_print(TRACE_ERROR, "[ERROR][YWPANEL_LEDDisplayString] TIME OUT\n");
+     }
+@@ -2493,7 +2438,7 @@ int YWPANEL_LEDDisplayString(void)
+ 	return ret;
+ }
+ 
+-int YWVFD_LED_ShowString(const char *str)
++static int YWVFD_LED_ShowString(char *str)
+ {
+ 	YWPANEL_FP_ControlTimer(false);
+ 	YWPANEL_LEDSetString(str);
+@@ -2502,160 +2447,75 @@ int YWVFD_LED_ShowString(const char *str)
+ 
+ //lwj add end
+ 
+-int YWPANEL_VFD_ShowString_StandBy(char* str)
++static int YWPANEL_VFD_ShowString_StandBy(char* str)
+ {
+ 	int ST_ErrCode = 0 ;
+-	u8 lenth;
++	u8 length;
+ 	u8 i,c;
+ 
+ 	YWPANEL_FPData_t	data;
+ 
+-	if (down_interruptible(&vfd_sem))
+-	{
++	if (down_interruptible(&vfd_sem)) {
+ 	   ST_ErrCode =-EBUSY;
+ 	   return ST_ErrCode;
+ 	}
+-	lenth = strlen(str);
+-	if(lenth > 8)
+-	{
+-		ST_ErrCode = -EINVAL ;
+-		PANEL_DEBUG(ST_ErrCode);
+ 
+-		up(&vfd_sem);
+-		return ST_ErrCode;
+-	}
++	length = strlen(str);
+ 	data.dataType = YWPANEL_DATATYPE_VFD;
+-	for(i = 0; i < 8; i++)
+-	{
++	for(i = 0; i < 8; i++) {
+ 		data.data.vfdData.type = YWPANEL_VFD_DISPLAYSTRING;
+-		if(i <lenth)
+-		{
+-			c = str[i] ;
+ 
+-			if(c >= 65 && c <= 95)
+-				c = c - 65;
+-			else if(c >= 97 && c <= 122)
+-				c = c - 97;
+-			else if(c >= 42 && c <= 57)
+-				c = c - 11;
+-			else if(c == 32)
+-				c = 47;
+-			else
+-			{
+-				c = 47;
+-			}
+-			VfdSegAddr[i+1].CurrValue1 = CharLib[c][0] ;
+-			VfdSegAddr[i+1].CurrValue2 = CharLib[c][1] ;
+-		}
++		if (i < length && !(str[i] & 0x80))
++			c = ywpanel_vfd_map[(int)str[i]];
+ 		else
+-		{
+-			VfdSegAddr[i+1].CurrValue1 = 0;
+-			VfdSegAddr[i+1].CurrValue2 = 0;
+-		}
++			c = 47;
++
++		VfdSegAddr[i+1].CurrValue1 = CharLib[c][0] ;
++		VfdSegAddr[i+1].CurrValue2 = CharLib[c][1] ;
++
+ 		data.data.vfdData.address[2*i] = VfdSegAddr[i+1].Segaddr1;
+ 		data.data.vfdData.DisplayValue[2*i] = VfdSegAddr[i+1].CurrValue1;
+ 		data.data.vfdData.address[2*i+1] = VfdSegAddr[i+1].Segaddr2;
+ 		data.data.vfdData.DisplayValue[2*i+1] = VfdSegAddr[i+1].CurrValue2;
+ 	}
+ 
+-	if(YWPANEL_FP_SendData(&data) != true)
+-	{
+-		PANEL_DEBUG("VFD show stings is wrong!!\n");
++	if(YWPANEL_FP_SendData(&data) != true) {
++		PANEL_DEBUG("VFD show strings is wrong!!\n");
+ 		ST_ErrCode = -ETIME;
+ 	}
+ 	up(&vfd_sem);
+ 	return ST_ErrCode;
+  }
+ 
+-int YWPANEL_VFD_ShowString_Common(char* str)
++static int YWPANEL_VFD_ShowString_Common(char* str)
+ {
+ 	int ST_ErrCode = 0 ;
+-	u8 lenth;
++	u8 length;
+ 	u8 i;
+ 
+-	if (down_interruptible(&vfd_sem))
+-	{
++	if (down_interruptible(&vfd_sem)) {
+ 	   ST_ErrCode =-EBUSY;
+ 	   return ST_ErrCode;
+ 	}
+-	lenth = strlen(str);
+-	if(lenth > 8)
+-	{
+-		ST_ErrCode = -EINVAL ;
+-		PANEL_DEBUG(ST_ErrCode);
+-		return ST_ErrCode;
+-	}
+-	for(i = 0; i < 8; i++)
+-	{
+-		if(i < lenth)
+-		{
++	length = strlen(str);
++
++	for(i = 0; i < 8; i++) {
++		if(i < length) {
+ 			YWPANEL_VFD_DrawChar(*str, i + 1);
+ 			str++;
+-		}
+-		else
+-		{
++		} else
+ 			YWPANEL_VFD_DrawChar(' ', i + 1);
+-		}
+ 	}
+ 	up(&vfd_sem);
+ 	return ST_ErrCode;
+  }
+ 
+-//lwj modify begin
+-#if 0
+-int YWPANEL_VFD_ShowString(char* str)
++static int YWPANEL_VFD_ShowString_Unknown(char* str)
+ {
+-	int ErrorCode = 0 ;
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_ShowString_StandBy(str);
+-			break;
+-
+-		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_ShowString_Common(str);
+-			break;
+-		default:
+-			ErrorCode = -ENODEV;
+-			break;
+-	}
+-	return ErrorCode;
+-}
+-#else
+-int YWPANEL_VFD_ShowString(char* str)
+-{
+-	int ret = 0;
+-
+-	if(YWVFD_INFO.vfd_type == YWVFD_STAND_BY)
+-	{
+-		switch(panel_disp_type)
+-		{
+-			case YWPANEL_FP_DISPTYPE_VFD:
+-                		ywtrace_print(TRACE_INFO, "YWPANEL_VFD_ShowString_StandBy ====\n");
+-				ret = YWPANEL_VFD_ShowString_StandBy(str);
+-				break;
+-
+-			case YWPANEL_FP_DISPTYPE_LED:
+-            		    	ywtrace_print(TRACE_INFO, "YWVFD_LED_ShowString ====\n");
+-				ret = YWVFD_LED_ShowString(str);
+-				break;
+-
+-			default:
+-				ret = -1;
+-				break;
+-		}
+-	}
+-	else
+-	{
+-		ret = YWPANEL_VFD_ShowString_Common(str);
+-	}
+-
+-	return ret;
++	return -ENODEV;
+ }
+-#endif
+-//lwj remove end
+ 
+-int YWPANEL_VFD_ShowIco_StandBy(LogNum_T log_num,int log_stat)
++static int YWPANEL_VFD_ShowIco_StandBy(LogNum_T log_num,int log_stat)
+ {
+ 	int ST_ErrCode = 0 ;
+ 	int dig_num = 0,seg_num = 0;
+@@ -2666,63 +2526,48 @@ int YWPANEL_VFD_ShowIco_StandBy(LogNum_T log_num,int log_stat)
+ 	data.dataType = YWPANEL_DATATYPE_VFD;
+ 
+ 	if (down_interruptible(&vfd_sem))
+-	{
+-	   ST_ErrCode =-EBUSY;
+-	   return ST_ErrCode;
+-	}
++	   return -EBUSY;
+ 
+-	if(log_num >= LogNum_Max)
+-	{
+-		ST_ErrCode = -EINVAL ;
++	if(log_num >= LogNum_Max) {
+ 		PANEL_DEBUG(ST_ErrCode);
+-
+ 		up(&vfd_sem);
+-		return ST_ErrCode;
++		return -EINVAL;
+ 	}
++
+ 	dig_num = log_num/16;
+ 	seg_num = log_num%16;
+ 	seg_part = seg_num/9;
+ 
+ 	data.data.vfdData.type = YWPANEL_VFD_DISPLAY;
+ 
+-	if(seg_part == SEGNUM1)
+-	{
++	if(seg_part == SEGNUM1) {
+ 		seg_offset = 0x01 << ((seg_num%9) - 1);
+ 		data.data.vfdData.address[0] = VfdSegAddr[dig_num].Segaddr1;
+ 		if(log_stat == LOG_ON)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue1 |= seg_offset;
+-		}
+ 		if(log_stat == LOG_OFF)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue1 &= (0xFF-seg_offset);
+-		}
+ 		data.data.vfdData.DisplayValue[0] = VfdSegAddr[dig_num].CurrValue1 ;
+ 	}
+-	else if(seg_part == SEGNUM2)
+-	{
++	else if(seg_part == SEGNUM2) {
+ 		seg_offset = 0x01 << ((seg_num%8) - 1);
+ 		data.data.vfdData.address[0] = VfdSegAddr[dig_num].Segaddr2;
+ 		if(log_stat == LOG_ON)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue2 |= seg_offset;
+-		}
+ 		if(log_stat == LOG_OFF)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue2 &= (0xFF-seg_offset);
+-		}
+ 		data.data.vfdData.DisplayValue[0] = VfdSegAddr[dig_num].CurrValue2 ;
+ 	}
+-   if(YWPANEL_FP_SendData(&data) != true)
+-   {
++	if(YWPANEL_FP_SendData(&data) != true) {
+ 		ywtrace_print(TRACE_ERROR,"Show a Ico wrong!!\n");
+ 		ST_ErrCode = -ETIME;
+-   }
++	}
++
+ 	up(&vfd_sem);
+ 	return ST_ErrCode ;
+ }
+ 
+-int YWPANEL_VFD_ShowIco_Common(LogNum_T log_num,int log_stat)
++static int YWPANEL_VFD_ShowIco_Common(LogNum_T log_num,int log_stat)
+ {
+ 	int ST_ErrCode = 0 ;
+ 	int dig_num = 0,seg_num = 0;
+@@ -2731,48 +2576,34 @@ int YWPANEL_VFD_ShowIco_Common(LogNum_T log_num,int log_stat)
+ 	u8	addr = 0,val = 0;
+ 
+ 	if (down_interruptible(&vfd_sem))
+-	{
+-	   ST_ErrCode =-EBUSY;
+-	   return ST_ErrCode;
+-	}
++		return -EBUSY;
+ 
+-	if(log_num >= LogNum_Max)
+-	{
+-		ST_ErrCode = -EINVAL ;
++	if(log_num >= LogNum_Max) {
+ 		PANEL_DEBUG(ST_ErrCode);
+-		return ST_ErrCode;
++		up(&vfd_sem);
++		return -EINVAL;
+ 	}
+ 	dig_num = log_num/16;
+ 	seg_num = log_num%16;
+ 	seg_part = seg_num/9;
+ 
+ 	VFD_CS_CLR();
+-	if(seg_part == SEGNUM1)
+-	{
++	if(seg_part == SEGNUM1) {
+ 		seg_offset = 0x01 << ((seg_num%9) - 1);
+ 		addr = VfdSegAddr[dig_num].Segaddr1;
+ 		if(log_stat == LOG_ON)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue1 |= seg_offset;
+-		}
+ 		if(log_stat == LOG_OFF)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue1 &= (0xFF-seg_offset);
+-		}
+ 		val = VfdSegAddr[dig_num].CurrValue1 ;
+ 	}
+-	else if(seg_part == SEGNUM2)
+-	{
++	else if(seg_part == SEGNUM2) {
+ 		seg_offset = 0x01 << ((seg_num%8) - 1);
+ 		addr = VfdSegAddr[dig_num].Segaddr2;
+ 		if(log_stat == LOG_ON)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue2 |= seg_offset;
+-		}
+ 		if(log_stat == LOG_OFF)
+-		{
+ 		   VfdSegAddr[dig_num].CurrValue2 &= (0xFF-seg_offset);
+-		}
+ 		val = VfdSegAddr[dig_num].CurrValue2 ;
+ 	}
+ 	ST_ErrCode = YWPANEL_VFD_WR(addr);
+@@ -2783,27 +2614,13 @@ int YWPANEL_VFD_ShowIco_Common(LogNum_T log_num,int log_stat)
+ 	return ST_ErrCode ;
+ }
+ 
+-int YWPANEL_VFD_ShowIco(LogNum_T log_num,int log_stat)
++static int YWPANEL_VFD_ShowIco_Unknown(LogNum_T log_num,int log_stat)
+ {
+-	int ErrorCode = 0 ;
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_ShowIco_StandBy(log_num,log_stat);
+-			break;
+-
+-		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_ShowIco_Common(log_num,log_stat);
+-			break;
+-		default:
+-			ErrorCode = -ENODEV;
+-			break;
+-	}
+-	return ErrorCode;
++	return -ENODEV;
+ }
+ 
+ #ifdef CONFIG_CPU_SUBTYPE_STX7105
+-int YWPANEL_VFD_DETECT(void)
++static int YWPANEL_VFD_DETECT(void)
+ {
+ 	int 	ret = 0;
+ 	softi2c_init();
+@@ -2820,14 +2637,14 @@ int YWPANEL_VFD_DETECT(void)
+ 	return ret;
+ }
+ #else
+-int YWPANEL_VFD_DETECT(void)
++static int YWPANEL_VFD_DETECT(void)
+ {
+ 	int 	ret = 0;
+ 	u8	localBuff[2] = {0xaa, 0xaa};
+ 
+ 	struct i2c_msg i2c_msg = { .addr = I2C_BUS_ADD, .flags = 0, .buf = localBuff, .len = 2 };
+ 
+-	YWVFD_INFO.vfd_type = YWVFD_UNKNOW;
++	YWVFD_INFO.vfd_type = YWVFD_UNKNOWN;
+ 	//printk("%s:%d\n", __FUNCTION__, __LINE__);
+ 	panel_i2c_adapter = i2c_get_adapter(I2C_BUS_NUM);
+ 	if(NULL == panel_i2c_adapter)
+@@ -2840,21 +2657,19 @@ int YWPANEL_VFD_DETECT(void)
+ 	//printk("%s:%d\n", __FUNCTION__, __LINE__);
+ 	ret = i2c_transfer(panel_i2c_adapter, &i2c_msg, 1);
+ 	if(ret == 1)
+-	{
+ 		YWVFD_INFO.vfd_type = YWVFD_STAND_BY;
+-		ret = 0;
+-	}
+ 	else
+-	{
+ 		YWVFD_INFO.vfd_type = YWVFD_COMMON;
+-		ret = -EINVAL;
+-	}
+ 
+ 	return 0;
+ 
+ }
+ #endif
+ 
++#if 0
++// Not used anyway, and dangerous due to lack of bounds checking
++// --martii
++
+ int YWPANEL_VFD_GetRevision(char * version)
+ {
+ 	int ErrorCode = 0 ;
+@@ -2864,8 +2679,7 @@ int YWPANEL_VFD_GetRevision(char * version)
+ 	{
+ 		case YWVFD_STAND_BY:
+ 		{
+-			switch(panel_disp_type)
+-			{
++			switch(panel_disp_type) {
+ 			case YWPANEL_FP_DISPTYPE_VFD:
+ 				DispType = "VFD";
+ 				break;
+@@ -2881,11 +2695,11 @@ int YWPANEL_VFD_GetRevision(char * version)
+ 			default:
+ 				break;
+ 			}
+-			sprintf(version,"%s Type:%s-%s",Revision,"StandBy", DispType);
++			sprintf(version, "%s Type:StandBy-%s", Revision, DispType);
+ 			break;
+ 		}
+ 		case YWVFD_COMMON:
+-			sprintf(version,"%s Type:%s",Revision,"Common");
++			sprintf(version, "%s Type:Common", Revision);
+ 			break;
+ 		default:
+ 			ErrorCode = -ENODEV;
+@@ -2893,8 +2707,14 @@ int YWPANEL_VFD_GetRevision(char * version)
+ 	}
+ 	return ErrorCode;
+ }
++#endif
++
++static int YWPANEL_VFD_Init_Unknown(void)
++{
++	return 0;
++}
+ 
+-int YWPANEL_VFD_Init_StandBy(void)
++static int YWPANEL_VFD_Init_StandBy(void)
+ {
+ 	int ErrorCode = 0 ;
+ 	init_MUTEX(&vfd_sem);
+@@ -2906,7 +2726,7 @@ int YWPANEL_VFD_Init_StandBy(void)
+ 	return ErrorCode;
+  }
+ 
+-int YWPANEL_VFD_Init_Common(void)
++static int YWPANEL_VFD_Init_Common(void)
+ {
+ 	int ErrorCode = 0 ;
+ 
+@@ -2918,7 +2738,7 @@ int YWPANEL_VFD_Init_Common(void)
+ 	pio_cs  = stpio_request_pin(3,5, "pio_cs",  STPIO_OUT);
+ 	if (!pio_sda || !pio_scl || !pio_cs )
+ 	{
+-	   return ErrorCode;
++	   return ErrorCode; // FIXME -- should't that return -ENODEV ?  --martii
+ 	}
+ 	stpio_set_pin(pio_scl, 1);
+ 	stpio_set_pin(pio_cs,  1);
+@@ -2936,89 +2756,121 @@ int YWPANEL_VFD_Init_Common(void)
+ 	return ErrorCode;
+  }
+ 
++static int  YWPANEL_VFD_Term_Unknown(void);
++static int  YWPANEL_VFD_Term_StandBy(void);
++static int  YWPANEL_VFD_Term_Common(void);
++
++int (*YWPANEL_VFD_Term)(void);
++int (*YWPANEL_VFD_Initialize)(void);
++int (*YWPANEL_VFD_ShowIco)(LogNum_T, int);
++int (*YWPANEL_VFD_ShowTime)(u8 hh,u8 mm);
++int (*YWPANEL_VFD_ShowTimeOff)(void);
++int (*YWPANEL_VFD_SetBrightness)(int);
++u8 (*YWPANEL_VFD_ScanKeyboard)(void);
++int (*YWPANEL_VFD_ShowString)(char *);
++
++int YWPANEL_width = 8;
++
+ int YWPANEL_VFD_Init(void)
+ {
+-	int ErrorCode = 0 ;
++	int ErrorCode = -ENODEV;
++
+ 	YWPANEL_Version_t panel_version;
++	YWPANEL_VFD_Initialize = YWPANEL_VFD_Init_Unknown;
++	YWPANEL_VFD_Term = YWPANEL_VFD_Term_Unknown;
++	YWPANEL_VFD_ShowIco = YWPANEL_VFD_ShowIco_Unknown;
++	YWPANEL_VFD_ShowTime = YWPANEL_VFD_ShowTime_Unknown;
++	YWPANEL_VFD_ShowTimeOff = YWPANEL_VFD_ShowTimeOff_Unknown;
++	YWPANEL_VFD_SetBrightness = YWPANEL_VFD_SetBrightness_Unknown;
++	YWPANEL_VFD_ScanKeyboard = YWPANEL_VFD_ScanKeyboard_Unknown;
++	YWPANEL_VFD_ShowString = YWPANEL_VFD_ShowString_Unknown;
+ 
+-	if (YWPANEL_VFD_DETECT() != 0)
+-	{
++	if (YWPANEL_VFD_DETECT() != 0) {
+ 		ywtrace_print(TRACE_ERROR, "vfd detect failed\n");
+-		return 0;
++		return ErrorCode;
+ 	}
+ 
+-	//printk("%s:%d\n", __FUNCTION__, __LINE__);
+-
++	printk("VfdType = %d\n", YWVFD_INFO.vfd_type);
+ 
+-	switch (YWVFD_INFO.vfd_type)
+-	{
++	switch (YWVFD_INFO.vfd_type) {
+ 		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_Init_StandBy();
++			YWPANEL_VFD_Initialize = YWPANEL_VFD_Init_StandBy;
++			YWPANEL_VFD_Term = YWPANEL_VFD_Term_StandBy;
++			YWPANEL_VFD_ShowIco = YWPANEL_VFD_ShowIco_StandBy;
++			YWPANEL_VFD_ShowTime = YWPANEL_VFD_ShowTime_StandBy;
++			YWPANEL_VFD_ShowTimeOff = YWPANEL_VFD_ShowTimeOff_StandBy;
++			YWPANEL_VFD_SetBrightness = YWPANEL_VFD_SetBrightness_StandBy;
++			YWPANEL_VFD_ScanKeyboard = YWPANEL_VFD_ScanKeyboard_StandBy;
++			YWPANEL_VFD_ShowString = YWPANEL_VFD_ShowString_StandBy;
+ 			break;
+-
+ 		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_Init_Common();
++			YWPANEL_VFD_Initialize = YWPANEL_VFD_Init_Common;
++			YWPANEL_VFD_Term = YWPANEL_VFD_Term_Common;
++			YWPANEL_VFD_ShowIco = YWPANEL_VFD_ShowIco_Common;
++			YWPANEL_VFD_ShowTime = YWPANEL_VFD_ShowTime_Common;
++			YWPANEL_VFD_ShowTimeOff = YWPANEL_VFD_ShowTimeOff_Common;
++			YWPANEL_VFD_SetBrightness = YWPANEL_VFD_SetBrightness_Common;
++			YWPANEL_VFD_ScanKeyboard = YWPANEL_VFD_ScanKeyboard_Common;
++			YWPANEL_VFD_ShowString = YWPANEL_VFD_ShowString_Common;
+ 			break;
+ 		default:
+-			ErrorCode = -ENODEV;
+-			break;
++			return ErrorCode;
+ 	}
+ 
+-	//printk("%s:%d\n", __FUNCTION__, __LINE__);
++	ErrorCode = YWPANEL_VFD_Initialize();
+ 
+ 	memset(&panel_version, 0, sizeof(YWPANEL_Version_t));
+ 
+-	if(YWPANEL_FP_GetVersion(&panel_version))
+-	{
++	if(YWPANEL_FP_GetVersion(&panel_version)) {
+ 		panel_disp_type = panel_version.DisplayInfo;
+ 		if(panel_disp_type<YWPANEL_FP_DISPTYPE_UNKNOWN || panel_disp_type>YWPANEL_FP_DISPTYPE_LBD)
+-		{
+ 			panel_disp_type = YWPANEL_FP_DISPTYPE_VFD;
++
++		switch(panel_disp_type) {
++			case YWPANEL_FP_DISPTYPE_VFD:
++				YWPANEL_VFD_ShowString = YWPANEL_VFD_ShowString_StandBy;
++				break;
++			case YWPANEL_FP_DISPTYPE_LED:
++				YWPANEL_width = 4;
++				YWPANEL_VFD_ShowString = YWVFD_LED_ShowString;
++				break;
++			default:
++				break;
+ 		}
+-	}
+-	else
+-	{
+-		ErrorCode = -ENODEV;
+-	}
+ 
+-	printk("CpuType = %d\n", panel_version.CpuType);
+-	printk("DisplayInfo = %d\n", panel_version.DisplayInfo);
+-	printk("scankeyNum = %d\n", panel_version.scankeyNum);
+-	printk("swMajorVersion = %d\n", panel_version.swMajorVersion);
+-	printk("swSubVersion = %d\n", panel_version.swSubVersion);
++		printk("CpuType = %d\n", panel_version.CpuType);
++		printk("DisplayInfo = %d\n", panel_version.DisplayInfo);
++		printk("scankeyNum = %d\n", panel_version.scankeyNum);
++		printk("swMajorVersion = %d\n", panel_version.swMajorVersion);
++		printk("swSubVersion = %d\n", panel_version.swSubVersion);
++	} else
++		ErrorCode = -ENODEV;
+ 
+ 	return ErrorCode;
+ }
+ 
+-int  YWPANEL_VFD_Term_StandBy(void)
+-{
+-	return 0;
++static int YWPANEL_VFD_Term_Unknown(void){
++	return -ENODEV;
+ }
+-int  YWPANEL_VFD_Term_Common(void)
++
++static int  YWPANEL_VFD_Term_StandBy(void)
+ {
++#ifdef CONFIG_CPU_SUBTYPE_STX7105
++	softi2c_cleanup();
++#else
++	i2c_put_adapter(panel_i2c_adapter);
++#endif
+ 	return 0;
+ }
+ 
+-int YWPANEL_VFD_Term(void)
++static int  YWPANEL_VFD_Term_Common(void)
+ {
+-	int ErrorCode = 0 ;
+-	switch (YWVFD_INFO.vfd_type)
+-	{
+-		case YWVFD_STAND_BY:
+-			ErrorCode = YWPANEL_VFD_Term_StandBy();
+-			break;
+-
+-		case YWVFD_COMMON:
+-			ErrorCode = YWPANEL_VFD_Term_Common();
+-			break;
+-		default:
+-			ErrorCode = -ENODEV;
+-			break;
+-	}
+ #ifdef CONFIG_CPU_SUBTYPE_STX7105
+ 	softi2c_cleanup();
+ #else
+ 	i2c_put_adapter(panel_i2c_adapter);
+ #endif
+-	return ErrorCode;
++	return 0;
+ }
++
++// vim:ts=4
+-- 
+1.7.7
+
