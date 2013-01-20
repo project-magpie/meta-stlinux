@@ -16,6 +16,11 @@ SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 SRC_URI = " \
 	git://gitorious.org/neutrino-mp/tdt-driver.git \
         file://0001-added-pm_power_off-registration.patch;patch=1 \
+        file://0002-aotom-fix-include-file.patch;patch=1 \
+        file://0003-aotom-add-VFDGETVERSION-ioctl-to-find-FP-type.patch;patch=1 \
+        file://0004-aotom-improve-scrolling-text-code.patch;patch=1 \
+        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch;patch=1 \
+        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch;patch=1 \
         file://COPYING \
         file://aotom_udev.rules \
 	file://${MACHINE}/tdt-driver_load.conf \

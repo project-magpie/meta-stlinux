@@ -4,7 +4,7 @@ DESCRIPTION = "Driver modules from TDT"
 
 MAINTAINER = "Christian Ege (graugans) <ka@gmail.com>"
 
-PR = "r18"
+PR = "r19"
 
 module_autoload_aotom = "aotom"
 module_autoload_e2_proc ="e2_proc"
