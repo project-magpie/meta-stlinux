@@ -1,4 +1,4 @@
-INCPR = "r2"
+INCPR = "r3"
 
 SRC_URI = "http://prdownloads.sourceforge.net/lirc/lirc-${PV}.tar.bz2"
 SRC_URI[md5sum] = "b232aef26f23fe33ea8305d276637086"

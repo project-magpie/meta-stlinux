@@ -34,6 +34,7 @@ SRC_URI_append_spark += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
                          file://lircd_spark.conf \
                          file://lircd_spark.init \
                          file://lircd_spark.conf.09_00_0A \
+                         file://98-lirc_spark.rules \
 "
 
 INITSCRIPT_PACKAGES = "lirc lirc-exec"
@@ -63,6 +64,8 @@ do_install_append_nslu2() {
 
 do_install_append_spark() {
 
+	install -d ${D}${sysconfdir}/udev/rules.d/
+        install -m 0644 ${WORKDIR}/98-lirc_spark.rules ${D}${sysconfdir}/udev/rules.d/98-lirc.rules
 	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
         install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_0A ${D}${sysconfdir}/lircd.conf.09_00_0A
         install -m 0755 ${WORKDIR}/lircd_spark.init ${D}${sysconfdir}/init.d/lircd

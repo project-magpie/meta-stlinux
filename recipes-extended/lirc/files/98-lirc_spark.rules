@@ -1,0 +1,3 @@
+# This udev rule creates a Link to the /dev/input/nevis_ir this is needed for the libstb-hal 
+# to work correctly 
+KERNELS=="input*", SUBSYSTEMS=="input", ATTRS{name}=="lircd", SYMLINK+="input/nevis_ir"
