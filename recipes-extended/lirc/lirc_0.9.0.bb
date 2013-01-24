@@ -16,6 +16,9 @@ RRECOMMENDS_${PN}_spark += "kernel-module-uinput"
 
 PR = "${INCPR}.0"
 
+
+CFLAGS_append = " -DUINPUT_NEUTRINO_HACK "
+
 EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER}"
 EXTRA_OECONF_spark += "--without-x --with-driver=userspace"
 
@@ -34,6 +37,7 @@ SRC_URI_append_spark += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
                          file://lircd_spark.conf \
                          file://lircd_spark.init \
                          file://lircd_spark.conf.09_00_0A \
+                         file://lircd_spark.conf.09_00_07 \
                          file://98-lirc_spark.rules \
 "
 
@@ -68,6 +72,7 @@ do_install_append_spark() {
         install -m 0644 ${WORKDIR}/98-lirc_spark.rules ${D}${sysconfdir}/udev/rules.d/98-lirc.rules
 	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
         install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_0A ${D}${sysconfdir}/lircd.conf.09_00_0A
+        install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_07 ${D}${sysconfdir}/lircd.conf.09_00_07
         install -m 0755 ${WORKDIR}/lircd_spark.init ${D}${sysconfdir}/init.d/lircd
         rm -rf  ${D}/bin/pronto2lirc 
 }
