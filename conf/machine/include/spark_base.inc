@@ -5,7 +5,6 @@ TARGET_ARCH = "sh4"
 STLINUX_SH_UPD_SRPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/SRPMS"
 STLINUX_SH_UPD_RPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/sh4/"
 
-STLINUX_SH_KERNEL_VER = "2.6.32.46-45"
 
 PREFERRED_VERSION_linux-${MACHINE} = "2.6.32.57-stm24-0210"
 PREFERRED_VERSION_linux-libc-headers = "2.6.32"
