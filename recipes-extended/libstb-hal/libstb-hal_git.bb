@@ -10,7 +10,11 @@ DEPENDS = "tdt-driver libass ffmpeg"
 
 SRCREV = "393f5452f46bd370c8c191ba6c9b8710b3b653bd"
 PV = "0.0+git${SRCPV}"
-PR = "r4"
+PR = "r5"
+
+PACKAGES += "pic2m2v spark-fp"
+
+RDEPENDS_pic2m2v = "ffmpeg"
 
 SRC_URI = " \
             git://gitorious.org/neutrino-hd/libstb-hal.git;protocol=git \
@@ -47,14 +51,23 @@ do_install_append () {
 	install -d ${D}/${includedir}/libstbhal/common
 	install -d ${D}/${includedir}/libstbhal/libspark
 	install -d ${D}/${includedir}/libstbhal/libspark/td-compat
+	install -d ${D}/${bindir}
 
 	cp ${S}/include/*.h ${D}/${includedir}/libstbhal/libstbhal
 	cp ${S}/common/*.h ${D}/${includedir}/libstbhal/common
 	cp ${S}/libspark/*.h ${D}/${includedir}/libstbhal/libspark
-	cp ${S}/libspark/td-compat/*.h ${D}/${includedir}/libstbhal/libspark/td-compat 
+	cp ${S}/libspark/td-compat/*.h ${D}/${includedir}/libstbhal/libspark/td-compat
+	install -m755 ${S}/tools/pic2m2v ${D}/${bindir}
+	install -m755 ${S}/tools/spark_fp ${D}/${bindir}
 }
+
+FILES_${PN} = "/usr/bin/libstb-hal-test /usr/bin/meta /usr/bin/eplayer3"
+
 
 FILES_${PN}-dev += "${includedir}/libstbhal/* \
                     ${includedir}/libspark/* \
                     ${includedir}/libspark/td-compat/* \
 "
+
+FILES_pic2m2v = "${bindir}/pic2m2v"
+FILES_spark-fp = "${bindir}/spark_fp"
