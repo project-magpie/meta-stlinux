@@ -4,7 +4,7 @@ DESCRIPTION = "Driver modules from TDT"
 
 MAINTAINER = "Christian Ege (graugans) <ka@gmail.com>"
 
-PR = "r19"
+PR = "r20"
 
 module_autoload_aotom = "aotom"
 module_autoload_e2_proc ="e2_proc"
@@ -37,7 +37,7 @@ module_autoload_bpamem = "bpamem"
 module_autoload_smartcard = "smartcard"
 
 
-module_conf_stmfb = "options stmfb display0=1280x720-32@50:8m:pal:yuv:yuv"
+module_conf_stmfb = "options stmfb display0=1280x720-32@50:12m:pal:yuv:yuv"
 module_conf_embxmailbox = "options embxmailbox mailbox0=0xfe211000:136:set2 mailbox1=0xfe212000:0"
 module_conf_embxshm = "options embxshm mailbox0=shm:0:7:0x60000000:0:256:256:0:512:0x40000000:0x10000000"
 module_conf_mme_host = "options mme_host transport0=shm"
