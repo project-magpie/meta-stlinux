@@ -6,6 +6,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
 inherit kernel siteinfo
 
+INC_PR = "r10"
+
 RPSRC = "http://www.rpsys.net/openzaurus/patches/archive"
 
 # Quirk for udev greater or equal 141
@@ -22,109 +24,30 @@ CMDLINE_append = " ${CMDLINE_DEBUG} "
 # Logo resolution (qvga, vga, ...) is machine-specific.
 LOGO_SIZE ?= "."
 
-do_configure_prepend() {
+S = "${WORKDIR}/git"
 
-        # Rename getline in ./scripts/unifdef.c
-        # Kernels up to 2.6.29 are currently failing to build unifdef.c,
-        # clashing with exposed getline() from <stdio.h>
-        # see https://patchwork.kernel.org/patch/11166/
-        # committed in 2.6.29 (commit d15bd1067b1fcb2b7250d22bc0c7c7fea0b759f7)
-
-        sed -i -e 's/getline/parseline/g' ${S}/scripts/unifdef.c
-
-
-        echo "" > ${S}/.config
-
-
-        echo "CONFIG_CMDLINE=\"${CMDLINE}\"" >> ${S}/.config
-
-       # sed -e '/CONFIG_CMDLINE=/d' \
-       #     -e '/CONFIG_LOCALVERSION/d' \
-       #     -e '/CONFIG_LOCALVERSION_AUTO/d' \
-       #    < '${WORKDIR}/defconfig' >>'${S}/.config'
-
-        echo 'CONFIG_LOCALVERSION=""' >>${S}/.config
-        echo '# CONFIG_LOCALVERSION_AUTO is not set' >>${S}/.config
-
-        #
-        # Udev quirks
-        #
-
-        # Newer versions of udev mandate that sysfs doesn't have deprecated entries
-        if [ "${UDEV_GE_141}" = "1" ] ; then
-            sed -e /CONFIG_SYSFS_DEPRECATED/d \
-                -e /CONFIG_SYSFS_DEPRECATED_V2/d \
-                -e /CONFIG_HOTPLUG/d \
-                -e /CONFIG_UEVENT_HELPER_PATH/d \
-                -e /CONFIG_UNIX/d \
-                -e /CONFIG_SYSFS/d \
-                -e /CONFIG_PROC_FS/d \
-                -e /CONFIG_TMPFS/d \
-                -e /CONFIG_INOTIFY_USER/d \
-                -e /CONFIG_SIGNALFD/d \
-                -e /CONFIG_TMPFS_POSIX_ACL/d \
-                -e /CONFIG_BLK_DEV_BSG/d \
-                -i '${S}/.config'
-
-            echo '# CONFIG_SYSFS_DEPRECATED is not set' >> ${S}/.config
-            echo '# CONFIG_SYSFS_DEPRECATED_V2 is not set' >> ${S}/.config
-            echo 'CONFIG_HOTPLUG=y' >> ${S}/.config
-            echo 'CONFIG_UEVENT_HELPER_PATH=""' >> ${S}/.config
-            echo 'CONFIG_UNIX=y' >> ${S}/.config
-            echo 'CONFIG_SYSFS=y' >> ${S}/.config
-            echo 'CONFIG_PROC_FS=y' >> ${S}/.config
-            echo 'CONFIG_TMPFS=y' >> ${S}/.config
-            echo 'CONFIG_INOTIFY_USER=y' >> ${S}/.config
-            echo 'CONFIG_SIGNALFD=y' >> ${S}/.config
-            echo 'CONFIG_TMPFS_POSIX_ACL=y' >> ${S}/.config
-            echo 'CONFIG_BLK_DEV_BSG=y' >> ${S}/.config
-            echo 'CONFIG_DEVTMPFS=y' >> ${S}/.config
-            echo 'CONFIG_DEVTMPFS_MOUNT=y' >> ${S}/.config
-        fi
-
-        # Newer inits like systemd need cgroup support
-        if [ "${KERNEL_ENABLE_CGROUPS}" = "1" ] ; then
-            sed -e /CONFIG_CGROUP_SCHED/d \
-                -e /CONFIG_CGROUPS/d \
-                -i '${S}/.config'
-            
-            echo 'CONFIG_CGROUP_SCHED=y' >> ${S}/.config
-            echo 'CONFIG_CGROUPS=y' >> ${S}/.config
-            echo 'CONFIG_CGROUP_NS=y' >> ${S}/.config
-            echo 'CONFIG_CGROUP_FREEZER=y' >> ${S}/.config
-            echo 'CONFIG_CGROUP_DEVICE=y' >> ${S}/.config
-            echo 'CONFIG_CPUSETS=y' >> ${S}/.config
-            echo 'CONFIG_PROC_PID_CPUSET=y' >> ${S}/.config
-            echo 'CONFIG_CGROUP_CPUACCT=y' >> ${S}/.config
-            echo 'CONFIG_RESOURCE_COUNTERS=y' >> ${S}/.config
-        fi
-
-        #
-        # root-over-nfs-over-usb-eth support. Limited, but should cover some cases.
-        # Enable this by setting a proper CMDLINE_NFSROOT_USB.
-        #
-        if [ ! -z "${CMDLINE_NFSROOT_USB}" ]; then
-                oenote "Configuring the kernel for root-over-nfs-over-usb-eth with CMDLINE ${CMDLINE_NFSROOT_USB}"
-                sed -e '/CONFIG_INET/d' \
-                    -e '/CONFIG_IP_PNP=/d' \
-                    -e '/CONFIG_USB_GADGET=/d' \
-                    -e '/CONFIG_USB_GADGET_SELECTED=/d' \
-                    -e '/CONFIG_USB_ETH=/d' \
-                    -e '/CONFIG_NFS_FS=/d' \
-                    -e '/CONFIG_ROOT_NFS=/d' \
-                    -e '/CONFIG_CMDLINE=/d' \
-                    -i ${S}/.config
-                echo "CONFIG_INET=y"                     >> ${S}/.config
-                echo "CONFIG_IP_PNP=y"                   >> ${S}/.config
-                echo "CONFIG_USB_GADGET=y"               >> ${S}/.config
-                echo "CONFIG_USB_GADGET_SELECTED=y"      >> ${S}/.config
-                echo "CONFIG_USB_ETH=y"                  >> ${S}/.config
-                echo "CONFIG_NFS_FS=y"                   >> ${S}/.config
-                echo "CONFIG_ROOT_NFS=y"                 >> ${S}/.config
-                echo "CONFIG_CMDLINE=\"${CMDLINE_NFSROOT_USB}\"" >> ${S}/.config
-        fi
-		yes '' | oe_runmake oldconfig
+do_configure() {
+	rm -f ${S}/.config || true
+   	cp ${WORKDIR}/${MACHINE}_defconfig ${S}/.config
+        yes '' | oe_runmake oldconfig
 }
+
+do_install_append() {
+	kerneldir=${D}${KERNEL_SRC_PATH}
+	if [ -f include/linux/bounds.h ]; then
+		mkdir -p $kerneldir/include/linux
+                cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
+        fi
+        if [ -f include/asm-sh/machtypes.h ]; then
+		mkdir -p $kerneldir/include/asm-sh
+		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
+	fi
+	install -d ${D}${includedir}/linux	
+   	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
+}
+
+
+FILES_kernel-dev += "${includedir}/linux"
 
 do_configure_append() {
         if test -e scripts/Makefile.fwinst ; then

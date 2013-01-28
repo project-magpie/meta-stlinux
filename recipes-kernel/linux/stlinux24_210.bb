@@ -1,20 +1,20 @@
-require recipes-kernel/linux/linux-stm.inc
-
-STM_PATCH_STR = "0210"
-PR = "r9"
-PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
+require linux-stm.inc
+FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 
 DESCRIPTION = "Linux kernel from stlinux"
+LINUX_VERSION = "2.6.32.57"
 
+STM_PATCH_STR = "0210"
+
+# INC_PR is defined in the .inc file if something has change here just increase the number after the dot
+PR = "${INC_PR}.1"
+
+PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 KBRANCH = "stmicro"
 
 KTAG = "stlinux24_0210"
-KTAG_spark = "stlinux24_0210"
 
 
-LINUX_VERSION ?= "2.6.32.57"
-
-FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 
 SRCREV="7367427b3c1b8965a0f5c960a18c5c802ad2eb8f"
 SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
@@ -41,35 +41,11 @@ file://st-coprocessor.h \
 "
 
 
-COMPATIBLE_MACHINE = "spark|spark7162"
+COMPATIBLE_MACHINE = "(spark|spark7162)"
 
 PARALLEL_MAKEINST = ""
 
 # CMDLINE for spark
 CMDLINE_spark = "console=ttyAMA0,115200 rootfstype=ext4 rootwait"
 
-S = "${WORKDIR}/git"
-
-do_configure() {
-	rm -f ${S}/.config || true
-   	cp ${WORKDIR}/${MACHINE}_defconfig ${S}/.config
-        yes '' | oe_runmake oldconfig
-}
-
-do_install_append() {
-	kerneldir=${D}${KERNEL_SRC_PATH}
-	if [ -f include/linux/bounds.h ]; then
-		mkdir -p $kerneldir/include/linux
-                cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
-        fi
-        if [ -f include/asm-sh/machtypes.h ]; then
-		mkdir -p $kerneldir/include/asm-sh
-		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
-	fi
-	install -d ${D}${includedir}/linux	
-   	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
-}
-
-
-FILES_kernel-dev += "${includedir}/linux"
 
