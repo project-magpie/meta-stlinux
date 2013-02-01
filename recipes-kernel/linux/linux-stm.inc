@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
 inherit kernel siteinfo
 
-INC_PR = "r10"
+INC_PR = "r11"
 
 RPSRC = "http://www.rpsys.net/openzaurus/patches/archive"
 
@@ -26,10 +26,9 @@ LOGO_SIZE ?= "."
 
 S = "${WORKDIR}/git"
 
-do_configure() {
+do_configure_prepend() {
 	rm -f ${S}/.config || true
    	cp ${WORKDIR}/${MACHINE}_defconfig ${S}/.config
-        yes '' | oe_runmake oldconfig
 }
 
 do_install_append() {
