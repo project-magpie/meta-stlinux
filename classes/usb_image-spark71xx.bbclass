@@ -88,7 +88,7 @@ IMAGE_CMD_spark71xx-usbimg () {
 	fi
 
 	echo "fatload usb 0:1 80000000 uImage" > ${WORKDIR}/script.scr
-	echo "setenv bootargs console=ttyAS0,115200 root=/dev/sda2 rootfstype=ext2 rw quiet coprocessor_mem=4m@0x40000000,4m@0x40400000 printk=1 printk.time=1 nwhwconf=device:eth0,hwaddr:00:80:E1:12:40:69 bigphysarea=6000 stmmaceth=msglvl:0,phyaddr:2,watchdog:5000 panic=10 rootwait usb_storage.delay_use=0" >> ${WORKDIR}/script.scr
+	echo "setenv bootargs console=ttyAS0,115200 root=/dev/sda2 rootfstype=ext2 rw coprocessor_mem=4m@0x40000000,4m@0x40400000 printk=1 printk.time=1 nwhwconf=device:eth0,hwaddr:00:80:E1:12:40:69 bigphysarea=6000 stmmaceth=msglvl:0,phyaddr:2,watchdog:5000 panic=10 rootwait usb_storage.delay_use=0" >> ${WORKDIR}/script.scr
 	echo "bootm 80000000" >> ${WORKDIR}/script.scr
 
 	mkimage -A sh -O linux -T script -C none -a 0 -e 0 -n "autoscript" -d ${WORKDIR}/script.scr ${WORKDIR}/script.img
