@@ -25,9 +25,12 @@ S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
 
-CFLAGS_append = "-Wall -W -Wshadow -g -O2 -fno-strict-aliasing -rdynamic -DNEW_LIBCURL"
-CFLAGS_spark += "-funsigned-char \
-"
+CFLAGS_append = " -Wall -W -Wshadow -g -O2 -fno-strict-aliasing -rdynamic -DNEW_LIBCURL"
+
+SPARK_GEN_CFLAGS = "-funsigned-char"
+
+CFLAGS_spark += "${SPARK_GEN_CFLAGS} "
+CFLAGS_spark7162 += "${SPARK_GEN_CFLAGS} "
 
 
 LDFLAGS = " -Wl,-rpath-link,${STAGING_DIR_HOST}/usr/lib -L${STAGING_DIR_HOST}/usr/lib"
@@ -38,12 +41,10 @@ EXTRA_OECONF += "\
                      --enable-silent-rules \
 "
 
-EXTRA_OECONF_spark += "\
-                     --with-boxtype=spark \
-"
-EXTRA_OECONF_spark7162 += "\
-                     --with-boxtype=spark \
-"
+SPARK_GEN_EXTRA_OECONF = " --with-boxtype=spark "
+
+EXTRA_OECONF_spark += "${SPARK_GEN_EXTRA_OECONF}"
+EXTRA_OECONF_spark7162 += "${SPARK_GEN_EXTRA_OECONF}"
 
 do_install_append () {
 
