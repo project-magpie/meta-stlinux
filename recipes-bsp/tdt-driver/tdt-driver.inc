@@ -23,8 +23,6 @@ SRC_URI = " \
         file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch;patch=1 \
         file://COPYING \
         file://aotom_udev.rules \
-	file://${MACHINE}/tdt-driver_load.conf \
-        file://${MACHINE}/tdt-driver_options.conf \
 " 
 
 PV = "0.1+git${SRCPV}"
@@ -121,8 +119,6 @@ do_install() {
 	install -d ${D}/${sysconfdir}/modprobe.d
 	install -d ${D}/${sysconfdir}/udev/rules.d/
 	
-	cp ${WORKDIR}/${MACHINE}/tdt-driver_load.conf ${D}/${sysconfdir}/modules-load.d/tdt-driver.conf
-	cp ${WORKDIR}/${MACHINE}/tdt-driver_options.conf ${D}/${sysconfdir}/modprobe.d/tdt-driver.conf
 	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
 	echo ${KERNEL_VERSION}
 	echo "/lib/modules/${KERNEL_VERSION}/extra"
