@@ -81,7 +81,4 @@ do_configure_spark () {
 	sed -i "s#^\(CONFIG_EXTRA_FIRMWARE_DIR=\).*#\1\"${STAGING_DIR_HOST}/lib/firmware\"#" .config;
 }
 
-# CMDLINE for spark
-CMDLINE_spark = "console=ttyAMA0,115200 rootfstype=ext4 rootwait"
-
 
