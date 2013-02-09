@@ -75,10 +75,12 @@ do_configure () {
 
 do_configure_spark7162 () {
 	sed -i "s#^\(CONFIG_EXTRA_FIRMWARE_DIR=\).*#\1\"${STAGING_DIR_HOST}/lib/firmware\"#" .config;
+        yes '' | oe_runmake oldconfig
 }
 
 do_configure_spark () {
 	sed -i "s#^\(CONFIG_EXTRA_FIRMWARE_DIR=\).*#\1\"${STAGING_DIR_HOST}/lib/firmware\"#" .config;
+        yes '' | oe_runmake oldconfig
 }
 
 
