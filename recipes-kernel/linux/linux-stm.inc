@@ -13,16 +13,8 @@ RPSRC = "http://www.rpsys.net/openzaurus/patches/archive"
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
-# Specify the commandline for your device
 
-# Set the verbosity of kernel messages during runtime
-# You can define CMDLINE_DEBUG in your local.conf or distro.conf to override this behaviour  
-CMDLINE_DEBUG ?= '${@base_conditional("DISTRO_TYPE", "release", "quiet", "debug", d)}'
-CMDLINE_append = " ${CMDLINE_DEBUG} "
 
-# Kernel bootlogo is distro-specific (default is OE logo).
-# Logo resolution (qvga, vga, ...) is machine-specific.
-LOGO_SIZE ?= "."
 
 S = "${WORKDIR}/git"
 
@@ -66,19 +58,21 @@ PACKAGES =+ "kernel-headers"
 FILES_kernel-headers = "${exec_prefix}/src/linux*"
 
 
-# Automatically depend on lzop-native if CONFIG_KERNEL_LZO is enabled
-python () {
-    try:
-        defconfig = bb.fetch2.localpath('file://defconfig', d)
-    except bb.fetch2.FetchError:
-        return
+## Automatically depend on lzop-native if CONFIG_KERNEL_LZO is enabled
+#python () {
+#    try:
+#        defconfig = bb.fetch2.localpath('file://defconfig', d)
+#    except bb.fetch2.FetchError:
+#        return
+#
+#    try:
+#        configfile = open(defconfig)
+#    except IOError:
+#        return
+#
+#    if 'CONFIG_KERNEL_LZO=y\n' in configfile.readlines():
+#        depends = d.getVar('DEPENDS', False)
+#        d.setVar('DEPENDS', depends + ' lzop-native')
+#}
 
-    try:
-        configfile = open(defconfig)
-    except IOError:
-        return
 
-    if 'CONFIG_KERNEL_LZO=y\n' in configfile.readlines():
-        depends = d.getVar('DEPENDS', False)
-        d.setVar('DEPENDS', depends + ' lzop-native')
-}

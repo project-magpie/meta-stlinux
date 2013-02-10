@@ -7,15 +7,36 @@ LINUX_VERSION = "2.6.32.57"
 STM_PATCH_STR = "0210"
 
 # INC_PR is defined in the .inc file if something has change here just increase the number after the dot
-PR = "${INC_PR}.5"
+PR = "${INC_PR}.7"
 
 PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 KBRANCH = "stmicro"
 
 KTAG = "stlinux24_0210"
 
-DEPENDS_spark7162 = "stlinux24-sh4-stx7105-fdma-firmware"
-DEPENDS_spark = "stlinux24-sh4-stx7111-fdma-firmware"
+
+### TODO ###
+# This should already set in the kernel.bbclass 
+# No doubt why it is not applied
+# Normaly only stlinux24-sh4-stx7105-fdma-firmware should be required 
+DEPENDS_spark7162_append += " \
+                   virtual/${TARGET_PREFIX}gcc \
+                   virtual/${TARGET_PREFIX}depmod \ 
+                   virtual/${TARGET_PREFIX}gcc${KERNEL_CCSUFFIX} \
+                   update-modules \
+                   stlinux24-sh4-stx7105-fdma-firmware \
+"
+### TODO ###
+# This should already set in the kernel.bbclass 
+# No doubt why it is not applied here
+# Normaly only stlinux24-sh4-stx7111-fdma-firmware should be required 
+DEPENDS_spark_append  += " \
+                   virtual/${TARGET_PREFIX}gcc \
+                   virtual/${TARGET_PREFIX}depmod \ 
+                   virtual/${TARGET_PREFIX}gcc${KERNEL_CCSUFFIX} \
+                   update-modules \
+                   stlinux24-sh4-stx7111-fdma-firmware \
+"
 
 
 SRCREV="7367427b3c1b8965a0f5c960a18c5c802ad2eb8f"
