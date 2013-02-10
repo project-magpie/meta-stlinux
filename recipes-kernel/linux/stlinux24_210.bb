@@ -24,6 +24,7 @@ DEPENDS_spark7162_append += " \
                    virtual/${TARGET_PREFIX}depmod \ 
                    virtual/${TARGET_PREFIX}gcc${KERNEL_CCSUFFIX} \
                    update-modules \
+                   u-boot-mkimage-native \
                    stlinux24-sh4-stx7105-fdma-firmware \
 "
 ### TODO ###
@@ -35,6 +36,7 @@ DEPENDS_spark_append  += " \
                    virtual/${TARGET_PREFIX}depmod \ 
                    virtual/${TARGET_PREFIX}gcc${KERNEL_CCSUFFIX} \
                    update-modules \
+                   u-boot-mkimage-native \
                    stlinux24-sh4-stx7111-fdma-firmware \
 "
 
