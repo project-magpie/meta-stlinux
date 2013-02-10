@@ -8,7 +8,7 @@ STLINUX_SH_UPD_RPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/sh4/"
 
 PREFERRED_VERSION_linux-${MACHINE} = "2.6.32.57-stm24-0210"
 PREFERRED_VERSION_linux-libc-headers = "2.6.32"
-PREFERRED_PROVIDER_virtual/kernel = "stlinux24"
+PREFERRED_PROVIDER_virtual/kernel = "stlinux24-${MACHINE}"
 
 PREFERRED_PROVIDER_openssl = "openssl"
 PREFERRED_PROVIDER_libcrypto = "openssl"
