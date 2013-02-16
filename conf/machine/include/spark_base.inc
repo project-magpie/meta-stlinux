@@ -14,11 +14,8 @@ PREFERRED_PROVIDER_openssl = "openssl"
 PREFERRED_PROVIDER_libcrypto = "openssl"
 PREFERRED_PROVIDER_libssl = "openssl"
 
-
 PREFERRED_VERSION_glibc = "2.10"
 
-#PREFERRED_PROVIDER_virtual/libc = "glibc"
-#PREFERRED_PROVIDER_virtual/sh4-poky-linux-libc-initial = "glibc"
 PREFERRED_VERSION_glibc                   ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-locale            ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-nativesdk         ?= "2.10"
