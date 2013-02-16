@@ -1,18 +1,9 @@
 inherit kernel siteinfo
-<<<<<<< Updated upstream
 DESCRIPTION = "Linux kernel from stlinux"
-=======
-DESCRIPTION = "Linux Kernel"
->>>>>>> Stashed changes
 SECTION = "kernel"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-INC_PR = "r12"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 LINUX_VERSION = "2.6.32.57"
