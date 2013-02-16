@@ -52,7 +52,9 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
                                      u-boot-fw-utils \
                                      stslave-fw \
                                      lirc \
-		                     fp-control stfbcontrol ustslave \
+                                     fp-control \
+                                     stfbcontrol \
+                                     ustslave \
                                      tdt-driver \
 "
 
