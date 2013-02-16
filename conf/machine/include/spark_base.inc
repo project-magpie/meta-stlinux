@@ -32,6 +32,9 @@ SERIAL_CONSOLE = "115200 ttyAS0"
 
 KERNEL_IMAGETYPE = "uImage"
 
+# save some extra space, kernel has its own mtd partion 
+RDEPENDS_kernel-base = ""
+
 UBI_VOLNAME = "rootfs"
 MKUBIFS_ARGS = "-m 2048 -e 126976 -c 4096 -F"
 UBINIZE_ARGS = "-m 2048 -p 128KiB"
