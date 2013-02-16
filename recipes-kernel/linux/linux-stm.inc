@@ -1,22 +1,40 @@
 DESCRIPTION = "Linux Kernel"
 SECTION = "kernel"
 LICENSE = "GPLv2"
-
 LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
 inherit kernel siteinfo
 
 INC_PR = "r11"
 
-RPSRC = "http://www.rpsys.net/openzaurus/patches/archive"
+FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
+
+DESCRIPTION = "Linux kernel from stlinux"
+LINUX_VERSION = "2.6.32.57"
+
+STM_PATCH_STR = "0210"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
 
+PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
+KBRANCH = "stmicro"
 
+KTAG = "stlinux24_0210"
 
+INC_PR = "r11"
+
+# Quirk for udev greater or equal 141
+UDEV_GE_141 ?= "0"
+
+SRCREV = "7367427b3c1b8965a0f5c960a18c5c802ad2eb8f"
+SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
+           file://${MACHINE}_defconfig \
+           file://st-coprocessor.h \
+"
 S = "${WORKDIR}/git"
+PARALLEL_MAKEINST = ""
 
 do_configure_prepend() {
 	rm -f ${S}/.config || true

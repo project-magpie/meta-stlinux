@@ -8,7 +8,7 @@ STLINUX_SH_UPD_RPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/sh4/"
 
 PREFERRED_VERSION_linux-${MACHINE} = "2.6.32.57-stm24-0210"
 PREFERRED_VERSION_linux-libc-headers = "2.6.32"
-PREFERRED_PROVIDER_virtual/kernel = "stlinux24"
+PREFERRED_PROVIDER_virtual/kernel = "stlinux24-${MACHINE}"
 
 PREFERRED_PROVIDER_openssl = "openssl"
 PREFERRED_PROVIDER_libcrypto = "openssl"
@@ -32,6 +32,9 @@ SERIAL_CONSOLE = "115200 ttyAS0"
 
 KERNEL_IMAGETYPE = "uImage"
 
+# save some extra space, kernel has its own mtd partion 
+RDEPENDS_kernel-base = ""
+
 UBI_VOLNAME = "rootfs"
 MKUBIFS_ARGS = "-m 2048 -e 126976 -c 4096 -F"
 UBINIZE_ARGS = "-m 2048 -p 128KiB"
@@ -43,12 +46,14 @@ IMAGE_FSTYPES ?= "tar.gz ubi ext2 spark71xx-usbimg"
 IMAGE_CLASSES += "usb_image-spark71xx"
 INITRAMFS_FSTYPES = "ext2.gz spark-updt"
 
-MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "stlinux24-sh4-stx7111-fdma-firmware \
-	                             stlinux24-sh4-stmfb-firmware-stx7111 \
+MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
+                                     stlinux24-sh4-stx7111-fdma-firmware \
+                                     stlinux24-sh4-stmfb-firmware-stx7111 \
                                      u-boot-fw-utils \
                                      stslave-fw \
-				     lirc \
-				     fp-control stfbcontrol ustslave \
+                                     lirc \
+		                     fp-control stfbcontrol ustslave \
+                                     tdt-driver \
 "
 
 #Spark Boxes have no hardware clock
