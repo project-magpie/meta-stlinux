@@ -1,6 +1,6 @@
 HOMEPAGE = "http://gitorious.org/open-duckbox-project-sh4"
 SECTION = "kernel/modules"
-RDEPENDS = "ustslave"
+RDEPENDS_${PN} = "ustslave"
 
 LICENSE = " GPLv2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882bbe"
@@ -310,7 +310,7 @@ python populate_packages_prepend () {
 	metapkg = "kernel-modules-tdt"
 	d.setVar('ALLOW_EMPTY_' + metapkg, "1")
 	d.setVar('FILES_' + metapkg, "")
-	blacklist = [ 'kernel-dev', 'kernel-image', 'kernel-base', 'kernel-vmlinux', 'perf', 'perf-dbg' ]
+	blacklist = [ 'tdt-driver-dev', 'kernel-image', 'kernel-base', 'kernel-vmlinux', 'perf', 'perf-dbg' ]
 	for l in module_deps.values():
 		for i in l:
 			pkg = module_pattern % legitimize_package_name(re.match(module_regex, os.path.basename(i)).group(1))
