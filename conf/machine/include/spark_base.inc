@@ -46,12 +46,14 @@ IMAGE_FSTYPES ?= "tar.gz ubi ext2 spark71xx-usbimg"
 IMAGE_CLASSES += "usb_image-spark71xx"
 INITRAMFS_FSTYPES = "ext2.gz spark-updt"
 
-MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "stlinux24-sh4-stx7111-fdma-firmware \
-	                             stlinux24-sh4-stmfb-firmware-stx7111 \
+MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
+                                     stlinux24-sh4-stx7111-fdma-firmware \
+                                     stlinux24-sh4-stmfb-firmware-stx7111 \
                                      u-boot-fw-utils \
                                      stslave-fw \
-				     lirc \
-				     fp-control stfbcontrol ustslave \
+                                     lirc \
+		                     fp-control stfbcontrol ustslave \
+                                     tdt-driver \
 "
 
 #Spark Boxes have no hardware clock
