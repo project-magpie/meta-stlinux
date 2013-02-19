@@ -1,14 +1,14 @@
-From 1e9bec79d518a8aa73cee15921ddb31d29788ecc Mon Sep 17 00:00:00 2001
+From 903645a0a627c86d68b6685ddb78855d54e18b3f Mon Sep 17 00:00:00 2001
 From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
 Date: Sun, 4 Nov 2012 18:08:26 +0100
-Subject: [PATCH 6/6] aotom: add additional chars for VFD, fix missing chars
+Subject: [PATCH 6/7] aotom: add additional chars for VFD, fix missing chars
 
 * add "{|}" chars, fix "_" char, fix display of "+_" chars.
 * improve "K" and "0" readability
 * add comments to the character map to ease understanding the data.
 ---
- frontcontroller/aotom/aotom_vfd.c |  131 ++++++++++++++++++++-----------------
- 1 files changed, 72 insertions(+), 59 deletions(-)
+ frontcontroller/aotom/aotom_vfd.c |  137 ++++++++++++++++++++-----------------
+ 1 file changed, 75 insertions(+), 62 deletions(-)
 
 diff --git a/frontcontroller/aotom/aotom_vfd.c b/frontcontroller/aotom/aotom_vfd.c
 index e92b9db..e159903 100644
@@ -35,12 +35,9 @@ index e92b9db..e159903 100644
 +/*               7 6 5 4 3 2 1 0 */
  /*address 0 8bit g i m c r p n e */
 -/*address 1 7bit d a b f k j h    */
-+/*address 1 7bit   d a b f k j h */
- 
+-
 -u8 CharLib[48][2] =
-+
-+u8 CharLib[0x33][2] =
- {
+-{
 -	{0xF1, 0x38},	//A
 -	{0x74, 0x72},	//B
 -	{0x01, 0x68},	//C
@@ -67,6 +64,11 @@ index e92b9db..e159903 100644
 -	{0x4A, 0x05},	//X
 -	{0x44, 0x05},	//Y
 -	{0x48, 0x64},	//Z
++/*address 1 7bit   d a b f k j h */
++
++
++u8 CharLib[0x33][2] =
++{
 +	{0xF1, 0x38},	//A	00
 +	{0x74, 0x72},	//B	01
 +	{0x01, 0x68},	//C	02
@@ -106,6 +108,17 @@ index e92b9db..e159903 100644
 -	{0xE0, 0x00},	//
 -	{0x05, 0x00},	//
 -	{0x48, 0x04},	//
+-
+-	{0x11, 0x78},	//
+-	{0x44, 0x02},	//
+-	{0xE1, 0x70},	//
+-	{0xF0, 0x70},	//
+-	{0xF0, 0x18},	//
+-	{0xF0, 0x68},	//
+-	{0xF1, 0x68},	//
+-	{0x10, 0x30},	//
+-	{0xF1, 0x78},	//
+-	{0xF0, 0x78},	//
 +	{0x01, 0x68},	// [	1A
 +	{0x42, 0x01},	// \	1B
 +	{0x10, 0x70},	// ]	1C
@@ -117,17 +130,7 @@ index e92b9db..e159903 100644
 +	{0xE0, 0x00},	// -	22
 +	{0x05, 0x00},	// ,,	23
 +	{0x48, 0x04},	// /	24
- 
--	{0x11, 0x78},	//
--	{0x44, 0x02},	//
--	{0xE1, 0x70},	//
--	{0xF0, 0x70},	//
--	{0xF0, 0x18},	//
--	{0xF0, 0x68},	//
--	{0xF1, 0x68},	//
--	{0x10, 0x30},	//
--	{0xF1, 0x78},	//
--	{0xF0, 0x78},	//
++
 +	{0x51, 0x78},	// 0	25
 +	{0x44, 0x02},	// 1	26
 +	{0xE1, 0x70},	// 2	27
@@ -171,5 +174,5 @@ index e92b9db..e159903 100644
  
  void YWPANEL_VFD_DrawChar(char c, u8 position)
 -- 
-1.7.7
+1.7.10.4
 

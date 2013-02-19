@@ -1,0 +1,190 @@
+From 3669eaed5939cd3671e97e3ce251ae7e57c515f6 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Sun, 10 Feb 2013 13:32:06 +0100
+Subject: [PATCH 7/7] aotom: register reboot_notifier, implement rtc driver
+
+* register a reboot_notifier, so that shutdown/poweroff "just works"
+  without magic private ioctls and stuff
+* implement a proper rtc driver, so that setting/querying the time
+  simply works with hwclock and the alarm time can be set in sysfs
+---
+ frontcontroller/aotom/aotom_main.c |  128 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 128 insertions(+)
+
+diff --git a/frontcontroller/aotom/aotom_main.c b/frontcontroller/aotom/aotom_main.c
+index 4b81b9b..3cf2a50 100644
+--- a/frontcontroller/aotom/aotom_main.c
++++ b/frontcontroller/aotom/aotom_main.c
+@@ -3,6 +3,7 @@
+  *
+  * (c) 2010 Spider-Team
+  * (c) 2011 oSaoYa
++ * (c) 2012-1012 Stefan Seyfried
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -44,6 +45,11 @@
+ #include <linux/time.h>
+ #include <linux/poll.h>
+ #include <linux/workqueue.h>
++/* for rtc / reboot_notifier hooks */
++#include <linux/notifier.h>
++#include <linux/reboot.h>
++#include <linux/rtc.h>
++#include <linux/platform_device.h>
+ 
+ #include "aotom_main.h"
+ #include "utf.h"
+@@ -103,6 +109,9 @@ static struct semaphore 	   write_sem;
+ static struct semaphore 	   receive_sem;
+ static struct semaphore 	   draw_thread_sem;
+ 
++#define RTC_NAME "aotom-rtc"
++static struct platform_device *rtc_pdev;
++
+ unsigned char ASCII[48][2] =
+ {
+ 	{0xF1, 0x38},	//A
+@@ -937,6 +946,110 @@ void button_dev_exit(void)
+ 	input_unregister_device(button_dev);
+ }
+ 
++static int aotom_reboot_event(struct notifier_block *nb, unsigned long event, void *ptr)
++{
++	switch(event) {
++		case SYS_POWER_OFF:
++			YWPANEL_VFD_ShowString("POWEROFF");
++			break;
++		case SYS_HALT:
++			YWPANEL_VFD_ShowString("HALT");
++			break;
++		default:
++			YWPANEL_VFD_ShowString("REBOOT");
++			return NOTIFY_DONE;
++	}
++	msleep(1000);
++	clear_display();
++	YWPANEL_FP_ControlTimer(true);
++	YWPANEL_FP_SetCpuStatus(YWPANEL_CPUSTATE_STANDBY);
++	return NOTIFY_DONE;
++};
++
++static struct notifier_block aotom_reboot_block = {
++	.notifier_call = aotom_reboot_event,
++	.priority = INT_MAX,
++};
++
++static int aotom_rtc_read_time(struct device *dev, struct rtc_time *tm)
++{
++	u32 uTime = 0;
++	//printk("%s\n", __func__);
++	uTime = YWPANEL_FP_GetTime();
++	rtc_time_to_tm(uTime, tm);
++	return 0;
++}
++
++static int tm2time(struct rtc_time *tm)
++{
++	return mktime(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
++}
++
++static int aotom_rtc_set_time(struct device *dev, struct rtc_time *tm)
++{
++	int res = 0;
++	//printk("%s\n", __func__);
++	u32 uTime = tm2time(tm);
++	res = YWPANEL_FP_SetTime(uTime);
++	YWPANEL_FP_ControlTimer(true);
++	return res;
++}
++
++static int aotom_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *al)
++{
++	return 0;
++}
++
++static int aotom_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *al)
++{
++	u32 a_time = 0;
++	if (al->enabled)
++		a_time = tm2time(&al->time);
++	printk(KERN_INFO "%s enabled:%d time: %d\n", __func__, al->enabled, a_time);
++	YWPANEL_FP_SetPowerOnTime(a_time);
++	return 0;
++}
++
++static const struct rtc_class_ops aotom_rtc_ops = {
++	.read_time	= aotom_rtc_read_time,
++	.set_time	= aotom_rtc_set_time,
++	.read_alarm	= aotom_rtc_read_alarm,
++	.set_alarm	= aotom_rtc_set_alarm,
++};
++
++static int __devinit aotom_rtc_probe(struct platform_device *pdev)
++{
++	struct rtc_device *rtc;
++	/* I have no idea where the pdev comes from, but it needs the can_wakeup = 1
++	 * otherwise we don't get the wakealarm sysfs attribute... :-) */
++	pdev->dev.power.can_wakeup = 1;
++	rtc = rtc_device_register("aotom", &pdev->dev, &aotom_rtc_ops, THIS_MODULE);
++	printk(KERN_DEBUG "%s %p\n", __func__, rtc);
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
++	printk(KERN_DEBUG "%s 2\n", __func__);
++	platform_set_drvdata(pdev, rtc);
++	return 0;
++}
++
++static int __devexit aotom_rtc_remove(struct platform_device *pdev)
++{
++	struct rtc_device *rtc = platform_get_drvdata(pdev);
++	printk(KERN_DEBUG "%s %p\n", __func__, rtc);
++	rtc_device_unregister(rtc);
++	platform_set_drvdata(pdev, NULL);
++	return 0;
++}
++
++static struct platform_driver aotom_rtc_driver = {
++	.probe = aotom_rtc_probe,
++	.remove = __devexit_p(aotom_rtc_remove),
++	.driver = {
++		.name	= RTC_NAME,
++		.owner	= THIS_MODULE,
++	},
++};
++
+ static int __init aotom_init_module(void)
+ {
+ 	int i;
+@@ -975,6 +1088,16 @@ static int __init aotom_init_module(void)
+ 		led_state[i].led_task = kthread_run(led_thread, (void *) i, "led thread");
+ 	}
+ 
++	register_reboot_notifier(&aotom_reboot_block);
++	i = platform_driver_register(&aotom_rtc_driver);
++	if (i)
++		printk(KERN_ERR "%s platform_driver_register failed: %d\n", __func__, i);
++	else
++		rtc_pdev = platform_device_register_simple(RTC_NAME, -1, NULL, 0);
++
++	if (IS_ERR(rtc_pdev))
++		printk(KERN_ERR "%s platform_device_register_simple failed: %ld\n",
++				__func__, PTR_ERR(rtc_pdev));
+ 
+ 	dprintk(5, "%s <\n", __func__);
+ 
+@@ -994,6 +1117,11 @@ static void __exit aotom_cleanup_module(void)
+ {
+ 	int i;
+ 
++	unregister_reboot_notifier(&aotom_reboot_block);
++	platform_driver_unregister(&aotom_rtc_driver);
++	platform_set_drvdata(rtc_pdev, NULL);
++	platform_device_unregister(rtc_pdev);
++
+ 	if(!draw_thread_stop && draw_task)
+ 		kthread_stop(draw_task);
+ 
+-- 
+1.7.10.4
+

@@ -1,0 +1,110 @@
+From 3c790376eced8a3c6e56d06bf043adcb1bbf5ff2 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Sun, 19 Feb 2012 16:45:49 +0100
+Subject: [PATCH 2/6] e2proc: silence kmsg spam
+
+---
+ e2_proc/e2_proc_main.c |   29 ++++++++++++++++-------------
+ 1 file changed, 16 insertions(+), 13 deletions(-)
+
+diff --git a/e2_proc/e2_proc_main.c b/e2_proc/e2_proc_main.c
+index cad4387..67293d7 100644
+--- a/e2_proc/e2_proc_main.c
++++ b/e2_proc/e2_proc_main.c
+@@ -316,9 +316,9 @@ static int three_d_mode_write(struct file *file, const char __user *buf,
+ 	ssize_t 	ret = -ENOMEM;
+ 
+ 	char* myString = kmalloc(count + 1, GFP_KERNEL);
+-
++#ifdef VERY_VERBOSE
+ 	printk("%s %ld - ", __FUNCTION__, count);
+-
++#endif
+ 	page = (char *)__get_free_page(GFP_KERNEL);
+ 	if (page)
+ 	{
+@@ -328,9 +328,9 @@ static int three_d_mode_write(struct file *file, const char __user *buf,
+ 
+ 		strncpy(myString, page, count);
+ 		myString[count] = '\0';
+-
++#ifdef VERY_VERBOSE
+ 		printk("%s\n", myString);
+-
++#endif
+ 		if (strncmp("sbs", myString, 3) == 0 || strncmp("sidebyside", myString, 10) == 0)
+ 		{
+ 			if(three_d_mode != NULL) kfree(three_d_mode);
+@@ -378,9 +378,9 @@ static int wakeup_time_write(struct file *file, const char __user *buf,
+ 	ssize_t 	ret = -ENOMEM;
+ 
+ 	char* myString = kmalloc(count + 1, GFP_KERNEL);
+-
++#ifdef VERY_VERBOSE
+ 	printk("%s %ld - ", __FUNCTION__, count);
+-
++#endif
+ 	page = (char *)__get_free_page(GFP_KERNEL);
+ 	if (page)
+ 	{
+@@ -390,9 +390,9 @@ static int wakeup_time_write(struct file *file, const char __user *buf,
+ 
+ 		strncpy(myString, page, count);
+ 		myString[count] = '\0';
+-
++#ifdef VERY_VERBOSE
+ 		printk("%s\n", myString);
+-
++#endif
+ 		if(wakeup_time != NULL) kfree(wakeup_time);
+ 		wakeup_time = myString;
+ 
+@@ -416,9 +416,9 @@ int proc_misc_12V_output_write(struct file *file, const char __user *buf,
+ 	char 		*page;
+ 	ssize_t 	ret = -ENOMEM;
+     char        *myString;
+-
++#ifdef VERY_VERBOSE
+ 	printk("%s %ld\n", __FUNCTION__, count);
+-
++#endif
+ 	page = (char *)__get_free_page(GFP_KERNEL);
+ 	if (page)
+ 	{
+@@ -456,8 +456,9 @@ int proc_misc_12V_output_read (char *page, char **start, off_t off, int count,
+ 			  int *eof, void *data_unused)
+ {
+ 	int len = 0;
++#ifdef VERY_VERBOSE
+ 	printk("%s %d\n", __FUNCTION__, count);
+-
++#endif
+ 	if(_12v_isON)
+ 		len = sprintf(page, "on\n");
+ 	else
+@@ -814,9 +815,9 @@ EXPORT_SYMBOL(install_e2_procs);
+ int cpp_install_e2_procs(const char *path, read_proc_t *read_func, write_proc_t *write_func, void* instance)
+ {
+   int i;
+-
++#ifdef VERY_VERBOSE
+ printk("%s: %s\n", __func__, path);
+-
++#endif
+   /* find the entry */
+   for(i = 0; i < sizeof(e2Proc) / sizeof(e2Proc[0]); i++)
+   {
+@@ -921,8 +922,10 @@ int cpp_remove_e2_procs(const char *path, read_proc_t *read_func, write_proc_t *
+         if(e2Proc[i].read_proc == read_func)
+         {
+           e2Proc[i].read_proc = NULL;
++#ifdef VERY_VERBOSE
+           printk("%s(): removed '%s, %s' (%p, %p)\n",
+                  __func__, path, e2Proc[i].name, e2Proc[i].read_proc, read_func);
++#endif
+         }
+         else
+           printk("%s(): different read_procs '%s, %s' (%p, %p)\n",
+-- 
+1.7.10.4
+

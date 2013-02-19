@@ -1,0 +1,52 @@
+From 3d3005fa11b39ce988b5032692a2f03594b41b54 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Sun, 19 Feb 2012 16:53:47 +0100
+Subject: [PATCH 5/6] frontends/spark_dvbapi5: silence kmsg spam
+
+---
+ frontends/spark_dvbapi5/ix7306.c  |    2 ++
+ frontends/spark_dvbapi5/stv090x.c |    4 ++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/frontends/spark_dvbapi5/ix7306.c b/frontends/spark_dvbapi5/ix7306.c
+index 886ff2f..6af8907 100644
+--- a/frontends/spark_dvbapi5/ix7306.c
++++ b/frontends/spark_dvbapi5/ix7306.c
+@@ -449,7 +449,9 @@ static int ix7306_get_status(struct dvb_frontend *fe, u32 *status)
+ 	}
+ 	else
+ 	{
++		#if defined(IX7306_DEBUG)
+ 		printk("%s: Tuner Phase Not Locked result - 0x%x, 0x%x,\n", __func__, result[0], result[1]);
++		#endif
+ 	}
+ 
+ 	return err;
+diff --git a/frontends/spark_dvbapi5/stv090x.c b/frontends/spark_dvbapi5/stv090x.c
+index bb025b9..fafd106 100644
+--- a/frontends/spark_dvbapi5/stv090x.c
++++ b/frontends/spark_dvbapi5/stv090x.c
+@@ -3038,8 +3038,10 @@ static int stv090x_get_dmdlock(struct stv090x_state *state, s32 timeout)
+ 
+ 		if (!lock)
+ 			msleep(10);
++#ifdef VERY_VERBOSE
+ 		else
+ 			printk("Demodulator acquired LOCK\n");
++#endif
+ 
+ 		timer += 10;
+ 	}
+@@ -3864,7 +3866,9 @@ static u8 stv090x_optimize_carloop(struct stv090x_state *state, enum stv090x_mod
+  */
+ 	if ((state->dev_ver == 0x20) && (state->device == STX7111))
+ 	{
++#ifdef VERY_VERBOSE
+                 printk("%s STX7111 cut 0x20 handling (modcod %d, pilots %d)\n", __func__, modcod, pilots);
++#endif
+ 		car_loop		= stx7111_s2_crl_cut20;
+ #warning stv090x: fixme fixme dont know lowqpsk crl
+ 		car_loop_qpsk_low	= stv090x_s2_lowqpsk_crl_cut20;
+-- 
+1.7.10.4
+

@@ -1,19 +1,19 @@
-From 9587fb2c57131dd55b285cb92d257fd3819719f7 Mon Sep 17 00:00:00 2001
+From 2682b86fb08c7a49b6eb2e8d907dc5812e9f962a Mon Sep 17 00:00:00 2001
 From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
 Date: Sun, 9 Sep 2012 16:08:32 +0200
-Subject: [PATCH 4/4] aotom: improve scrolling text code
+Subject: [PATCH 4/7] aotom: improve scrolling text code
 
 instead of completely scrolling in and out text that's longer than the
 display, add a short pause before and after scrolling
 ---
  frontcontroller/aotom/aotom_main.c |   28 +++++++++++++++++++++++-----
- 1 files changed, 23 insertions(+), 5 deletions(-)
+ 1 file changed, 23 insertions(+), 5 deletions(-)
 
 diff --git a/frontcontroller/aotom/aotom_main.c b/frontcontroller/aotom/aotom_main.c
-index 7859ecf..9fbeb58 100644
+index 33a0de8..4b81b9b 100644
 --- a/frontcontroller/aotom/aotom_main.c
 +++ b/frontcontroller/aotom/aotom_main.c
-@@ -211,11 +211,11 @@ static void VFD_clr(void)
+@@ -211,7 +211,7 @@ static void VFD_clr(void)
  static int draw_thread(void *arg)
  {
  	struct vfd_ioctl_data *data = (struct vfd_ioctl_data *) arg;
@@ -21,15 +21,19 @@ index 7859ecf..9fbeb58 100644
 +	char buf[sizeof(data->data) + 0 * 2 * DISPLAYWIDTH_MAX];
  	int len = data->length;
  	int off = 0;
+ 	int doton3 = 0;
+@@ -219,7 +219,7 @@ static int draw_thread(void *arg)
+ 	if (YWPANEL_width == 4 && len == 5 && data->data[2] == '.')
+ 		doton3 = 1;
  
--	if (len > YWPANEL_width) {
-+	if (0 && len > YWPANEL_width) {
+-	if (len > YWPANEL_width + doton3) {
++	if (0 && len > YWPANEL_width + doton3) {
   		memset(buf, ' ', sizeof(buf));
  		off = YWPANEL_width - 1;
  		memcpy(buf + off, data->data, len);
-@@ -230,8 +230,17 @@ static int draw_thread(void *arg)
+@@ -234,8 +234,17 @@ static int draw_thread(void *arg)
  
- 	if(len > YWPANEL_width) {
+ 	if(len > YWPANEL_width + doton3) {
  		int pos;
 -		for(pos = 0; pos < len; pos++) {
 -			int i;
@@ -47,7 +51,7 @@ index 7859ecf..9fbeb58 100644
  			if(kthread_should_stop()) {
  				draw_thread_stop = 1;
  				return 0;
-@@ -246,11 +255,20 @@ static int draw_thread(void *arg)
+@@ -250,11 +259,20 @@ static int draw_thread(void *arg)
  				msleep(40);
  			}
  		}
@@ -70,5 +74,5 @@ index 7859ecf..9fbeb58 100644
  	draw_thread_stop = 1;
  	return 0;
 -- 
-1.7.7
+1.7.10.4
 

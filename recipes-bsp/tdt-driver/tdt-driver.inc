@@ -10,22 +10,32 @@ inherit module
 PACKAGES = "${PN} ${PN}-dev"
 PACKAGES_DYNAMIC += "kernel-module-*"
 
-SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
+SRCREV = "350ce95d04b701b61e91e6aa60d1120a1958ca57"
+
 
 # using seifes tdt drivers because this has less overhead
 SRC_URI = " \
 	git://gitorious.org/neutrino-mp/tdt-driver.git \
-        file://0001-added-pm_power_off-registration.patch;patch=1 \
-        file://0002-aotom-fix-include-file.patch;patch=1 \
-        file://0003-aotom-add-VFDGETVERSION-ioctl-to-find-FP-type.patch;patch=1 \
-        file://0004-aotom-improve-scrolling-text-code.patch;patch=1 \
-        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch;patch=1 \
-        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch;patch=1 \
-        file://COPYING \
+        file://0001-player2_191-silence-kmsg-spam.patch \
+        file://0002-e2proc-silence-kmsg-spam.patch \
+        file://0003-pti-silence-kmsg-spam.patch \
+        file://0004-stmfb-silence-kmsg-spam.patch \
+        file://0005-frontends-spark_dvbapi5-silence-kmsg-spam.patch \
+        file://0006-frontends-spark7162-silence-kmsg-spam.patch \
+        file://0001-import-cec-from-pinky-s-git.patch \
+        file://0002-aotom-fix-include-file.patch \
+        file://0003-aotom-add-VFDGETVERSION-ioctl-to-find-FP-type.patch \
+        file://0004-aotom-improve-scrolling-text-code.patch \
+        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
+        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
+        file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
         file://aotom_udev.rules \
+        file://COPYING \
 " 
 
-PV = "0.1+git${SRCPV}"
+INC_PR = "r25"
+
+PV = "0.2+git${SRCPV}"
 
 FILES_${PN} = "/etc/udev/rules.d "
 FILES = ""
@@ -60,7 +70,7 @@ do_configure_prepend () {
 	rm -f .config 
         printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
 	# disable wireless build
-	sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
+	# sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
 	# disable led and button - it's not for spark
 	sed -i 's@^\(obj-y.*+= \(led\|button\)/\)@# \1@' Makefile
 }

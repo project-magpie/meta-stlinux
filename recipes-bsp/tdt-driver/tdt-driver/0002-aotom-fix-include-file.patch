@@ -1,10 +1,10 @@
-From d07baed3307f3688abcfd97ac770ceaf6110d961 Mon Sep 17 00:00:00 2001
+From 371209aca540f27e900184678216bda2d0c80075 Mon Sep 17 00:00:00 2001
 From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
 Date: Sat, 28 Jul 2012 21:18:47 +0200
-Subject: [PATCH 2/4] aotom: fix include file
+Subject: [PATCH 2/7] aotom: fix include file
 
 ---
- frontcontroller/aotom/aotom_main.h | 3 +++
+ frontcontroller/aotom/aotom_main.h |    3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/frontcontroller/aotom/aotom_main.h b/frontcontroller/aotom/aotom_main.h
@@ -25,5 +25,5 @@ index cf425e6..91921b0 100644
  #define VFD_MAJOR             147
  
 -- 
-1.7.11.5
+1.7.10.4
 

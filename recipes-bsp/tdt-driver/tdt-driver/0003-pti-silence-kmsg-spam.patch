@@ -1,0 +1,124 @@
+From 66915df065c9cf4e8fc29aa7133da2aa1064ce8f Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Sun, 19 Feb 2012 16:49:28 +0100
+Subject: [PATCH 3/6] pti: silence kmsg spam
+
+---
+ pti/pti_main.c |   30 ++++++++++++++++++++----------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
+
+diff --git a/pti/pti_main.c b/pti/pti_main.c
+index 397b8aa..f610928 100644
+--- a/pti/pti_main.c
++++ b/pti/pti_main.c
+@@ -167,16 +167,18 @@ static void PtiWrite(volatile unsigned short int *addr,unsigned short int value)
+ static void loadtc(struct pti_internal *pti)
+ {
+   int n;
+-
++#ifdef VERY_VERBOSE
+   printk("%s: >\n",__FUNCTION__);
+-
++#endif
+   for (n=0;n<=TCASM_LableMap[0].Value;n+=4)
+     writel(transport_controller_code[n/4], pti->pti_io + PTI_IRAM_BASE + n );
+ 
+   for (n=0;n<(sizeof(transport_controller_data) * 2);n+=4)
+     writel(transport_controller_data[n/4], pti->pti_io + PTI_DRAM_BASE + n);
+ 
++#ifdef VERY_VERBOSE
+   printk("%s: <\n",__FUNCTION__);
++#endif
+ }
+ 
+ static void *getsymbol(struct pti_internal *pti, const char *symbol)
+@@ -877,9 +879,11 @@ int pti_hal_slot_clear_pid ( int session_handle, int slot_handle )
+ 
+   slot_handle -= SLOT_HANDLE_OFFSET;
+ 
++#ifdef VERY_VERBOSE
+   printk("%s slot = %d, tc = %d, num = %d\n", __FUNCTION__, slot_handle,
+ 		internal->vSlots[slot_handle]->tcIndex,
+ 		*internal->num_pids);
++#endif
+ 
+   if ((internal->vSlots[slot_handle]->tcIndex < 0) ||
+ 	(internal->vSlots[slot_handle]->pid == 0xffff))
+@@ -917,7 +921,9 @@ int pti_hal_slot_clear_pid ( int session_handle, int slot_handle )
+ 
+ int pti_hal_slot_free ( int session_handle, int slot_handle )
+ {
++#ifdef VERY_VERBOSE
+   printk("%s %d\n", __FUNCTION__, slot_handle);
++#endif
+ 
+   if(internal->vSlots[slot_handle - SLOT_HANDLE_OFFSET]->tcIndex != -1)
+     pti_hal_slot_clear_pid (session_handle, slot_handle );
+@@ -949,7 +955,9 @@ int pti_hal_slot_set_pid ( int session_handle, int slot_handle, u16 pid )
+ {
+   int vLoop;
+ 
++#ifdef VERY_VERBOSE
+   printk("%s: %d %d %d\n", __FUNCTION__, session_handle, slot_handle, pid);
++#endif
+ 
+   for (vLoop = 0; vLoop < (*internal->num_pids); vLoop++)
+   {
+@@ -968,9 +976,9 @@ int pti_hal_slot_set_pid ( int session_handle, int slot_handle, u16 pid )
+ 	{
+ 	   internal->vSlots[vLoop]->pid = pid;
+ 	   internal->vSlots[vLoop]->tcIndex = *internal->num_pids;
+-
++#ifdef VERY_VERBOSE
+ 	   printk("%s ok (pid %d, tc = %d)\n", __FUNCTION__, pid, *internal->num_pids);
+-
++#endif
+ 	   PtiWrite(&internal->pidtable[*internal->num_pids], pid);
+ 	   msleep(10);
+ 	   PtiWrite(internal->num_pids,*internal->num_pids + 1);
+@@ -1002,9 +1010,9 @@ int pti_hal_get_new_slot_handle ( int session_handle, int dvb_type,
+ 	{
+           internal->vSlots[vLoopSlots]->inUse = 1;
+           internal->vSlots[vLoopSlots]->tcIndex = -1;
+-
++#ifdef VERY_VERBOSE
+ 	  printk("ret slothandle = %d\n", internal->vSlots[vLoopSlots]->Handle);
+-
++#endif
+           return internal->vSlots[vLoopSlots]->Handle;
+ 	}
+   }
+@@ -1018,13 +1026,19 @@ int pti_hal_set_source(int session_handle, const int source)
+ int pti_hal_set_source ( int session_handle, const dmx_source_t source )
+ #endif
+ {
++#ifdef VERY_VERBOSE
+ 		printk("source %d, session_handle %d\n", source, session_handle);
++#endif
+ 		#if defined(SPARK7162)
+ 		{
+ 			int i;
+ 			int old_session;
+ 			int old_source = -1;
+ 			old_session = internal->demux_tag[source];
++			if (old_session == session_handle)
++			{
++				return 1;
++			}
+ 			printk("before\n");
+ 			for (i = 0; i < TAG_COUNT; i++)
+ 			{
+@@ -1033,10 +1047,6 @@ int pti_hal_set_source ( int session_handle, const dmx_source_t source )
+ 				printk("internal->demux_tag[%d] = %d\n",
+ 						i, internal->demux_tag[i]);
+ 			}
+-			if (old_session == session_handle)
+-			{
+-        		return 1;
+-			}
+ 			for (i = 0; i < TAG_COUNT; i++)
+ 			{
+ 			    if (internal->demux[i])
+-- 
+1.7.10.4
+

@@ -1,0 +1,188 @@
+From 2958842f02de90ba2342e1b478302e6b4f86d7d7 Mon Sep 17 00:00:00 2001
+From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
+Date: Fri, 6 Jul 2012 14:50:02 +0200
+Subject: [PATCH 1/7] import cec from pinky's git
+
+git://gitorious.org/~pinky1981/open-duckbox-project-sh4/pingulux-git.git
+commit 6d6486c89a5e4c0828ed0502f45b2b9c5b5f53ce
+---
+ cec/Makefile      |    1 +
+ cec/cec_dev.c     |    3 +++
+ cec/cec_main.c    |   15 +++++++++++++++
+ cec/cec_opcodes.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 66 insertions(+), 1 deletion(-)
+
+diff --git a/cec/Makefile b/cec/Makefile
+index 4194668..7fba26a 100644
+--- a/cec/Makefile
++++ b/cec/Makefile
+@@ -6,6 +6,7 @@ obj-m           += cec.o
+ cec-objs        += cec_main.o cec_worker.o cec_opcodes.o cec_internal.o cec_proc.o cec_rc.o cec_dev.o
+ 
+ EXTRA_CFLAGS    := -I$(DRIVER_TOPDIR)/cec -I$(DRIVER_TOPDIR)/include -I$(DRIVER_TOPDIR)/dvb/drivers/media/dvb
++EXTRA_CFLAGS	+= -DEVOLUX
+ 
+ ifdef UFS912
+ EXTRA_CFLAGS	+= -DSTx7111
+diff --git a/cec/cec_dev.c b/cec/cec_dev.c
+index 5fa3baa..0822037 100644
+--- a/cec/cec_dev.c
++++ b/cec/cec_dev.c
+@@ -265,6 +265,9 @@ int init_dev(void)
+ int cleanup_dev(void)
+ {
+ 	unregister_chrdev(CEC_MAJOR,"CEC");
++#ifdef EVOLUX
++	return 0;
++#endif
+ }
+ 
+ 
+diff --git a/cec/cec_main.c b/cec/cec_main.c
+index 60223ff..d546acd 100644
+--- a/cec/cec_main.c
++++ b/cec/cec_main.c
+@@ -40,6 +40,9 @@
+ #include "cec_debug.h"
+ #include "cec_worker.h"
+ #include "cec_opcodes.h"
++#ifdef EVOLUX
++#include "cec_opcodes_def.h"
++#endif
+ #include "cec_internal.h"
+ #include "cec_proc.h"
+ #include "cec_rc.h"
+@@ -49,6 +52,10 @@
+ 
+ static unsigned char cancelStart = 0;
+ int activemode = 0;
++#ifdef EVOLUX
++char *deviceName = "DUCKBOX";
++unsigned char deviceType = DEVICE_TYPE_DVD;
++#endif
+ 
+ //----------------------------
+ 
+@@ -134,6 +141,14 @@ MODULE_LICENSE          ("GPL");
+ 
+ module_param(debug, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+ module_param(activemode, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
++#ifdef EVOLUX
++module_param(deviceType, byte, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
++module_param(deviceName, charp, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
++#endif
+ MODULE_PARM_DESC(debug, "Debug Output 0=disabled >0=enabled(debuglevel)");
+ MODULE_PARM_DESC(activemode, "Active mode 0=disabled >0=enabled(activemode)");
++#ifdef EVOLUX
++MODULE_PARM_DESC(deviceType, "Device type (default: 4 (DVD))");
++MODULE_PARM_DESC(deviceName, "Name (default: DUCKBOX)");
++#endif
+ 
+diff --git a/cec/cec_opcodes.c b/cec/cec_opcodes.c
+index 6aacc38..08dab1c 100644
+--- a/cec/cec_opcodes.c
++++ b/cec/cec_opcodes.c
+@@ -52,6 +52,19 @@ static unsigned char isFirstKiss = 0;
+ static unsigned char logicalDeviceTypeChoicesIndex = 0;
+ 
+ 
++#ifdef EVOLUX
++static const unsigned char logicalDeviceTypeChoices[][2] =  { 
++  { 1 << DEVICE_TYPE_DVD, DEVICE_TYPE_DVD1 }, 
++  { 1 << DEVICE_TYPE_DVD, DEVICE_TYPE_DVD2 }, 
++  { 1 << DEVICE_TYPE_DVD, DEVICE_TYPE_DVD3 }, 
++  { 1 << DEVICE_TYPE_STB, DEVICE_TYPE_STB1 }, 
++  { 1 << DEVICE_TYPE_STB, DEVICE_TYPE_STB2 }, 
++  { 1 << DEVICE_TYPE_STB, DEVICE_TYPE_STB3 },
++  { 1 << DEVICE_TYPE_REC, DEVICE_TYPE_REC1 },
++  { 1 << DEVICE_TYPE_REC, DEVICE_TYPE_REC2 },
++  { 0xFF, DEVICE_TYPE_UNREG }
++ };
++#else
+ static const unsigned char logicalDeviceTypeChoices[] =  { 
+ DEVICE_TYPE_DVD1, 
+ DEVICE_TYPE_DVD2, 
+@@ -62,9 +75,17 @@ DEVICE_TYPE_STB3,
+ DEVICE_TYPE_REC1, //PREV_KEY_WORKING
+ DEVICE_TYPE_REC2, 
+ DEVICE_TYPE_UNREG };
++#endif
+ 
++#ifdef EVOLUX
++extern char *deviceName;
++#endif
+ static unsigned char logicalDeviceType = DEVICE_TYPE_DVD1;
++#ifdef EVOLUX
++extern unsigned char deviceType;
++#else
+ static unsigned char deviceType = DEVICE_TYPE_DVD;
++#endif
+ 
+ static unsigned short ActiveSource = 0x0000;
+ 
+@@ -94,7 +115,7 @@ unsigned char getDeviceType(void) {
+ unsigned short getPhysicalAddress(void) {
+   unsigned int value = 0;
+   stmhdmiio_get_cec_address(&value);
+-  
++
+   return value & 0xffff;
+ }
+ 
+@@ -313,6 +334,15 @@ void parseMessage(unsigned char src, unsigned char dst, unsigned int len, unsign
+       {
+       responseBuffer[0] = (getLogicalDeviceType() << 4) + (src & 0xF);
+       responseBuffer[1] = SET_OSD_NAME;
++#ifdef EVOLUX
++      {
++	int len = strlen(deviceName);
++	if (len > CEC_MAX_DATA_LEN - 2)
++		len = CEC_MAX_DATA_LEN - 2;
++	strncpy(responseBuffer + 2, deviceName, len);
++	sendMessage(len + 2, responseBuffer);
++      }
++#else
+       responseBuffer[2] = 'D';
+       responseBuffer[3] = 'U';
+       responseBuffer[4] = 'C'; 
+@@ -321,6 +351,7 @@ void parseMessage(unsigned char src, unsigned char dst, unsigned int len, unsign
+       responseBuffer[7] = 'O'; 
+       responseBuffer[8] = 'X'; 
+       sendMessage(9, responseBuffer);
++#endif
+       }
+       break;
+ 
+@@ -645,14 +676,29 @@ void sendPingWithAutoIncrement(void)
+ {
+   unsigned char responseBuffer[1];
+ 
++#ifdef EVOLUX
++  char ldt = 1 << deviceType;
++  // advance to the first matching device type
++  while (!(ldt & logicalDeviceTypeChoices[logicalDeviceTypeChoicesIndex][0]))
++    logicalDeviceTypeChoicesIndex++;
++#endif
+   printk("[CEC] sendPingWithAutoIncrement - 1\n");
+   setIsFirstKiss(1);
+ 
++#ifdef EVOLUX
++  logicalDeviceType = logicalDeviceTypeChoices[logicalDeviceTypeChoicesIndex++][1];
++#else
+   logicalDeviceType = logicalDeviceTypeChoices[logicalDeviceTypeChoicesIndex++];
++#endif
+   responseBuffer[0] = (logicalDeviceType << 4) + (logicalDeviceType & 0xF);
+   printk("[CEC] sendPingWithAutoIncrement - 2\n");
+   sendMessage(1, responseBuffer);
+   printk("[CEC] sendPingWithAutoIncrement - 3\n");
++#ifdef EVOLUX
++  // advance to the next matching device type
++  while (!(ldt & logicalDeviceTypeChoices[logicalDeviceTypeChoicesIndex][0]))
++    logicalDeviceTypeChoicesIndex++;
++#endif
+ }
+ 
+ void sendOneTouchPlay(void)
+-- 
+1.7.10.4
+

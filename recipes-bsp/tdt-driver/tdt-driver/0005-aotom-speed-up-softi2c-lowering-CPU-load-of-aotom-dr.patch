@@ -1,7 +1,7 @@
-From a02fc80b725ff4ddeccd4cc39165ba2d077631d1 Mon Sep 17 00:00:00 2001
+From 3c86adf33efcd098cc51869669681bb815f3c47f Mon Sep 17 00:00:00 2001
 From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
 Date: Sun, 4 Nov 2012 17:43:42 +0100
-Subject: [PATCH 5/6] aotom: speed up softi2c, lowering CPU load of aotom
+Subject: [PATCH 5/7] aotom: speed up softi2c, lowering CPU load of aotom
  driver
 
 this doubles the i2c speed on spark7162, lowering the CPU load
@@ -9,7 +9,7 @@ of the aotom driver significantly (less busy-waiting).
 Still works well with my box.
 ---
  frontcontroller/aotom/aotom_i2csoft.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/frontcontroller/aotom/aotom_i2csoft.c b/frontcontroller/aotom/aotom_i2csoft.c
 index 44e1812..518a3cf 100644
@@ -25,5 +25,5 @@ index 44e1812..518a3cf 100644
  
  
 -- 
-1.7.7
+1.7.10.4
 
