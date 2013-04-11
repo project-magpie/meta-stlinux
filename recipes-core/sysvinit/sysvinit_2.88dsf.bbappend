@@ -10,7 +10,7 @@ SRC_URI_append = " \
 do_install_append() {
         install -d ${D}/bin
         install -m 755 ${WORKDIR}/devinit ${D}/bin
-        find  ${D}${sysconfdir}/rc* -name "*bootlogd" -exec rm {} \;
+#        find  ${D}${sysconfdir}/rc* -name "*bootlogd" -exec rm {} \;
 }
 
 FILES_${PN} += " \
