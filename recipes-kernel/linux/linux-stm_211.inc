@@ -47,7 +47,7 @@ do_install_append() {
 }
 
 
-FILES_kernel-dev += "${includedir}/linux"
+FILES_kernel-dev += "${D}${includedir}/linux"
 
 do_configure_append() {
         if test -e scripts/Makefile.fwinst ; then
