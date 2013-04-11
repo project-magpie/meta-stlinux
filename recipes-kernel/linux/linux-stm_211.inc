@@ -4,6 +4,8 @@ SECTION = "kernel"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
+RPROVIDES_kernel-base = "kernel-${KERNEL_VERSION}"
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 LINUX_VERSION = "2.6.32.59"
 STM_PATCH_STR = "0211"
@@ -11,7 +13,7 @@ STM_PATCH_STR = "0211"
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
-PV = "${LINUX_VERSION}_stm24_${STM_PATCH_STR}"
+PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 KBRANCH = "stmicro"
 KTAG = "stlinux24_0211"
 INC_PR = "r2"
