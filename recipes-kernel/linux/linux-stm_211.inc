@@ -16,7 +16,7 @@ UDEV_GE_141 ?= "0"
 PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 KBRANCH = "stmicro"
 KTAG = "stlinux24_0211"
-INC_PR = "r2"
+INC_PR = "r1"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
