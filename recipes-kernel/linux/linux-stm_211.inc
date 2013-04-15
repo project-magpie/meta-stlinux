@@ -48,7 +48,7 @@ do_install_append() {
    	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
 }
 
-FILES_kernel-dev += "${includedir}/linux"
+FILES_kernel-dev += "/kernel ${includedir}/linux"
 
 do_configure_append() {
         if test -e scripts/Makefile.fwinst ; then
