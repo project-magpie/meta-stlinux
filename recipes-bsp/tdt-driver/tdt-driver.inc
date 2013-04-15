@@ -33,7 +33,7 @@ SRC_URI = " \
         file://COPYING \
 " 
 
-INC_PR = "r25"
+INC_PR = "r26"
 
 PV = "0.2+git${SRCPV}"
 
@@ -130,8 +130,10 @@ do_install() {
 	install -d ${D}/${sysconfdir}/udev/rules.d/
 	
 	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
-	echo ${KERNEL_VERSION}
-	echo "/lib/modules/${KERNEL_VERSION}/extra"
+}
+
+do_install_append_spark7162() {
+	find ${D} -name stmcore-display-sti7106.ko | xargs -r rm # we don't have a 7106 chip
 }
 
 pkg_postinst_modules () {
