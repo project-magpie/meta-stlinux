@@ -1,7 +1,7 @@
 require linux-stm_211.inc
 
 # INC_PR is defined in the .inc file if something has change here just increase the number after the dot
-PR = "${INC_PR}.9"
+PR = "${INC_PR}.10"
 
 DEPENDS += " \
            stlinux24-sh4-stx7105-fdma-firmware \

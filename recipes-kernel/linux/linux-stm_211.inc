@@ -13,7 +13,7 @@ STM_PATCH_STR = "0211"
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
-PV = "${LINUX_VERSION}-stm24-${STM_LINUX_PATCH_STR}"
+PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 KBRANCH = "stmicro"
 KTAG = "stlinux24_0211"
 INC_PR = "r1"
@@ -35,7 +35,7 @@ do_configure_prepend() {
 }
 
 do_install_append() {
-        kerneldir=${D}${KERNEL_SRC_PATH}
+        kerneldir=${D}/kernel
 	if [ -f include/linux/bounds.h ]; then
 		mkdir -p $kerneldir/include/linux
                 cp include/linux/bounds.h $kerneldir/include/linux/bounds.h
