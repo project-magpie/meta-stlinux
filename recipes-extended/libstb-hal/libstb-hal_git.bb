@@ -8,9 +8,9 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING.GPL;md5=751419260aa954499f7abaabaa
 
 DEPENDS = "tdt-driver libass ffmpeg"
 
-SRCREV = "6b9726992630f9a8570d8d2a1122d013c96bcc3a"
+SRCREV = "c191aba9ca778a6a902c17931e5a7e5965673a66"
 PV = "0.0+git${SRCPV}"
-PR = "r6"
+PR = "r6.1"
 
 PACKAGES += "pic2m2v spark-fp"
 
