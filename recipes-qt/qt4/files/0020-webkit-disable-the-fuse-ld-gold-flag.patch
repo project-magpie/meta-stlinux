@@ -1,0 +1,21 @@
+diff --git a/src/3rdparty/webkit/Source/common.pri b/src/3rdparty/webkit/Source/common.pri
+index 0f62e14..d81a1f0 100644
+--- a/src/3rdparty/webkit/Source/common.pri
++++ b/src/3rdparty/webkit/Source/common.pri
+@@ -3,12 +3,12 @@
+ contains(JAVASCRIPTCORE_JIT,yes): DEFINES+=ENABLE_JIT=1
+ contains(JAVASCRIPTCORE_JIT,no): DEFINES+=ENABLE_JIT=0
+ 
+-linux-g++ {
+-isEmpty($$(SBOX_DPKG_INST_ARCH)):exists(/usr/bin/ld.gold) {
+-    message(Using gold linker)
+-    QMAKE_LFLAGS+=-fuse-ld=gold
+-}
+-}
++#linux-g++ {
++#isEmpty($$(SBOX_DPKG_INST_ARCH)):exists(/usr/bin/ld.gold) {
++#    message(Using gold linker)
++#    QMAKE_LFLAGS+=-fuse-ld=gold
++#}
++#}
+ 
