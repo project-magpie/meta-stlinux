@@ -12,4 +12,5 @@ RRECOMMENDS = "\
 	openspark-3rdparty-plugins \
 	enigma2-skins \
 	enigma2-pliplugins \
+        compat-wireless-all \
 	"

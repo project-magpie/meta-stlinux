@@ -9,6 +9,7 @@ RPROVIDES_kernel-base = "kernel-${KERNEL_VERSION}"
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 LINUX_VERSION = "2.6.32.59"
 STM_PATCH_STR = "0211"
+KEEPUIMAGE = "true"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"

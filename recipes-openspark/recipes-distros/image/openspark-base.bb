@@ -38,4 +38,6 @@ RDEPENDS = "\
 	task-base-nfs \
 	busybox-cron \
 	python-imaging \
+        kernel-module-autofs4 \
+        autofs \
 	"
