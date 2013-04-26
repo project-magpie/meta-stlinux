@@ -1,0 +1,10 @@
+--- linux-sh4.org/include/linux/dvb/frontend.h.org	2012-12-31 16:08:27.072530782 +0100
++++ linux-sh4/include/linux/dvb/frontend.h	2012-12-31 16:08:27.048530781 +0100
+@@ -336,6 +336,7 @@
+ 	SYS_DMBTH,
+ 	SYS_CMMB,
+ 	SYS_DAB,
++	SYS_DVBT2,
+ } fe_delivery_system_t;
+ 
+ struct dtv_cmds_h {
