@@ -5,24 +5,27 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
+LINUX_VERSION = "2.6.32.59"
+STM_PATCH_STR = "0211"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
 PV = "${LINUX_VERSION}-stm24-${STM_PATCH_STR}"
 KBRANCH = "stmicro"
+KTAG = "stlinux24_0211"
+INC_PR = "r1"
 
+# Quirk for udev greater or equal 141
+UDEV_GE_141 ?= "0"
+
+SRCREV = "3bce06ff873fb5098c8cd21f1d0e8d62c00a4903"
 SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
            file://${MACHINE}_defconfig \
            file://st-coprocessor.h \
 "
 S = "${WORKDIR}/git"
 PARALLEL_MAKEINST = ""
-
-do_configure () {
-	sed -i "s#^\(CONFIG_EXTRA_FIRMWARE_DIR=\).*#\1\"${STAGING_DIR_HOST}/lib/firmware\"#" .config;
-        yes '' | oe_runmake oldconfig
-}
 
 do_configure_prepend() {
 	rm -f ${S}/.config || true
