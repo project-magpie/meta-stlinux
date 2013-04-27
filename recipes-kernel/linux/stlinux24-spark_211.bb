@@ -1,11 +1,11 @@
 require linux-stm_211.inc
 
 # INC_PR is defined in the .inc file if something has change here just increase the number after the dot
-PR = "${INC_PR}.1"
+PR = "${INC_PR}.12"
 
 
 DEPENDS += " \
-           stlinux24-sh4-stx7105-fdma-firmware \
+           stlinux24-sh4-stx7111-fdma-firmware \
 "
 
 SRC_URI_append = "\
@@ -28,5 +28,4 @@ SRC_URI_append = "\
              file://linux-sh4-lirc_stm_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://af901x-NXP-TDA18218.patch;patch=1 \
              file://dvb-as102.patch;patch=1 \
-             file://0001-added-pm_power_off-hoock-for-machine_halt.patch;patch=1 \
 "
