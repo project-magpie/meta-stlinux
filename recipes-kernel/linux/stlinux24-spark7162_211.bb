@@ -15,6 +15,7 @@ SRC_URI_append = "\
              file://linux-sh4-init_mm_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://linux-sh4-copro_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://linux-sh4-strcpy_stm24_${STM_PATCH_STR}.patch;patch=1 \
+             file://linux-squashfs-lzma_stm24_${STM_PATCH_STR}.patch;patch=1  \
              file://linux-sh4-ext23_as_ext4_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://bpa2_procfs_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://linux-ftdi_sio.c_stm24_${STM_PATCH_STR}.patch;patch=1 \
@@ -25,4 +26,5 @@ SRC_URI_append = "\
              file://linux-sh4-stmmac_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://linux-sh4-lmb_stm24_${STM_PATCH_STR}.patch;patch=1 \
              file://linux-sh4-spark7162_setup_stm24_${STM_PATCH_STR}.patch;patch=1 \
+             file://linux-sh4-cifs-unaligned-mem-access-kernel_stm24.patch;patch=1 \
 "
