@@ -1,8 +1,10 @@
-require linux-stm_210.inc
+require linux-stm.inc
 
 # INC_PR is defined in the .inc file if something has change here just increase the number after the dot
 PR = "${INC_PR}.12"
 
+PV = "${LINUX_VERSION}-stm24-0210"
+SRCREV = "7367427b3c1b8965a0f5c960a18c5c802ad2eb8f"
 
 DEPENDS += " \
            stlinux24-sh4-stx7111-fdma-firmware \
