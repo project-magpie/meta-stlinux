@@ -1,6 +1,6 @@
 require tdt-tools.inc
 
-RDEPEND += "libmmeimage"
+DEPENDS += "jpeg"
 
 DESCRIPTION = "MME image library"
 
