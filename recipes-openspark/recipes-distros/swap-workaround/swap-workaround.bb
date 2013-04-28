@@ -17,3 +17,4 @@ do_install() {
 	install -m 0755 ${WORKDIR}/swapfile	${D}${sysconfdir}/init.d/swapfile
 	ln -sf		../init.d/swapfile	${D}${sysconfdir}/rc3.d/S98swapfile
 }
+
