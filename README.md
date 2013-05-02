@@ -1,69 +1,29 @@
-OpenEmbedded BSP Layer - For STLinux sh4 based Set-Top-Boxes 
+OE-Alliance BSP Layer - For STLinux sh4 based Set-Top-Boxes 
 ============================================================
 
 This is the general hardware specific BSP overlay for STLinux based devices.
-It should be used with openembedded-core (not old-style org.openembedded.dev).
+It should be used with oe-alliance.
 
 
-This layer in its entirety depends on:
-
-    URI: git://git.openembedded.org/openembedded-core
-    branch: denzil 
-    revision: HEAD
-
-It is preferred that people raise pull requests using GIThub by forking the appropriate tree:
-
-                   https://github.com/project-magpie/meta-stlinux.git
-                   (More info on achieving this can be found at http://help.github.com/send-pull-requests/)
-
-
-How to use it with yocto (preferred) 
+How to use it 
 -----------------------------------
 
-## Clone poky
-    git clone http://git.yoctoproject.org/git/poky poky
-
-## Switch to denzil branch
-    cd poky 
-    git checkout -b denzil remotes/origin/denzil
+## Clone oe-alliance build environment
+    git clone git://github.com/oe-alliance/build-enviroment.git OEA
 
 ## Move to top folder
-    cd ..
-        
-How to use it with openembedded core 
-------------------------------------
+    cd OEA
 
-## Clone openembedded-core
-    git clone git://git.openembedded.org/openembedded-core oe-core
-
-## Switch to denzil branch
-    cd oe-core
-    git checkout -b denzil remotes/origin/denzil
-
-## Clone bitbake into the oe-core folder
-    git clone git://git.openembedded.org/bitbake bitbake
-    git checkout -b f8bf449 f8bf449
-
-## Move to top folder
-    cd ..
-
-Independent Steps from poky/oe-core
------------------------------------
-
-## Clone meta-stlinux
-    git clone https://github.com/project-magpie/meta-stlinux.git meta-stlinux
+## Update
+    make update
     
-## Initialize the oe-core build environment 
-    # Initialize the oe-core build environment and edit configuration files 
-    # 
-    # This following command line line will create your build directory, setup your build environment,
-    # automatically place the current work directory inside the build dir and
-    # print out some useful information on how to bitbake packages.
-    # You can rerun this command every time you want to re-setup your build environment!
+## Clone meta-stlinux
+    git clone git://github.com/sklnet/meta-stlinux.git
 
-    source poky/oe-init-build-env spark-build
+## Initialize the build environment 
+    MACHINE=spark7162 DISTRO=openspark make init
 
-## Add meta-stlinux in bblayers.conf 
+## Add meta-stlinux in bblayers.conf and remove non-sh4 extensions in site.conf (e.g., native)
     vim conf/bblayers.conf
     ...
     BBLAYERS ?= " \
@@ -72,19 +32,8 @@ Independent Steps from poky/oe-core
     "
     ...
 
-## Set MACHINE to spark and package type to ipk in local.conf
-    vim conf/local.conf
-    ...
-    # Currently only spark hardware is supported
-    MACHINE ??= "spark"
-    ...
-    PACKAGE_CLASSES ?= "package_ipk"
-    ...
-   
-
 ## Run bitbake: 
-
-    bitbake core-image-minimal 
+    bitbake openpli-enigma2-image
 
 
 Prerequisite
@@ -95,11 +44,3 @@ For the coprocessor firmware loading you have to provide the coprocessor firmwar
 -   /data/stslave_fw/spark/audio.elf
 
 These files can be extracted from a alternative image and are not part of this repository.
-
-Caution!
---------
-
-Currently the only supported boot mechanism is booting a USB Stick. Fore more information 
-have a look at this wiki page: [Boot-from-USB-Stick](https://github.com/project-magpie/meta-stlinux/wiki/Boot-from-USB-Stick)
-
-Layer maintainer: Christian Ege (graugans) k4230r6 at googlemail.com 
