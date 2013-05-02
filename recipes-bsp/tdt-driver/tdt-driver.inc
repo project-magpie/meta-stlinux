@@ -29,15 +29,15 @@ SRC_URI = " \
         file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
         file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
         file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
-        file://aotom_udev.rules \
+        file://aotom.sh \
         file://COPYING \
 " 
 
-INC_PR = "r26"
+INC_PR = "r27"
 
 PV = "0.2+git${SRCPV}"
 
-FILES_${PN} = "/etc/udev/rules.d "
+FILES_${PN} = ""
 FILES = ""
 
 S = "${WORKDIR}/git"
@@ -127,9 +127,10 @@ do_install() {
 	#install modutils config
 	install -d ${D}/${sysconfdir}/modules-load.d
 	install -d ${D}/${sysconfdir}/modprobe.d
-	install -d ${D}/${sysconfdir}/udev/rules.d/
-	
-	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
+	install -d ${D}/${sysconfdir}/init.d
+        install -d ${D}/${sysconfdir}/rcS.d
+        install -m 0755 ${WORKDIR}/aotom.sh ${D}${sysconfdir}/init.d
+        ln -sf ../init.d/aotom.sh ${D}${sysconfdir}/rcS.d/S04aotom
 }
 
 do_install_append_spark7162() {
