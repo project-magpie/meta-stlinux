@@ -1,18 +1,15 @@
-#! /bin/sh
-#
-# This is an init script for Familiar
-# Copy it to /etc/init.d/lircd and type
-# > update-rc.d lircd defaults 20
-#
-
+#!/bin/sh
 
 test -f /usr/sbin/lircd || exit 0
 test -f /etc/lircd.conf || exit 0
 
+# if /var/run does not exist, we are screwed anyway...
+test -d /var/run/lirc || mkdir /var/run/lirc
+
 case "$1" in
   start)
     echo -n "Starting lirc daemon: lircd"
-    start-stop-daemon --start --quiet --exec /usr/sbin/lircd -- --device=/dev/lirc
+    start-stop-daemon --start --quiet --exec /usr/sbin/lircd -- -u --device=/dev/lirc0 
     echo "."
     ;;
   stop)
@@ -25,10 +22,10 @@ case "$1" in
     ;;
   restart)
     echo -n "Stopping lirc daemon: lircd"
-    start-stop-daemon --stop --quiet --exec /usr/sbin/lircd
+    $0 stop
     sleep 1
     echo -n "Starting lirc daemon: lircd"
-    start-stop-daemon --start --quiet --exec /usr/sbin/lircd -- --device=/dev/lirc
+    $0 start
     echo "."
     ;;
   *)

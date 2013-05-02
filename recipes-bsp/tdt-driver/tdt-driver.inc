@@ -37,7 +37,7 @@ INC_PR = "r27"
 
 PV = "0.2+git${SRCPV}"
 
-FILES_${PN} = ""
+FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""
 
 S = "${WORKDIR}/git"

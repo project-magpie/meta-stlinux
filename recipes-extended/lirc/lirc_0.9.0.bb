@@ -12,9 +12,6 @@ RRECOMMENDS_${PN} = "lirc-exec kernel-module-uinput"
 
 PR = "${INCPR}.0"
 
-
-CFLAGS_append = " -DUINPUT_NEUTRINO_HACK "
-
 EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER} --without-x --with-driver=userspace "
 
 inherit autotools module-base update-rc.d
@@ -23,22 +20,17 @@ SRC_URI_append = " file://lircd.init \
                    file://lircexec.init \
                  "
 
-SPARK_GEN_SRC_URI += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
-			 file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
-			 file://lirc-0.9.0-uinput-repeat-fix.diff;patch=1 \
-                         file://lircd_spark.conf \
-                         file://lircd_spark.init \
-                         file://98-lirc_spark.rules \
+SPARK_GEN_SRC_URI += " file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
 "
+
 SRC_URI_append_spark += "${SPARK_GEN_SRC_URI} \
-                         file://lircd_spark.conf.09_00_0A \
-                         file://lircd_spark.conf.09_00_07 \
+			file://lircd.conf \
 "
 
 SRC_URI_append_spark7162 += "${SPARK_GEN_SRC_URI} \
-                         file://lircd_spark.conf.09_00_0A \
-                         file://lircd_spark.conf.09_00_07 \
+			file://lircd.conf \
 "
+
 INITSCRIPT_PACKAGES = "lirc lirc-exec"
 INITSCRIPT_NAME = "lircd"
 INITSCRIPT_PARAMS = "defaults 20"
@@ -51,8 +43,6 @@ EXTRA_OEMAKE = 'SUBDIRS="daemons tools"'
 
 do_install_append() {
 	install -d ${D}${sysconfdir}/init.d
-	install -d ${D}${sysconfdir}/udev/rules.d/
-        install -m 0644 ${WORKDIR}/98-lirc_spark.rules ${D}${sysconfdir}/udev/rules.d/98-lirc.rules
 	install ${WORKDIR}/lircd.init ${D}${sysconfdir}/init.d/lircd
 	install ${WORKDIR}/lircexec.init ${D}${sysconfdir}/init.d/lircexec
         install -d ${D}${datadir}/lirc/
@@ -63,18 +53,11 @@ do_install_append() {
 
 
 do_install_append_spark() {
-	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
-        install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_0A ${D}${sysconfdir}/lircd.conf.09_00_0A
-        install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_07 ${D}${sysconfdir}/lircd.conf.09_00_07
-        install -m 0755 ${WORKDIR}/lircd_spark.init ${D}${sysconfdir}/init.d/lircd
+	install -m 0644 ${WORKDIR}/lircd.conf ${D}${sysconfdir}/lircd.conf
 }
 
 do_install_append_spark7162() {
-        install -m 0644 ${WORKDIR}/98-lirc_spark.rules ${D}${sysconfdir}/udev/rules.d/98-lirc.rules
-	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
-        install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_0A ${D}${sysconfdir}/lircd.conf.09_00_0A
-        install -m 0644 ${WORKDIR}/lircd_spark.conf.09_00_07 ${D}${sysconfdir}/lircd.conf.09_00_07
-        install -m 0755 ${WORKDIR}/lircd_spark.init ${D}${sysconfdir}/init.d/lircd
+	install -m 0644 ${WORKDIR}/lircd.conf ${D}${sysconfdir}/lircd.conf
 }
 
 PACKAGES =+ "lirc-exec lirc-remotes"
