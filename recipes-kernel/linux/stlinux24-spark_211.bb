@@ -32,5 +32,4 @@ SRC_URI_append = "\
              file://af901x-NXP-TDA18218.patch;patch=1 \
              file://dvb-as102.patch;patch=1 \
              file://linux-sh4-cifs-unaligned-mem-access-kernel_stm24.patch;patch=1 \
-             file://linux-sh4-linux_yaffs2_stm24_${STM_PATCH_STR}.patch;patch=1 \
 "
