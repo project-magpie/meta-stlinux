@@ -31,8 +31,7 @@ MKUBIFS_ARGS = "-m 2048 -e 126976 -c 4096 -F"
 UBINIZE_ARGS = "-m 2048 -p 128KiB"
 
 JFFS2_ERASEBLOCK = "0x20000"
-JFFS2_ENDIANNESS = "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '--little-endian', '--big-endian', d)}"
-EXTRA_IMAGECMD_jffs2 = "--pad ${JFFS2_ENDIANNESS} --eraseblock=${JFFS2_ERASEBLOCK} --no-cleanmarkers"
+EXTRA_IMAGECMD_jffs2 = "-e ${JFFS2_ERASEBLOCK} -pn"
 
 INHERIT += "usb_image-spark71xx"
 IMAGE_FSTYPES ?= "tar.gz ubi ext2 jffs2 spark71xx-usbimg"
