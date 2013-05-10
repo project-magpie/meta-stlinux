@@ -24,7 +24,7 @@ UDEV_GE_141 ?= "0"
 
 SRCREV = "3bce06ff873fb5098c8cd21f1d0e8d62c00a4903"
 SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
-           file://${MACHINE}_defconfig \
+           file://linux-sh4-2.6.32.59-0211_${MACHINE}.config.debug \
            file://st-coprocessor.h \
 "
 S = "${WORKDIR}/git"
@@ -32,7 +32,7 @@ PARALLEL_MAKEINST = ""
 
 do_configure_prepend() {
 	rm -f ${S}/.config || true
-   	cp ${WORKDIR}/${MACHINE}_defconfig ${S}/.config
+   	cp ${WORKDIR}/linux-sh4-2.6.32.59-0211_${MACHINE}.config.debug ${S}/.config
 }
 
 do_install_append() {

@@ -10,37 +10,22 @@ inherit module
 PACKAGES = "${PN} ${PN}-dev"
 PACKAGES_DYNAMIC += "kernel-module-*"
 
-SRCREV = "350ce95d04b701b61e91e6aa60d1120a1958ca57"
+SRCREV = "8d7537153e1fb8afbb1ae3fc6a2f8e5d8b3b1efa"
 
-
-# using seifes tdt drivers because this has less overhead
 SRC_URI = " \
-	git://gitorious.org/neutrino-mp/tdt-driver.git \
-        file://0001-player2_191-silence-kmsg-spam.patch \
-        file://0002-e2proc-silence-kmsg-spam.patch \
-        file://0003-pti-silence-kmsg-spam.patch \
-        file://0004-stmfb-silence-kmsg-spam.patch \
-        file://0005-frontends-spark_dvbapi5-silence-kmsg-spam.patch \
-        file://0006-frontends-spark7162-silence-kmsg-spam.patch \
-        file://0001-import-cec-from-pinky-s-git.patch \
-        file://0002-aotom-fix-include-file.patch \
-        file://0003-aotom-add-VFDGETVERSION-ioctl-to-find-FP-type.patch \
-        file://0004-aotom-improve-scrolling-text-code.patch \
-        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
-        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
-        file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
+	git://gitorious.org/~max10/open-duckbox-project-sh4/max-tdt.git;branch=master \
         file://aotom.sh \
         file://COPYING \
 " 
 
-INC_PR = "r27"
+INC_PR = "r1"
 
-PV = "0.2+git${SRCPV}"
+PV = "0.3+git${SRCPV}"
 
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/git/tdt/cvs/driver"
 
 do_configure_prepend () {
 	if [ -L include/stmfb ]; then
@@ -61,12 +46,12 @@ do_configure_prepend () {
 	if [ -L multicom ]; then
                 rm multicom 
         fi
-	ln -s ${S}/include/stmfb-3.1_stm24_0102 ${S}/include/stmfb
-	ln -s ${S}/include/player2_179 ${S}/include/player2
+	ln -s ${S}/include/stmfb-3.1_stm24_0104 ${S}/include/stmfb
+	ln -s ${S}/include/player2_191 ${S}/include/player2
 	ln -s ${S}/multicom-3.2.4/include ${S}/include/multicom
 	ln -s ${S}/player2_191 ${S}/player2
 	ln -s ${S}/multicom-3.2.4 ${S}/multicom
-	ln -s ${S}/stgfb/stmfb-3.1_stm24_0102 ${S}/stgfb/stmfb
+	ln -s ${S}/stgfb/stmfb-3.1_stm24_0104 ${S}/stgfb/stmfb
 	rm -f .config 
         printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
 	# disable wireless build

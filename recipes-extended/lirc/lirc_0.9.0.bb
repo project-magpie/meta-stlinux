@@ -7,10 +7,10 @@ PRIORITY = "optional"
 HOMEPAGE = "http://www.lirc.org"
 LICENSE = "GPLv2"
 DEPENDS = "virtual/kernel"
-RDEPENDS_lirc-exec = "lirc"
-RRECOMMENDS_${PN} = "lirc-exec kernel-module-uinput"
+RDEPENDS_lirc-exec = "lirc evremote2"
+RRECOMMENDS_${PN} = "lirc-exec"
 
-PR = "${INCPR}.0"
+PR = "${INCPR}.1"
 
 EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER} --without-x --with-driver=userspace "
 
@@ -24,11 +24,11 @@ SPARK_GEN_SRC_URI += " file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
 "
 
 SRC_URI_append_spark += "${SPARK_GEN_SRC_URI} \
-			file://lircd.conf \
+			file://lircd_spark.conf \
 "
 
 SRC_URI_append_spark7162 += "${SPARK_GEN_SRC_URI} \
-			file://lircd.conf \
+			file://lircd_spark7162.conf \
 "
 
 INITSCRIPT_PACKAGES = "lirc lirc-exec"
@@ -53,11 +53,11 @@ do_install_append() {
 
 
 do_install_append_spark() {
-	install -m 0644 ${WORKDIR}/lircd.conf ${D}${sysconfdir}/lircd.conf
+	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
 }
 
 do_install_append_spark7162() {
-	install -m 0644 ${WORKDIR}/lircd.conf ${D}${sysconfdir}/lircd.conf
+	install -m 0644 ${WORKDIR}/lircd_spark7162.conf ${D}${sysconfdir}/lircd.conf
 }
 
 PACKAGES =+ "lirc-exec lirc-remotes"
