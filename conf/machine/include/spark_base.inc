@@ -2,8 +2,8 @@ require conf/machine/include/tune-sh4.inc
 TARGET_ARCH = "sh4"
 STLINUX_SH_UPD_SRPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/SRPMS"
 STLINUX_SH_UPD_RPMS = "http://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/sh4/"
-STM_LINUX_PATCH_STR = "0210"
-PREFERRED_VERSION_linux-${MACHINE} = "2.6.32.57-stm24-0210"
+STM_LINUX_PATCH_STR = "0211"
+PREFERRED_VERSION_linux-${MACHINE} = "2.6.32.57-stm24-0211"
 PREFERRED_VERSION_linux-libc-headers = "2.6.32"
 PREFERRED_PROVIDER_virtual/kernel = "stlinux24-${MACHINE}"
 PREFERRED_PROVIDER_openssl = "openssl"
@@ -48,7 +48,6 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
                                      fp-control \
                                      stfbcontrol \
                                      ustslave \
-                                     libmmeimage \
                                      tdt-driver \
 "
 
