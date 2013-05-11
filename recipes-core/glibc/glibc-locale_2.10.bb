@@ -2,6 +2,7 @@ INHIBIT_DEFAULT_DEPS = "1"
 LICENSE = "GPLv2 & LGPLv2.1"
 
 BPN = "glibc"
+DEPENDS = "glibc"
 
 do_fetch[noexec] = "1"
 do_unpack[noexec] = "1"
