@@ -4,7 +4,7 @@ SRCREV = "3e94272e370a13e6e1754fde578b2c44165ebcaa"
 PV = "2.10"
 
 DEPENDS += "gperf-native"
-PR = "r2"
+PR = "r3"
 PR_append = "+git${SRCPV}"
 FILESPATHPKG =. "glibc-git:"
 
@@ -18,6 +18,8 @@ SRC_URI = " \
            file://fallocate64-backport.patch;patch=1 \
 	   file://glibc-ports-${GLIBC_PORTS_VER}.tar.bz2 \
            file://execvpe.patch;patch=1 \
+           file://sh4_set_fpscr.patch \
+           file://sh4_local-fpscr_values.patch;patch=1 \
 	   "
 SRC_URI[md5sum] = "05c85905b43021a81318c3aa81718019"
 SRC_URI[sha256sum] = "3691677a855fd5caf4c90ff922c132a7d2b966279a342733860b0c9084a155d9"
