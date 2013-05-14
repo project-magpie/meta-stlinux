@@ -21,20 +21,29 @@ How to use it
     git clone git://github.com/sklnet/meta-stlinux.git
 
 ## Initialize the build environment 
-    MACHINE=spark7162 DISTRO=openspark make init
+    MACHINE=spark7162 DISTRO=<distroname> make init
 
-## Add meta-stlinux in bblayers.conf and remove non-sh4 extensions in site.conf (e.g., native)
-    vim conf/bblayers.conf
-    ...
-    BBLAYERS ?= " \
-      ${TOPDIR}/../oe-core/meta \
-      ${TOPDIR}/../meta-stlinux \
-    "
-    ...
+## Fix configuration files
 
-## Run bitbake: 
-    bitbake openpli-enigma2-image
+    Add meta-stlinux in bblayers.conf:
+        vim builds/<distroname>/spark7162/conf/bblayers.conf
 
+            ...
+            BBLAYERS ?= " \
+            ${TOPDIR}/../oe-core/meta \
+            ${TOPDIR}/../meta-stlinux \
+            "
+            ...
+    Remove "-march=native" in site.conf
+        vim builds/<distroname>/spark7162/conf/site.conf
+            ...
+            BUILD_OPTIMIZATION = "-O2 -pipe"
+            ...
+    WORKAROUND FOR GLIBC. MUST BE FIXED!!!!
+        Remove TCLIBC definition in <distroname>.conf inside oe-alliance meta
+
+## create image: 
+    MACHINE=spark7162 DISTRO=<distroname> make image
 
 Prerequisite
 ------------
