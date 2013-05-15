@@ -18,7 +18,7 @@ SRC_URI = " \
         file://COPYING \
 " 
 
-INC_PR = "r1"
+INC_PR = "r2"
 
 PV = "0.3+git${SRCPV}"
 
@@ -82,6 +82,8 @@ do_compile() {
                    modules 
 }
 
+BINARY_PTI_NP_PATH ?= "/data/pti_np"
+
 do_install() {
         unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
         oe_runmake KERNEL_PATH=${STAGING_KERNEL_DIR}   \
@@ -116,6 +118,13 @@ do_install() {
         install -d ${D}/${sysconfdir}/rcS.d
         install -m 0755 ${WORKDIR}/aotom.sh ${D}${sysconfdir}/init.d
         ln -sf ../init.d/aotom.sh ${D}${sysconfdir}/rcS.d/S04aotom
+
+	# if a custom pti.ko is present, overwrite the tdt one
+	if [ -e ${BINARY_PTI_NP_PATH}/pti.ko ]; then
+		echo "Found custom pti.." 
+		install -m 644 ${BINARY_PTI_NP_PATH}/pti.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
+	fi
+
 }
 
 do_install_append_spark7162() {
