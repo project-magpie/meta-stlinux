@@ -13,6 +13,8 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 SRCREV = "350ce95d04b701b61e91e6aa60d1120a1958ca57"
 
 
+BINARY_PTI_NP_PATH ?= "/data/pti_np"
+
 # using seifes tdt drivers because this has less overhead
 SRC_URI = " \
 	git://gitorious.org/neutrino-mp/tdt-driver.git \
@@ -33,7 +35,7 @@ SRC_URI = " \
         file://COPYING \
 " 
 
-INC_PR = "r26"
+INC_PR = "r27"
 
 PV = "0.2+git${SRCPV}"
 
@@ -130,6 +132,15 @@ do_install() {
 	install -d ${D}/${sysconfdir}/udev/rules.d/
 	
 	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
+ 
+        # if a custom pti.ko is present, overwrite the tdt one
+        if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
+                echo "Found custom pti.." 
+                install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
+        fi
+
+
+
 }
 
 do_install_append_spark7162() {
