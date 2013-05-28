@@ -18,7 +18,6 @@ PROVIDES = "${PN} \
 	enigma2-plugin-systemplugins-fancontrol \
 	enigma2-plugin-extensions-vuplusevent \
 	enigma2-plugin-systemplugins-remotecontrolcode \
-	enigma2-plugin-extensions-webbrowser \
 	enigma2-plugin-extensions-ondemand-openuitzendinggemist \
 	enigma2-plugin-extensions-tunerserver \
 	enigma2-plugin-extensions-hbbtv \
@@ -49,9 +48,6 @@ RDEPENDS_enigma2-plugin-systemplugins-fancontrol_et9x00 = "hddtemp"
 DESCRIPTION_enigma2-plugin-extensions-vuplusevent = "Return the Love Event (only for genuine box)"
 DESCRIPTION_enigma2-plugin-systemplugins-remotecontrolcode = "Change Remote Control Code"
 RDEPENDS_enigma2-plugin-systemplugins-3gmodemmanager = "ppp usbmodeswitch usbmodeswitch-data wvstreams libwvutils4.6 libwvstreams-extras libuniconf4.6 kernel-module-ppp-async kernel-module-ppp-deflate kernel-module-ppp-synctty kernel-module-ppp-generic kernel-module-slhc kernel-module-usbserial kernel-module-cdc-acm kernel-module-ppp-mppe kernel-module-pppoe kernel-module-pppox kernel-module-option kernel-module-bsd-comp usbutils"
-DESCRIPTION_enigma2-plugin-extensions-webbrowser = "Webbrowser launcher"
-RDEPENDS_enigma2-plugin-extensions-webbrowser = "python-gdata libqtwebkite4 webbrowser-utils qt4-embedded-fonts qt4-embedded-plugin-imageformat-gif qt4-embedded-plugin-imageformat-ico qt4-embedded-plugin-imageformat-jpeg qt4-embedded-plugin-imageformat-mng qt4-embedded-plugin-imageformat-svg qt4-embedded-plugin-imageformat-tiff qt4-embedded-plugin-iconengine-svgicon"
-FILES_enigma2-plugin-extensions-webbrowser_append = "${datadir}/keymaps"
 DESCRIPTION_enigma2-plugin-extensions-ondemand-openuitzendinggemist = "Watch NL-IP TV"
 DESCRIPTION_enigma2-plugin-extensions-tunerserver = "Builds a virtual channels list"
 DESCRIPTION_enigma2-plugin-extensions-hbbtv = "HbbTV player"
@@ -75,12 +71,10 @@ DEPENDS = "enigma2 \
 	usbmodeswitch \
 	usbmodeswitch-data \
 	wvstreams \
-	webbrowser-utils \
 	usbutils \
 	gmp \
 	tslib \
 	mpfr \
-	vuplus-opera-browser-util \
 	"
 
 inherit gitpkgv autotools
