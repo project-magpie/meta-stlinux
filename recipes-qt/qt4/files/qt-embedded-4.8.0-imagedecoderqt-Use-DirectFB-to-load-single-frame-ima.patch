@@ -1,0 +1,42 @@
+From ac72bbd2a18d9ac86d11767c5052b9978740ca84 Mon Sep 17 00:00:00 2001
+From: Ilyes Gouta <ilyes.gouta@st.com>
+Date: Wed, 4 Jan 2012 16:04:41 +0100
+Subject: [PATCH] imagedecoderqt: Use DirectFB to load single frame images
+ using QPixmap::loadFromData()
+
+By reverting commit f8af163c6324c99be41f04e900cc618ca74635a2.
+---
+ .../platform/graphics/qt/ImageDecoderQt.cpp        |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/src/3rdparty/webkit/Source/WebCore/platform/graphics/qt/ImageDecoderQt.cpp b/src/3rdparty/webkit/Source/WebCore/platform/graphics/qt/ImageDecoderQt.cpp
+index 1f93aa3..e66511d 100644
+--- a/src/3rdparty/webkit/Source/WebCore/platform/graphics/qt/ImageDecoderQt.cpp
++++ b/src/3rdparty/webkit/Source/WebCore/platform/graphics/qt/ImageDecoderQt.cpp
+@@ -194,9 +194,21 @@ void ImageDecoderQt::internalReadImage(size_t frameIndex)
+ 
+ bool ImageDecoderQt::internalHandleCurrentImage(size_t frameIndex)
+ {
+-    QPixmap pixmap = QPixmap::fromImageReader(m_reader.get());
++    QPixmap pixmap;
++    bool pixmapLoaded = false;
++    const int imageCount = m_reader->imageCount();
++    if (imageCount == 0 || imageCount == 1)
++        pixmapLoaded = pixmap.loadFromData((const uchar*)(m_data->data()), m_data->size(), m_format);
++    else {
++        QImage img;
++        const bool imageLoaded = m_reader->read(&img);
++        if (imageLoaded) {
++            pixmap = QPixmap::fromImage(img);
++            pixmapLoaded = true;
++        }
++    }
+ 
+-    if (pixmap.isNull()) {
++    if (!pixmapLoaded) {
+         frameCount();
+         repetitionCount();
+         clearPointers();
+-- 
+1.7.4.4
+

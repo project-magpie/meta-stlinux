@@ -1,0 +1,22 @@
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/webkit/Source/WebKit/qt/Api/qwebpage.cpp qt-everywhere-opensource-src-4.8.0/src/3rdparty/webkit/Source/WebKit/qt/Api/qwebpage.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/webkit/Source/WebKit/qt/Api/qwebpage.cpp	2011-11-16 14:31:03.121313906 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/3rdparty/webkit/Source/WebKit/qt/Api/qwebpage.cpp	2011-11-17 08:47:59.527937097 +0100
+@@ -2092,11 +2092,13 @@
+ {
+     Q_UNUSED(sourceID)
+ 
+-    // Catch plugin logDestroy message for LayoutTests/plugins/open-and-close-window-with-plugin.html
+-    // At this point DRT's WebPage has already been destroyed
+-    if (QWebPagePrivate::drtRun) {
+-        if (message == QLatin1String("PLUGIN: NPP_Destroy"))
+-            fprintf (stdout, "CONSOLE MESSAGE: line %d: %s\n", lineNumber, message.toUtf8().constData());
++    if (getenv("printConsole")) {
++      // Catch plugin logDestroy message for LayoutTests/plugins/open-and-close-window-with-plugin.html
++      // At this point DRT's WebPage has already been destroyed
++      // if (QWebPagePrivate::drtRun) {
++          // if (message == QLatin1String("PLUGIN: NPP_Destroy"))
++              fprintf (stdout, "CONSOLE MESSAGE: line %d: %s\n", lineNumber, message.toUtf8().constData());
++      // }
+     }
+ }
+ 

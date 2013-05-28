@@ -1,0 +1,102 @@
+diff --git a/src/3rdparty/webkit/Source/JavaScriptCore/assembler/MacroAssemblerSH4.h b/Source/JavaScriptCore/assembler/MacroAssemblerSH4.h
+index 9036f0f..ddca57b 100644
+--- a/src/3rdparty/webkit/Source/JavaScriptCore/assembler/MacroAssemblerSH4.h
++++ b/src/3rdparty/webkit/Source/JavaScriptCore/assembler/MacroAssemblerSH4.h
+@@ -156,6 +156,14 @@ public:
+ 
+     void lshift32(RegisterID shiftamount, RegisterID dest)
+     {
++        if (shiftamount == SH4Registers::r0)
++            m_assembler.andlImm8r(0x1f, shiftamount);
++        else {
++            RegisterID scr = claimScratch();
++            m_assembler.loadConstant(0x1f, scr);
++            m_assembler.andlRegReg(scr, shiftamount);
++            releaseScratch(scr);
++        }
+         m_assembler.shllRegReg(dest, shiftamount);
+     }
+ 
+@@ -175,7 +183,7 @@ public:
+         }
+ 
+         RegisterID scr = claimScratch();
+-        m_assembler.loadConstant(imm.m_value, scr);
++        m_assembler.loadConstant((imm.m_value & 0x1f), scr);
+         m_assembler.shllRegReg(dest, scr);
+         releaseScratch(scr);
+     }
+@@ -221,9 +229,14 @@ public:
+ 
+     void rshift32(RegisterID shiftamount, RegisterID dest)
+     {
+-        compare32(32, shiftamount, Equal);
+-        m_assembler.ensureSpace(m_assembler.maxInstructionSize + 4);
+-        m_assembler.branch(BT_OPCODE, 1);
++        if (shiftamount == SH4Registers::r0)
++            m_assembler.andlImm8r(0x1f, shiftamount);
++        else {
++            RegisterID scr = claimScratch();
++            m_assembler.loadConstant(0x1f, scr);
++            m_assembler.andlRegReg(scr, shiftamount);
++            releaseScratch(scr);
++        }
+         m_assembler.neg(shiftamount, shiftamount);
+         m_assembler.shaRegReg(dest, shiftamount);
+     }
+@@ -709,7 +722,7 @@ public:
+         RegisterID scr1 = claimScratch();
+         m_assembler.loadConstant((imm.m_value), scr);
+         m_assembler.loadConstant(reinterpret_cast<uint32_t>(address), scr1);
+-        m_assembler.movlMemReg(scr, scr1);
++        m_assembler.movlRegMem(scr, scr1);
+         releaseScratch(scr);
+         releaseScratch(scr1);
+     }
+@@ -718,7 +731,7 @@ public:
+     {
+         RegisterID scr = claimScratch();
+         m_assembler.loadConstant(reinterpret_cast<uint32_t>(address), scr);
+-        m_assembler.movlMemReg(src, scr);
++        m_assembler.movlRegMem(src, scr);
+         releaseScratch(scr);
+     }
+ 
+@@ -1175,8 +1188,9 @@ public:
+ 
+     DataLabelPtr moveWithPatch(TrustedImmPtr initialValue, RegisterID dest)
+     {
++        m_assembler.ensureSpace(m_assembler.maxInstructionSize, sizeof(uint32_t));
+         DataLabelPtr dataLabel(this);
+-        m_assembler.loadConstantUnReusable(reinterpret_cast<uint32_t>(initialValue.m_value), dest, true);
++        m_assembler.loadConstantUnReusable(reinterpret_cast<uint32_t>(initialValue.m_value), dest);
+         return dataLabel;
+     }
+ 
+@@ -1608,9 +1622,14 @@ public:
+ 
+     void urshift32(RegisterID shiftamount, RegisterID dest)
+     {
+-        compare32(32, shiftamount, Equal);
+-        m_assembler.ensureSpace(m_assembler.maxInstructionSize + 4);
+-        m_assembler.branch(BT_OPCODE, 1);
++        if (shiftamount == SH4Registers::r0)
++            m_assembler.andlImm8r(0x1f, shiftamount);
++        else {
++            RegisterID scr = claimScratch();
++            m_assembler.loadConstant(0x1f, scr);
++            m_assembler.andlRegReg(scr, shiftamount);
++            releaseScratch(scr);
++        }
+         m_assembler.neg(shiftamount, shiftamount);
+         m_assembler.shllRegReg(dest, shiftamount);
+     }
+@@ -1618,7 +1637,7 @@ public:
+     void urshift32(TrustedImm32 imm, RegisterID dest)
+     {
+         RegisterID scr = claimScratch();
+-        m_assembler.loadConstant(-(imm.m_value), scr);
++        m_assembler.loadConstant(-(imm.m_value & 0x1f), scr);
+         m_assembler.shaRegReg(dest, scr);
+         releaseScratch(scr);
+     }

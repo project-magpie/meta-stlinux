@@ -1,0 +1,58 @@
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TCSystemAlloc.cpp qt-everywhere-opensource-src-4.8.0/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TCSystemAlloc.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TCSystemAlloc.cpp	2011-11-16 14:31:16.743934114 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TCSystemAlloc.cpp	2011-11-16 17:41:29.620022734 +0100
+@@ -443,9 +443,22 @@
+ 
+ void TCMalloc_SystemRelease(void* start, size_t length)
+ {
+-  void* newAddress = mmap(reinterpret_cast<char*>(start), length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+-  // If the mmap failed then that's ok, we just won't return the memory to the system.
+-  ASSERT_UNUSED(newAddress, newAddress == start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
++ if (pagesize == 0) pagesize = getpagesize();
++  const size_t pagemask = pagesize - 1;
++  size_t new_start = reinterpret_cast<size_t>(start);
++  size_t end = new_start + length;
++  size_t new_end = end;
++
++  new_start = (new_start + pagesize - 1) & ~pagemask;
++  new_end = new_end & ~pagemask;
++
++  if (new_end <= new_start)
++    return;
++
++  size_t new_length = new_end - new_start;
++  void* newAddress = (void*) new_start;//mmap(reinterpret_cast<char*>(new_start), new_length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
++   // If the mmap failed then that's ok, we just won't return the memory to the system.
++  ASSERT_UNUSED(newAddress, newAddress == new_start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
+ }
+ 
+ #elif HAVE(VIRTUALALLOC)
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TCSystemAlloc.cpp qt-everywhere-opensource-src-4.8.0/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TCSystemAlloc.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TCSystemAlloc.cpp	2011-11-16 14:30:57.258016500 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/3rdparty/webkit/Source/JavaScriptCore/wtf/TCSystemAlloc.cpp	2011-11-16 17:42:35.010037303 +0100
+@@ -443,9 +443,22 @@
+ 
+ void TCMalloc_SystemRelease(void* start, size_t length)
+ {
+-  void* newAddress = mmap(start, length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+-  // If the mmap failed then that's ok, we just won't return the memory to the system.
+-  ASSERT_UNUSED(newAddress, newAddress == start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
++  if (pagesize == 0) pagesize = getpagesize();
++  const size_t pagemask = pagesize - 1;
++  size_t new_start = reinterpret_cast<size_t>(start);
++  size_t end = new_start + length;
++  size_t new_end = end;
++
++  new_start = (new_start + pagesize - 1) & ~pagemask;
++  new_end = new_end & ~pagemask;
++
++  if (new_end <= new_start)
++    return;
++
++  size_t new_length = new_end - new_start;
++  void* newAddress = (void*) new_start ;//= mmap(reinterpret_cast<char*>(new_start), new_length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
++   // If the mmap failed then that's ok, we just won't return the memory to the system.
++  ASSERT_UNUSED(newAddress, newAddress == new_start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
+ }
+ 
+ #elif HAVE(VIRTUALALLOC)

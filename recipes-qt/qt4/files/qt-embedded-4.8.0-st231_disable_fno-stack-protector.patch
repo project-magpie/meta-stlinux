@@ -1,0 +1,28 @@
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/javascriptcore/JavaScriptCore/JavaScriptCore.pri qt-everywhere-opensource-src-4.8.0/src/3rdparty/javascriptcore/JavaScriptCore/JavaScriptCore.pri
+--- qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/javascriptcore/JavaScriptCore/JavaScriptCore.pri	2012-01-19 14:20:41.274638293 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/3rdparty/javascriptcore/JavaScriptCore/JavaScriptCore.pri	2012-01-19 14:24:40.595637304 +0100
+@@ -61,8 +61,8 @@
+ # Rules when JIT enabled (not disabled)
+ !contains(DEFINES, ENABLE_JIT=0) {
+     linux*-g++*:greaterThan(QT_GCC_MAJOR_VERSION,3):greaterThan(QT_GCC_MINOR_VERSION,0) {
+-        QMAKE_CXXFLAGS += -fno-stack-protector
+-        QMAKE_CFLAGS += -fno-stack-protector
++        QMAKE_CXXFLAGS +=
++        QMAKE_CFLAGS +=
+     }
+ }
+ 
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/webkit/Source/JavaScriptCore/JavaScriptCore.pro qt-everywhere-opensource-src-4.8.0/src/3rdparty/webkit/Source/JavaScriptCore/JavaScriptCore.pro
+--- qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/webkit/Source/JavaScriptCore/JavaScriptCore.pro	2012-01-19 14:20:37.922641744 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/3rdparty/webkit/Source/JavaScriptCore/JavaScriptCore.pro	2012-01-19 14:25:40.832638111 +0100
+@@ -34,8 +34,8 @@
+ # Rules when JIT enabled (not disabled)
+ !contains(DEFINES, ENABLE_JIT=0) {
+     linux*-g++*:greaterThan(QT_GCC_MAJOR_VERSION,3):greaterThan(QT_GCC_MINOR_VERSION,0) {
+-        QMAKE_CXXFLAGS += -fno-stack-protector
+-        QMAKE_CFLAGS += -fno-stack-protector
++        QMAKE_CXXFLAGS +=
++        QMAKE_CFLAGS +=
+     }
+ }
+ 

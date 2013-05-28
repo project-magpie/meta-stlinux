@@ -1,0 +1,19 @@
+diff --git a/include/directfb.h b/include/directfb.h
+index 4199dfb..32d0be0 100644
+--- a/include/directfb.h
++++ b/include/directfb.h
+@@ -1625,9 +1631,13 @@ typedef enum {
+ typedef enum {
+      DVPLAY_NOFX        = 0x00000000, /* normal playback           */
+      DVPLAY_REWIND      = 0x00000001, /* reverse playback          */
+-     DVPLAY_LOOPING     = 0x00000002  /* automatically restart
++     DVPLAY_LOOPING     = 0x00000002, /* automatically restart
+                                          playback when end-of-stream
+                                          is reached (gapless).     */
++     DVPLAY_PACED       = 0x00000004  /* decoding pace is controlled
++                                         by the caller, the decoder
++                                         won't wait on its own while
++                                         decoding frames. */
+ } DFBVideoProviderPlaybackFlags;
+ 
+ /*

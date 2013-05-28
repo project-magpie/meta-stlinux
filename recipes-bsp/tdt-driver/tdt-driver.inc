@@ -14,13 +14,18 @@ SRCREV = "8d7537153e1fb8afbb1ae3fc6a2f8e5d8b3b1efa"
 
 SRC_URI = " \
 	git://gitorious.org/~max10/open-duckbox-project-sh4/max-tdt.git;branch=master \
+        file://0001-import-cec-from-pinky-s-git.patch \
+        file://0004-aotom-improve-scrolling-text-code.patch \
+        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
+        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
+        file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
         file://aotom.sh \
         file://COPYING \
 " 
 
 INC_PR = "r2"
 
-PV = "0.3+git${SRCPV}"
+PV = "0.4+git${SRCPV}"
 
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""

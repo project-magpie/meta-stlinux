@@ -7,22 +7,80 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=8e37f34d0e40d32ea2bc90ee812c9131"
 
 PROVIDES = "${PN} \
 	enigma2-plugin-systemplugins-autobouquetsmaker \
+	enigma2-plugin-systemplugins-blindscan \
 	enigma2-plugin-extensions-dlnabrowser \
 	enigma2-plugin-extensions-dlnaserver \
+	enigma2-plugin-systemplugins-firmwareupgrade \
+	enigma2-plugin-systemplugins-fpgaupgrade \
+	enigma2-plugin-systemplugins-vfdcontrol \
+	enigma2-plugin-extensions-streamtv \
+	enigma2-plugin-systemplugins-tempfancontrol \
+	enigma2-plugin-systemplugins-fancontrol \
+	enigma2-plugin-extensions-vuplusevent \
+	enigma2-plugin-systemplugins-remotecontrolcode \
+	enigma2-plugin-extensions-webbrowser \
+	enigma2-plugin-extensions-ondemand-openuitzendinggemist \
+	enigma2-plugin-extensions-tunerserver \
+	enigma2-plugin-extensions-hbbtv \
+	enigma2-plugin-systemplugins-transcodingsetup \
+	enigma2-plugin-systemplugins-micomupgrade \
+	enigma2-plugin-extensions-ondemand \
+	enigma2-plugin-extensions-fempa \
 	"
 
 DESCRIPTION_enigma2-plugin-systemplugins-autobouquetsmaker = "Automatically build and update bouquets from the satellite stream."
 RREPLACES_enigma2-plugin-systemplugins-autobouquetsmaker = "enigma2-plugin-extensions-autobouquets"
 RCONFLICTS_enigma2-plugin-systemplugins-autobouquetsmaker = "enigma2-plugin-extensions-autobouquets"
+DESCRIPTION_enigma2-plugin-systemplugins-blindscan = "blindscan..."
+RDEPENDS_enigma2-plugin-systemplugins-blindscan = "virtual/blindscan-dvbs"
 DESCRIPTION_enigma2-plugin-extensions-dlnabrowser = "this is dlna/upnp browser using djmount"
 RDEPENDS_enigma2-plugin-extensions-dlnabrowser = "djmount fuse-utils libfuse2 libupnp3 gst-plugins-bad-neonhttpsrc"
 DESCRIPTION_enigma2-plugin-extensions-dlnaserver = "this is dlna server using minidlna"
 RDEPENDS_enigma2-plugin-extensions-dlnaserver = "minidlna"
+DESCRIPTION_enigma2-plugin-systemplugins-firmwareupgrade = "Upgrade your system Firmware"
+DESCRIPTION_enigma2-plugin-systemplugins-fpgaupgrade = "Upgrade your system FPGA"
+DESCRIPTION_enigma2-plugin-systemplugins-vfdcontrol = "vfd controller"
+RDEPENDS_enigma2-plugin-systemplugins-vfdcontrol = "gigablue-vfdctl"
+DESCRIPTION_enigma2-plugin-extensions-streamtv = "iptv player"
+RDEPENDS_enigma2-plugin-extensions-streamtv = "librtmp"
+DESCRIPTION_enigma2-plugin-systemplugins-tempfancontrol = "Control your internal system fan."
+DESCRIPTION_enigma2-plugin-systemplugins-fancontrol = "Control your internal system fan."
+RDEPENDS_enigma2-plugin-systemplugins-fancontrol_et9x00 = "hddtemp"
+DESCRIPTION_enigma2-plugin-extensions-vuplusevent = "Return the Love Event (only for genuine box)"
+DESCRIPTION_enigma2-plugin-systemplugins-remotecontrolcode = "Change Remote Control Code"
+RDEPENDS_enigma2-plugin-systemplugins-3gmodemmanager = "ppp usbmodeswitch usbmodeswitch-data wvstreams libwvutils4.6 libwvstreams-extras libuniconf4.6 kernel-module-ppp-async kernel-module-ppp-deflate kernel-module-ppp-synctty kernel-module-ppp-generic kernel-module-slhc kernel-module-usbserial kernel-module-cdc-acm kernel-module-ppp-mppe kernel-module-pppoe kernel-module-pppox kernel-module-option kernel-module-bsd-comp usbutils"
+DESCRIPTION_enigma2-plugin-extensions-webbrowser = "Webbrowser launcher"
+RDEPENDS_enigma2-plugin-extensions-webbrowser = "python-gdata libqtwebkite4 webbrowser-utils qt4-embedded-fonts qt4-embedded-plugin-imageformat-gif qt4-embedded-plugin-imageformat-ico qt4-embedded-plugin-imageformat-jpeg qt4-embedded-plugin-imageformat-mng qt4-embedded-plugin-imageformat-svg qt4-embedded-plugin-imageformat-tiff qt4-embedded-plugin-iconengine-svgicon"
+FILES_enigma2-plugin-extensions-webbrowser_append = "${datadir}/keymaps"
+DESCRIPTION_enigma2-plugin-extensions-ondemand-openuitzendinggemist = "Watch NL-IP TV"
+DESCRIPTION_enigma2-plugin-extensions-tunerserver = "Builds a virtual channels list"
+DESCRIPTION_enigma2-plugin-extensions-hbbtv = "HbbTV player"
+RDEPENDS_enigma2-plugin-extensions-hbbtv = "tslib-conf libts-1.0-0 libsysfs2 libgmp10 libmpfr4 vuplus-opera-browser-util enigma2-hbbtv-util"
+DESCRIPTION_enigma2-plugin-systemplugins-transcodingsetup = "Setup transcoding of your VU+"
+RDEPENDS_enigma2-plugin-systemplugins-transcodingsetup = "vuplus-transtreamproxy"
+DESCRIPTION_enigma2-plugin-systemplugins-micomupgrade = "micomupgrade"
+RDEPENDS_enigma2-plugin-extensions-ondemand = "python-dnspython python-beautifulsoup python-lxml python-simplejson python-pyamf"
+DESCRIPTION_enigma2-plugin-extensions-ondemand = "Watch on demand TV."
+DESCRIPTION_enigma2-plugin-extensions-fempa = "Norwegian P4 FEM PAA radio show player."
 
 DEPENDS = "enigma2 \
+	${@base_contains("MACHINE_FEATURES", "blindscan-dvbc", "virtual/blindscan-dvbc" , "", d)} \
+	${@base_contains("MACHINE_FEATURES", "blindscan-dvbs", "virtual/blindscan-dvbs" , "", d)} \
+	python-dnspython python-beautifulsoup python-lxml python-simplejson python-pyamf \
 	djmount \
 	librtmp \
 	minidlna \
+	hddtemp \
+	ppp \
+	usbmodeswitch \
+	usbmodeswitch-data \
+	wvstreams \
+	webbrowser-utils \
+	usbutils \
+	gmp \
+	tslib \
+	mpfr \
+	vuplus-opera-browser-util \
 	"
 
 inherit gitpkgv autotools

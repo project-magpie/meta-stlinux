@@ -1,0 +1,85 @@
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbpaintengine.cpp qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbpaintengine.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbpaintengine.cpp	2011-11-16 14:31:53.744943420 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbpaintengine.cpp	2011-11-16 18:13:38.608936608 +0100
+@@ -1117,8 +1117,14 @@
+         blittingFlags |= DSBLIT_FLIP_VERTICAL;
+ #endif
+ 
+-    if (flags & HasAlpha)
+-        blittingFlags |= DSBLIT_BLEND_ALPHACHANNEL;
++/*
++ *  Add the DSBLIT_SRC_PREMULTIPLY  when we have alpha
++ *  because the porterduff rules assumes that the colors are premultiplied.
++ *  but what happens for surfaces already premultiplied ??
++ */
++    if (flags & HasAlpha) {
++        blittingFlags |= (DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY);
++    }
+ 
+     if (opacity != 255) {
+         blittingFlags |= DSBLIT_BLEND_COLORALPHA;
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbpixmap.cpp qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbpixmap.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbpixmap.cpp	2011-11-16 14:31:53.740936148 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbpixmap.cpp	2011-11-16 18:20:41.783934006 +0100
+@@ -359,7 +359,8 @@
+ 
+     if (alpha) {
+         dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+-        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
++        dfbSurface->SetPorterDuff(dfbSurface, DSPD_SRC_OVER);
++        dfbSurface->SetBlittingFlags(dfbSurface, (DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY));
+     } else {
+         dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+     }
+@@ -455,13 +456,14 @@
+     DFBSurfaceBlittingFlags flags = DSBLIT_NOFX;
+     data->alpha = alpha;
+     if (alpha) {
+-        flags = DSBLIT_BLEND_ALPHACHANNEL;
++        flags = DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY;
+     }
+     data->dfbSurface = screen->createDFBSurface(size,
+                                                 imageFormat,
+                                                 QDirectFBScreen::TrackSurface);
+     if (flags & DSBLIT_BLEND_ALPHACHANNEL) {
+         data->dfbSurface->Clear(data->dfbSurface, 0, 0, 0, 0);
++        dfbSurface->SetPorterDuff(dfbSurface, DSPD_SRC_OVER);
+     }
+     data->dfbSurface->SetBlittingFlags(data->dfbSurface, flags);
+ 
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbscreen.cpp qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbscreen.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbscreen.cpp	2011-11-16 14:31:53.739276151 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbscreen.cpp	2011-11-16 18:22:13.776936444 +0100
+@@ -241,10 +241,12 @@
+     src->GetSize(src, &size.rwidth(), &size.rheight());
+     IDirectFBSurface *surface = createDFBSurface(size, format, options, result);
+     DFBSurfaceBlittingFlags flags = QDirectFBScreen::hasAlphaChannel(surface)
+-                                    ? DSBLIT_BLEND_ALPHACHANNEL
++                                    ? (DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY)
+                                     : DSBLIT_NOFX;
+-    if (flags & DSBLIT_BLEND_ALPHACHANNEL)
++    if (flags & DSBLIT_BLEND_ALPHACHANNEL){
+         surface->Clear(surface, 0, 0, 0, 0);
++        surface->SetPorterDuff(surface, DSPD_SRC_OVER);
++    }
+ 
+     surface->SetBlittingFlags(surface, flags);
+     surface->Blit(surface, src, 0, 0, 0);
+diff -ruN qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbwindowsurface.cpp qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbwindowsurface.cpp
+--- qt-everywhere-opensource-src-4.8.0_orig/src/plugins/gfxdrivers/directfb/qdirectfbwindowsurface.cpp	2011-11-16 14:31:53.743936576 +0100
++++ qt-everywhere-opensource-src-4.8.0/src/plugins/gfxdrivers/directfb/qdirectfbwindowsurface.cpp	2011-11-16 18:23:14.902156579 +0100
+@@ -180,6 +180,14 @@
+ 
+     Q_ASSERT(!dfbSurface);
+     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
++/*
++ * Is this really required ?
++ * Does the "DWOP_ALPHACHANNEL" flag imply the "DSBLIT_BLEND_ALPHACHANNEL"? 
++ */
++    if (!(surfaceFlags() & Opaque)) {
++        dfbSurface->SetBlittingFlags(dfbSurface, (DSBLIT_BLEND_ALPHACHANNEL | DSBLIT_SRC_PREMULTIPLY));
++        dfbSurface->SetPorterDuff(dfbSurface, DSPD_SRC_OVER);
++    }
+ }
+ 
+ static DFBResult setWindowGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const QRect &rect)
