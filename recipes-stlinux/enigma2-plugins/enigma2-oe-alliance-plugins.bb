@@ -84,7 +84,9 @@ PV = "git${SRCPV}"
 PKGV = "git${GITPKGV}"
 PR = "r48"
 
-SRC_URI="git://github.com/oe-alliance/oe-alliance-plugins.git;protocol=git"
+SRC_URI="git://github.com/oe-alliance/oe-alliance-plugins.git;protocol=git \
+	file://oe-alliance-plugins-spark.patch;patch=1 \
+"
 
 EXTRA_OECONF = " \
 	BUILD_SYS=${BUILD_SYS} \
