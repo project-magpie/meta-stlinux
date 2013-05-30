@@ -1,0 +1,369 @@
+--- linux-sh4/arch/sh/boards/mach-sat7111/setup.c	2012-03-11 12:51:04.780592485 +0100
++++ linux-sh4/arch/sh/boards/mach-sat7111/setup.c	2012-03-11 12:46:50.283330496 +0100
+@@ -33,19 +33,40 @@
+ #include <asm/irq-ilc.h>
+ #include <asm/irl.h>
+ #include <sound/stm.h>
++#include <linux/bpa2.h>
+ 
+-#define SAT7111_PHY_RESET stm_gpio(2, 4)
++#define SAT7111_PHY_RESET stm_gpio(5, 3)
+ 
+-/* The sat7111 board is populated with NOR, NAND, and Serial Flash.  The setup
+- * below assumes the board is in its default boot-from-NOR configuration.  Other
+- * boot configurations are possible but require board-level modifications to be
+- * made, and equivalent changes to the setup here.  Note, only boot-from-NOR has
+- * been fully tested.
+- */
++const char *LMI_IO_partalias[] = { "v4l2-coded-video-buffers", "BPA2_Region1", "v4l2-video-buffers" ,
++                                    "coredisplay-video", "gfx-memory", "BPA2_Region0", "LMI_VID", NULL };
++
++/*
++0x40000000 - 0x403FFFFF - cocpu 1 ram (4mb)
++0x40400000 - 0x407FFFFF - cocpu 2 ram (4mb)
++0x40800000 - 0x47FFFFFF - linux   (120mb)
++0x48000000 - 0x49FFFFFF - bigphys ( 32mb)
++0x4A000000 - 0x4FFFFFFF - lmi_io  ( 96mb)
++*/
++static struct bpa2_partition_desc bpa2_parts_table[] = {
++    {
++ 	    .name  = "bigphysarea",
++ 	    .start = 0x48000000,
++ 	    .size  = 0x02000000, /* 32 Mb */
++ 	    .flags = 0,
++ 	    .aka   = NULL
++    },
++    {
++ 	    .name  = "LMI_IO",
++ 	    .start = 0x4A000000,
++ 	    .size  = 0x06000000, /* 96 Mb */
++ 	    .flags = 0,
++ 	    .aka   = LMI_IO_partalias
++    },
++ };
+ 
+ static void __init sat7111_setup(char** cmdline_p)
+ {
+-	printk(KERN_INFO "STMicroelectronics sat7111 reference board initialisation\n");
++	printk(KERN_INFO "Spark-7111 board initialization\n");
+ 
+ 	stx7111_early_device_init();
+ 
+@@ -53,106 +74,63 @@
+ 			.hw_flow_control = 1,
+ 			.is_console = 1, });
+ 	stx7111_configure_asc(3, &(struct stx7111_asc_config) {
+-			.hw_flow_control = 1,
++			.hw_flow_control = 0,
+ 			.is_console = 0, });
++  	bpa2_init(bpa2_parts_table, ARRAY_SIZE(bpa2_parts_table));
+ }
+ 
+-
+-
+-static struct platform_device sat7111_leds = {
+-	.name = "leds-gpio",
+-	.id = -1,
+-	.dev.platform_data = &(struct gpio_led_platform_data) {
+-		.num_leds = 2,
+-		.leds = (struct gpio_led[]) {
+-			{
+-				.name = "HB red",
+-				.default_trigger = "heartbeat",
+-				.gpio = stm_gpio(3, 5),
+-			}, {
+-				.name = "HB white",
+-				.gpio = stm_gpio(3, 0),
+-			},
+-		},
+-	},
+-};
+-
+-
+-
+-static struct gpio_keys_button sat7111_buttons[] = {
+-	{
+-		.code = BTN_0,
+-		.gpio = stm_gpio(6, 2),
+-		.desc = "SW2",
+-	}, {
+-		.code = BTN_1,
+-		.gpio = stm_gpio(6, 3),
+-		.desc = "SW3",
+-	}, {
+-		.code = BTN_2,
+-		.gpio = stm_gpio(6, 4),
+-		.desc = "SW4",
+-	}, {
+-		.code = BTN_3,
+-		.gpio = stm_gpio(6, 5),
+-		.desc = "SW5",
+-	},
+-};
+-
+-static struct platform_device sat7111_button_device = {
+-	.name = "gpio-keys",
+-	.id = -1,
+-	.num_resources = 0,
+-	.dev.platform_data = &(struct gpio_keys_platform_data) {
+-		.buttons = sat7111_buttons,
+-		.nbuttons = ARRAY_SIZE(sat7111_buttons),
+-	},
+-};
+-
+ static struct platform_device sat7111_nor_flash = {
+ 	.name		= "physmap-flash",
+ 	.id		= -1,
+ 	.num_resources	= 1,
+ 	.resource	= (struct resource[]) {
+-		STM_PLAT_RESOURCE_MEM(0, 32*1024*1024),
++		STM_PLAT_RESOURCE_MEM(0, 8*1024*1024),
+ 	},
+ 	.dev.platform_data = &(struct physmap_flash_data) {
+ 		.width		= 2,
+ 		.nr_parts	= 3,
+ 		.parts		=  (struct mtd_partition []) {
+ 			{
+-				.name = "NOR Flash 1",
+-				.size = 0x00080000,
++				.name   = "Boot firmware", 	//  (512K)
++				.size   = 0x00080000,
+ 				.offset = 0x00000000,
+-			}, {
+-				.name = "NOR Flash 2",
+-				.size = 0x00200000,
+-				.offset = MTDPART_OFS_NXTBLK,
+-			}, {
+-				.name = "NOR Flash 3",
+-				.size = MTDPART_SIZ_FULL,
+-				.offset = MTDPART_OFS_NXTBLK,
++			},
++			{
++				.name   = "Kernel",		//  (7MB)
++				.size   = 0x00700000,
++				.offset = 0x00080000,
++			},
++			{
++				.name   = "Reserve",		//  (512K)
++				.size   = MTDPART_SIZ_FULL,
++				.offset = 0x00780000,
+ 			},
+ 		},
+-
+-
+ 	},
+ };
+ 
+-struct stm_nand_bank_data sat7111_nand_flash = {
++struct stm_nand_bank_data sat7111_nand_data = {
+ 	.csn		= 1,
+ 	.options	= NAND_NO_AUTOINCR | NAND_USE_FLASH_BBT,
+-	.nr_partitions	= 2,
++	.nr_partitions	= 4,
+ 	.partitions	= (struct mtd_partition []) {
+-		{
+-			.name	= "NAND Flash 1",
+-			.offset	= 0,
+-			.size 	= 0x00800000
+-		}, {
+-			.name	= "NAND Flash 2",
+-			.offset = MTDPART_OFS_NXTBLK,
+-			.size	= MTDPART_SIZ_FULL
+-		},
++	     {
++		 .name = "Spark Kernel",
++		 .size = 0x0800000,
++		 .offset = 0,
++	     }, {
++		 .name = "Spark Rootfs",
++		 .size = 0x17800000,
++		 .offset = 0x800000,
++	     }, {
++		 .name = "E2 Kernel",
++		 .size = 0x800000,
++		 .offset = 0x18000000,
++	     }, {
++		 .name = "E2 RootFs",
++		 .size = 0x7700000,
++		 .offset = 0x18800000,
++	     },
+ 	},
+ 	.timing_data	= &(struct stm_nand_timing_data) {
+ 		.sig_setup	= 50,		/* times in ns */
+@@ -160,35 +138,20 @@
+ 		.CE_deassert	= 0,
+ 		.WE_to_RBn	= 100,
+ 		.wr_on		= 10,
+-		.wr_off		= 40,
++		.wr_off		= 30,
+ 		.rd_on		= 10,
+-		.rd_off		= 40,
++		.rd_off		= 30,
+ 		.chip_delay	= 30,		/* in us */
+ 	},
++	.emi_withinbankoffset	= 0,
+ };
+ 
+-/* Serial Flash */
+-static struct spi_board_info sat7111_serial_flash = {
+-	.modalias       = "m25p80",
+-	.bus_num        = 0,
+-	.chip_select    = stm_gpio(6, 7),
+-	.max_speed_hz   = 7000000,
+-	.mode           = SPI_MODE_3,
+-	.platform_data  = &(struct flash_platform_data) {
+-		.name = "m25p80",
+-		.type = "m25p16",
+-		.nr_parts	= 2,
+-		.parts = (struct mtd_partition []) {
+-			{
+-				.name = "Serial Flash 1",
+-				.size = 0x00080000,
+-				.offset = 0,
+-			}, {
+-				.name = "Serial Flash 2",
+-				.size = MTDPART_SIZ_FULL,
+-				.offset = MTDPART_OFS_NXTBLK,
+-			},
+-		},
++static struct platform_device sat7111_nand_flash = {
++	.name		= "stm-nand-emi",
++	.dev.platform_data = &(struct stm_plat_nand_emi_data){
++		.nr_banks	= 1,
++		.banks		= &sat7111_nand_data,
++		.emi_rbn_gpio	= -1,
+ 	},
+ };
+ 
+@@ -209,22 +172,15 @@
+ };
+ 
+ static struct platform_device *sat7111_devices[] __initdata = {
+-	&sat7111_leds,
+ 	&sat7111_nor_flash,
+-	&sat7111_button_device,
++	&sat7111_nand_flash,
+ };
+ 
+ static int __init sat7111_devices_init(void)
+ {
+-	int peripherals_i2c_bus;
+-
+-	stx7111_configure_pwm(&(struct stx7111_pwm_config) {
+-			.out0_enabled = 1,
+-			.out1_enabled = 0, });
+-
+-	stx7111_configure_ssc_spi(0, NULL);
+-	stx7111_configure_ssc_i2c(1); /* J12=1-2, J16=1-2 */
+-	peripherals_i2c_bus = stx7111_configure_ssc_i2c(2);
++	stx7111_configure_ssc_i2c(0);
++	stx7111_configure_ssc_i2c(1);
++	stx7111_configure_ssc_i2c(2);
+ 	stx7111_configure_ssc_i2c(3);
+ 
+ 	stx7111_configure_usb(&(struct stx7111_usb_config) {
+@@ -252,8 +208,6 @@
+ 			.banks = &sat7111_nand_flash,
+ 			.rbn.flex_connected = 1,});
+ 
+-	spi_register_board_info(&sat7111_serial_flash, 1);
+-
+ 	return platform_add_devices(sat7111_devices,
+ 				    ARRAY_SIZE(sat7111_devices));
+ }
+
+*** linux-sh4-2.6.32.46_stm24_0209.orig/drivers/net/stmmac/stmmac_mdio.c	2011-11-24 22:22:25.000000000 +0200
+--- linux-sh4/drivers/net/stmmac/stmmac_mdio.c	2011-11-24 23:33:55.732873713 +0200
+***************
+*** 169,174 ****
+--- 169,175 ----
+  	priv->mii = new_bus;
+  
+  	found = 0;
++ 
+  	for (addr = 0; addr < PHY_MAX_ADDR; addr++) {
+  		struct phy_device *phydev = new_bus->phy_map[addr];
+  		if (phydev) {
+***************
+*** 191,202 ****
+  			 * and no PHY number was provided to the MAC,
+  			 * use the one probed here.
+  			 */
+! 			if ((priv->plat->bus_id == mdio_bus_data->bus_id) &&
+! 			    (priv->plat->phy_addr == -1))
+  				priv->plat->phy_addr = addr;
+  
+- 			act = (priv->plat->bus_id == mdio_bus_data->bus_id) &&
+- 				(priv->plat->phy_addr == addr);
+  			switch (phydev->irq) {
+  			case PHY_POLL:
+  				irq_str = "POLL";
+--- 192,214 ----
+  			 * and no PHY number was provided to the MAC,
+  			 * use the one probed here.
+  			 */
+! 
+! 			act = 0;
+! 
+! 			if ((priv->plat->bus_id == mdio_bus_data->bus_id) && (/*(priv->plat->phy_addr == -1) ||*/
+! 					(phydev->phy_id == 0x0181b880) || // Davicom DM9161E
+! 					(phydev->phy_id == 0x0181b8a0) || // Davicom DM9161A
+! 					(phydev->phy_id == 0x00181b80) || // Davicom DM9131
+! 					(phydev->phy_id == 0x1c040011) || // STe100p
+! 					(phydev->phy_id == 0x00061c50) || // STe101p
+! 					(phydev->phy_id == 0x00008201) || //
+! 					(phydev->phy_id == 0x0007c0f1) || // Pingulux
+! 					(phydev->phy_id == 0x001cc912)))  // RTL821x
+! 			{
+  				priv->plat->phy_addr = addr;
++ 				act=1;
++ 			}
+  
+  			switch (phydev->irq) {
+  			case PHY_POLL:
+  				irq_str = "POLL";
+--- linux-sh4/arch/sh/kernel/setup.c	2012-03-24 19:04:15.446990932 +0100
++++ linux-sh4/arch/sh/kernel/setup.c	2012-03-24 18:59:27.000000000 +0100
+@@ -388,6 +388,30 @@
+ #endif
+ #endif
+ 
++	{
++		/* spider: remove bigphysarea allocation from command line */
++		int i;
++		int command_line_len = strlen(command_line);
++
++		for(i = 0; i < (command_line_len-11); i++)
++		{
++			if(!strncmp(command_line + i + 1, "bigphysarea", 11))
++			{
++				// search for next pos
++				int k;
++				int pos=command_line_len;
++				for(k=i+1; k<command_line_len; k++)
++					if(command_line[k]==' ') {
++						pos=k;
++						break;
++					}
++				memmove(command_line+i, command_line+pos, command_line_len-pos);
++				memset(&command_line[command_line_len-(pos-i)], '\0', pos-i);
++				break;
++			}
++		}
++	}
++
+ 	/* Save unparsed command line copy for /proc/cmdline */
+ 	memcpy(boot_command_line, command_line, COMMAND_LINE_SIZE);
+ 	*cmdline_p = command_line;
+*** linux-sh4-2.6.32.46_stm24_0209.orig/drivers/net/stmmac/dwmac_lib.c	2011-11-24 22:22:25.000000000 +0200
+--- linux-sh4/drivers/net/stmmac/dwmac_lib.c	2011-11-24 23:33:55.732873713 +0200
+@@ -210,7 +210,7 @@
+ 	}
+ 	/* Optional hardware blocks, interrupts should be disabled */
+ 	if (unlikely(intr_status &
+-		     (DMA_STATUS_GPI | DMA_STATUS_GMI | DMA_STATUS_GLI)))
++		     (DMA_STATUS_GPI | DMA_STATUS_GMI | DMA_STATUS_GLI)) && printk_ratelimit())
+ 		pr_info("%s: unexpected status %08x\n", __func__, intr_status);
+ 	/* Clear the interrupt by writing a logic 1 to the CSR5[15-0] */
+ 	writel((intr_status & 0x1ffff), ioaddr + DMA_STATUS);
+

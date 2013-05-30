@@ -12,6 +12,8 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 
 SRCREV = "8d7537153e1fb8afbb1ae3fc6a2f8e5d8b3b1efa"
 
+BINARY_PTI_NP_PATH ?= "/data/pti_np"
+
 SRC_URI = " \
 	git://gitorious.org/~max10/open-duckbox-project-sh4/max-tdt.git;branch=master \
         file://0001-import-cec-from-pinky-s-git.patch \
@@ -23,9 +25,9 @@ SRC_URI = " \
         file://COPYING \
 " 
 
-INC_PR = "r2"
+INC_PR = "r27"
 
-PV = "0.4+git${SRCPV}"
+PV = "0.2+git${SRCPV}"
 
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""
@@ -124,11 +126,11 @@ do_install() {
         install -m 0755 ${WORKDIR}/aotom.sh ${D}${sysconfdir}/init.d
         ln -sf ../init.d/aotom.sh ${D}${sysconfdir}/rcS.d/S04aotom
 
-	# if a custom pti.ko is present, overwrite the tdt one
-	if [ -e ${BINARY_PTI_NP_PATH}/pti.ko ]; then
-		echo "Found custom pti.." 
-		install -m 644 ${BINARY_PTI_NP_PATH}/pti.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
-	fi
+        # if a custom pti.ko is present, overwrite the tdt one
+        if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
+                echo "Found custom pti.." 
+                install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
+        fi
 
 }
 
