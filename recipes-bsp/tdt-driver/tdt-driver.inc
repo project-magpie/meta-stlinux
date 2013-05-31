@@ -10,7 +10,11 @@ inherit module
 PACKAGES = "${PN} ${PN}-dev"
 PACKAGES_DYNAMIC += "kernel-module-*"
 
-SRCREV = "8d7537153e1fb8afbb1ae3fc6a2f8e5d8b3b1efa"
+inherit gitpkgv
+
+SRCREV = "${AUTOREV}"
+INC_PR = "r1"
+PV = "0.1+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
@@ -24,10 +28,6 @@ SRC_URI = " \
         file://aotom.sh \
         file://COPYING \
 " 
-
-INC_PR = "r27"
-
-PV = "0.2+git${SRCPV}"
 
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""
