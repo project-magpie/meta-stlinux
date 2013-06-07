@@ -1,0 +1,182 @@
+diff -Naur driver/frontcontroller/aotom/aotom_main.c driver_mod/frontcontroller/aotom/aotom_main.c
+--- driver/frontcontroller/aotom/aotom_main.c	2013-06-03 18:55:44.711310854 +0200
++++ driver_mod/frontcontroller/aotom/aotom_main.c	2013-06-03 18:59:48.427339088 +0200
+@@ -76,6 +76,9 @@
+ 	int open_count;
+ } tFrontPanelOpen;
+ 
++extern void create_proc_fp(void);
++extern void remove_proc_fp(void);
++
+ #define FRONTPANEL_MINOR_VFD    0
+ #define FRONTPANEL_MINOR_RC     1
+ #define LASTMINOR               2
+@@ -224,7 +227,7 @@
+ 	int len = data->length;
+ 	int off = 0;
+ 	int doton3 = 0;
+-	
++
+ 	if (YWPANEL_width == 4 && len == 5 && data->data[2] == '.')
+ 		doton3 = 1;
+ 
+@@ -639,7 +642,7 @@
+ 				icon_nr = 0; //no additional symbols at the moment
+ 				break;
+ 			}
+-		}	  
++		}
+ 		if (aotom_data.u.icon.on != 0)
+ 			aotom_data.u.icon.on = 1;
+ 		if (icon_nr > 0 && icon_nr <= 45 )
+@@ -658,7 +661,7 @@
+ 				break;
+ 			}
+ 		}
+-#endif		
++#endif
+ 		mode = 0;
+ 		break;
+ 	}
+@@ -1038,7 +1041,7 @@
+ 	}
+ 
+ 	VFD_clr();
+-	
++
+ 	if(button_dev_init() != 0)
+ 		return -1;
+ 
+@@ -1075,6 +1078,8 @@
+ 
+ 	dprintk(5, "%s <\n", __func__);
+ 
++  create_proc_fp();
++
+ 	return 0;
+ }
+ 
+@@ -1114,6 +1119,9 @@
+ 	unregister_chrdev(VFD_MAJOR,"VFD");
+ 	YWPANEL_VFD_Term();
+ 	printk("Fulan front panel module unloading\n");
++
++  remove_proc_fp();
++
+ }
+ 
+ module_init(aotom_init_module);
+diff -Naur driver/frontcontroller/aotom/aotom_procfs.c driver_mod/frontcontroller/aotom/aotom_procfs.c
+--- driver/frontcontroller/aotom/aotom_procfs.c	1970-01-01 01:00:00.000000000 +0100
++++ driver_mod/frontcontroller/aotom/aotom_procfs.c	2013-06-04 09:28:30.825555098 +0200
+@@ -0,0 +1,99 @@
++#include <linux/proc_fs.h>      /* proc fs */
++#include <asm/uaccess.h>        /* copy_from_user */
++#include <linux/time.h>
++#include <linux/kernel.h>
++#include "aotom_main.h"
++
++/*
++/proc/stb/fp/version", "r"
++/proc/stb/fp/rtc", "w"
++/proc/stb/fp/rtc", "r"
++*/
++/*
++ *  /proc/stb/fp
++ *             |
++ *             +--- rtc (rw)
++*/
++
++extern int install_e2_procs(char *name, read_proc_t *read_proc, write_proc_t *write_proc, void *data);
++extern int remove_e2_procs(char *name, read_proc_t *read_proc, write_proc_t *write_proc);
++
++static int rtc_read (char *page, char **start, off_t off, int count,
++                          int *eof, void *data_unused)
++{
++  int len = 0;
++  u32 gmtoffset;
++  extern char* gmt;
++
++  gmtoffset = simple_strtol(gmt, NULL, 0);
++  len = sprintf(page, "%ld\n", YWPANEL_FP_GetTime() - gmtoffset * 60);
++
++  printk("%s %d\n", __FUNCTION__, count);
++
++  return len;
++}
++
++static int rtc_write(struct file *file, const char __user *buf,
++                           unsigned long count, void *data)
++{
++  char *page;
++  u32 uTime;
++  u32 gmtoffset;
++  extern char* gmt;
++  int ret = -ENOMEM;
++
++  //printk("%s(%ld, ", __FUNCTION__, count);
++
++  page = (char *)__get_free_page(GFP_KERNEL);
++  if (page)
++  {
++    ret = -EFAULT;
++    if (copy_from_user(page, buf, count) == 0)
++    {
++      page[count] = 0;
++      //printk("%s", page);
++      uTime = simple_strtol(page, NULL, 0);
++      gmtoffset = simple_strtol(gmt, NULL, 0);
++      YWPANEL_FP_SetTime(uTime + gmtoffset * 60);
++      YWPANEL_FP_ControlTimer(true);
++      ret = count;
++    }
++    free_page((unsigned long)page);
++  }
++  //printk(")\n");
++
++  return ret;
++}
++
++struct fp_procs
++{
++  char *name;
++  read_proc_t *read_proc;
++  write_proc_t *write_proc;
++} fp_procs[] =
++{
++  { "stb/fp/rtc", rtc_read, rtc_write },
++};
++
++void create_proc_fp(void)
++{
++  int i;
++
++  for(i = 0; i < sizeof(fp_procs)/sizeof(fp_procs[0]); i++)
++  {
++    install_e2_procs(fp_procs[i].name, fp_procs[i].read_proc,
++			fp_procs[i].write_proc, NULL);
++  }
++}
++
++void remove_proc_fp(void)
++{
++  int i;
++
++  for(i = sizeof(fp_procs)/sizeof(fp_procs[0]) - 1; i >= 0; i--)
++  {
++    remove_e2_procs(fp_procs[i].name, fp_procs[i].read_proc,
++			fp_procs[i].write_proc);
++  }
++}
++
+diff -Naur driver/frontcontroller/aotom/Makefile driver_mod/frontcontroller/aotom/Makefile
+--- driver/frontcontroller/aotom/Makefile	2013-06-02 12:31:27.881714831 +0200
++++ driver_mod/frontcontroller/aotom/Makefile	2013-06-03 21:45:42.119566959 +0200
+@@ -5,6 +5,7 @@
+     aotom-objs += aotom_trace.o
+     aotom-objs += aotom_i2csoft.o
+     aotom-objs += aotom_vfd.o
++    aotom-objs += aotom_procfs.o
+     aotom-objs += aotom_main.o
+ 
+     obj-m += aotom.o
