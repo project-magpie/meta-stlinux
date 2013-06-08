@@ -3388,7 +3388,7 @@ diff -Naur gui_orig/main/Makefile.am gui_new/main/Makefile.am
 
 diff -Naur enigma2_orig/lib/driver/vfd.cpp enigma2/lib/driver/vfd.cpp
 --- enigma2_orig/lib/driver/vfd.cpp	2013-05-03 16:44:53.532546355 +0200
-+++ enigma2/lib/driver/vfd.cpp	2013-06-07 22:42:37.216380076 +0200
++++ enigma2/lib/driver/vfd.cpp	2013-06-08 08:09:10.039292326 +0200
 @@ -7,14 +7,28 @@
  #include <sys/ioctl.h>
  #include <ctype.h>
@@ -3455,7 +3455,7 @@ diff -Naur enigma2_orig/lib/driver/vfd.cpp enigma2/lib/driver/vfd.cpp
 -#endif
 -	return 0;
 +	//vfd.vfd_clear_icons();
-+	vfd.vfd_write_string("Opensif Spark", true);
++	vfd.vfd_write_string("Opensif Spark");
 +	//run 2 times through all icons 
 +	for (int vloop = 0; vloop < 128; vloop++)
 +	{
@@ -3620,23 +3620,19 @@ diff -Naur enigma2_orig/lib/driver/vfd.cpp enigma2/lib/driver/vfd.cpp
 +	tmp = localtime(&t);
 +	t += tmp->tm_gmtoff;
 +	file_vfd = open (VFD_DEVICE, O_WRONLY);
-+	ioctl(file_vfd, VFDSETTIME2, &t)
++	ioctl(file_vfd, VFDSETTIME2, &t);
 +	close (file_vfd);
 +	return;
 +}
 +
 diff -Naur enigma2_orig/lib/driver/vfd.h enigma2/lib/driver/vfd.h
 --- enigma2_orig/lib/driver/vfd.h	2013-05-03 16:44:53.532546355 +0200
-+++ enigma2/lib/driver/vfd.h	2013-06-07 22:43:04.237358942 +0200
-@@ -1,13 +1,17 @@
++++ enigma2/lib/driver/vfd.h	2013-06-08 08:09:10.039292326 +0200
+@@ -1,13 +1,13 @@
  #ifndef VFD_H_
  #define VFD_H_
  
-+#define ICON_ON  1
-+#define ICON_OFF 0
-+
-+typedef enum { USB = 0x10, STANDBY, SAT, REC, TIMESHIFT, TIMER, HD, LOCK, DD, MUTE, TUNER1, TUNER2, MP3, REPEAT,
-+			    PLAY, PAUSE, TER, FILE, 480i, 480p, 576i, 576p, 720p, 1080i, 1080p } tvfd_icon;
++typedef enum { VFD_USB = 0x10, VFD_STANDBY, VFD_SAT, VFD_REC, VFD_TIMESHIFT, VFD_TIMER, VFD_HD, VFD_LOCK, VFD_DD, VFD_MUTE, VFD_TUNER1, VFD_TUNER2, VFD_MP3, VFD_REPEAT, VFD_PLAY, VFD_PAUSE, VFD_TER, VFD_FILE, VFD_480i, VFD_480p, VFD_576i, VFD_576p, VFD_720p, VFD_1080i, VFD_1080p } tvfd_icon;
 +
  class evfd
  {
@@ -3648,7 +3644,7 @@ diff -Naur enigma2_orig/lib/driver/vfd.h enigma2/lib/driver/vfd.h
  #ifdef SWIG
  	evfd();
  	~evfd();
-@@ -20,11 +24,17 @@
+@@ -20,11 +20,17 @@
  	void init();
  	static evfd* getInstance();
  

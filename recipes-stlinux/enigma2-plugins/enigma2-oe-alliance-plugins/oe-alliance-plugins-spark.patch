@@ -3189,47 +3189,40 @@ diff -Naur oe-alliance-plugins/SparkVFDControl/src/Makefile.am oe-alliance-plugi
 +install_PYTHON = *.py
 diff -Naur oe-alliance-plugins/SparkVFDControl/src/plugin.py oe-alliance-plugins-spark/SparkVFDControl/src/plugin.py
 --- oe-alliance-plugins/SparkVFDControl/src/plugin.py	1970-01-01 01:00:00.000000000 +0100
-+++ oe-alliance-plugins-spark/SparkVFDControl/src/plugin.py	2013-05-29 07:25:35.113528154 +0200
-@@ -0,0 +1,262 @@
++++ oe-alliance-plugins-spark/SparkVFDControl/src/plugin.py	2013-06-08 17:10:57.850164361 +0200
+@@ -0,0 +1,260 @@
 +# for localized messages
 +from . import _
 +
 +from Screens.Screen import Screen
-+from Plugins.Plugin import PluginDescriptor
 +from Components.Console import Console
 +from Components.Button import Button
 +from Components.ActionMap import ActionMap
-+from Components.ConfigList import ConfigList
-+from Components.config import config, configfile, ConfigSubsection, getConfigListEntry, ConfigSelection
-+from Components.ConfigList import ConfigListScreen
++from Components.config import config, configfile, ConfigSubsection, ConfigEnableDisable, getConfigListEntry, ConfigInteger, ConfigSelection, ConfigYesNo
++from Components.ConfigList import ConfigListScreen, ConfigList
++from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 +from enigma import iPlayableService, eServiceCenter, eTimer
++from os import system
++from Plugins.Plugin import PluginDescriptor
 +from Components.ServiceEventTracker import ServiceEventTracker
 +from Components.ServiceList import ServiceList
 +from Screens.InfoBar import InfoBar
-+from time import localtime, time, strftime
-+from subprocess import call
++from time import localtime, time
 +import Screens.Standby
++from enigma import evfd
 +
 +config.plugins.VFD_spark = ConfigSubsection()
 +config.plugins.VFD_spark.ledMode = ConfigSelection(default = "True", choices = [("False",_("Led in Standby off")),("True",_("Led in Standby on"))])
 +config.plugins.VFD_spark.textMode = ConfigSelection(default = "ChNumber", choices = [("ChNumber",_("Channel number")),("ChName",_("Channel name"))])
 +
-+def vfd_write(text):
-+	open("/dev/vfd", "w").write(text)
-+
-+def vfd_clear():
-+	call(["/usr/bin/fp_control","-c"])
-+
-+def vfd_time():
-+	call(["/usr/bin/fp_control","-s",str(strftime("%H:%M:%S")),str(strftime("%d-%m-%Y"))])
-+
-+def vfd_led(onoff):
-+		call(["/usr/bin/fp_control","-l","0",str(onoff)])
-+
 +class Channelnumber:
 +
 +	def __init__(self, session):
 +		self.session = session
++		self.updatetime = 1000
++		self.zaPrik = eTimer()
++		self.zaPrik.timeout.get().append(self.vrime)
++		self.zaPrik.start(60*1000, 1)
 +		self.onClose = [ ]
 +
 +		self.__event_tracker = ServiceEventTracker(screen=self,eventmap=
@@ -3238,7 +3231,6 @@ diff -Naur oe-alliance-plugins/SparkVFDControl/src/plugin.py oe-alliance-plugins
 +			})
 +
 +	def __eventInfoChanged(self):
-+		vfd_time()
 +		if Screens.Standby.inStandby:
 +			return
 +		service = self.session.nav.getCurrentService()
@@ -3254,7 +3246,7 @@ diff -Naur oe-alliance-plugins/SparkVFDControl/src/plugin.py oe-alliance-plugins
 +				vfdtext = "---"
 +		info = None
 +		service = None
-+		vfd_write(vfdtext)
++		evfd.getInstance().vfd_write_string(vfdtext)
 +
 +	def getchannelnr(self):
 +		if InfoBar.instance is None:
@@ -3294,27 +3286,32 @@ diff -Naur oe-alliance-plugins/SparkVFDControl/src/plugin.py oe-alliance-plugins
 +		#################################################
 +		return CentChnr
 +
++	def vrime(self):
++		clock=int(time())
++		evfd.getInstance().vfd_set_clock(clock)	
++
 +ChannelnumberInstance = None
 +
 +def leaveStandby():
 +	print "[VFD-SPARK] Leave Standby"
-+	vfd_write("....")
++	evfd.getInstance().vfd_write_string("....")
 +	if config.plugins.VFD_spark.ledMode.value == 'True':
-+		vfd_led(0)
++		evfd.getInstance().vfd_set_light(0)
 +
 +def standbyCounterChanged(configElement):
 +	print "[VFD-SPARK] In Standby"
 +	from Screens.Standby import inStandby
 +	inStandby.onClose.append(leaveStandby)
-+	vfd_clear()
++	evfd.getInstance().vfd_clear_string()
 +	if config.plugins.VFD_spark.ledMode.value == 'True':
-+		vfd_led(1)
++		evfd.getInstance().vfd_set_light(1)
 +
 +def initVFD():
 +	print "[VFD-SPARK] initVFD"
-+	vfd_write("....")
-+	vfd_time()
-+	vfd_led(0)
++	evfd.getInstance().vfd_write_string("....")
++	clock=int(time())
++	evfd.getInstance().vfd_set_clock(clock)
++	evfd.getInstance().vfd_set_light(0)
 +
 +class VFD_SparkSetup(ConfigListScreen, Screen):
 +	def __init__(self, session, args = None):
@@ -3453,3 +3450,5 @@ diff -Naur oe-alliance-plugins/SparkVFDControl/src/plugin.py oe-alliance-plugins
 +def Plugins(**kwargs):
 + 	return [ PluginDescriptor(where=[PluginDescriptor.WHERE_AUTOSTART, PluginDescriptor.WHERE_SESSIONSTART], fnc=sessionstart),
 + 		PluginDescriptor(name="VFD Spark", description="Change VFD display settings",where = PluginDescriptor.WHERE_MENU, fnc = main) ]
++
+
