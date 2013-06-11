@@ -13,18 +13,13 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 inherit gitpkgv
 
 SRCREV = "${AUTOREV}"
-INC_PR = "r9"
+INC_PR = "r11"
 PV = "0.1+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
 SRC_URI = " \
 	git://gitorious.org/~max10/open-duckbox-project-sh4/max-tdt.git;branch=master \
-        file://0001-import-cec-from-pinky-s-git.patch \
-        file://0004-aotom-improve-scrolling-text-code.patch \
-        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
-        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
-        file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
         file://aotom.sh \
         file://COPYING \
 " 
@@ -129,7 +124,7 @@ do_install() {
         # if a custom pti.ko is present, overwrite the tdt one
         if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
                 echo "Found custom pti.." 
-                install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
+                install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/pti.ko
         fi
 
 }
