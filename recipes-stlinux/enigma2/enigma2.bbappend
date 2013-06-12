@@ -10,7 +10,3 @@ DEPENDS_append_spark7162 = " \
         libmmeimage \
         "
 
-SRC_URI_append = " \
-	file://enigma2-${DISTRO}.patch;patch=1 \
-"
-
