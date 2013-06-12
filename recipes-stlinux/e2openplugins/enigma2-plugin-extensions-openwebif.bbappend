@@ -1,10 +1,11 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
-SRC_URI_append = " \
-		file://openwebif_spark.patch;patch=1 \
+SRC_URI_spark = " \
+		git://github.com/sklnet/e2openplugin-OpenWebif.git \
 	"
 
-S="${WORKDIR}/git"
+SRC_URI_spark7162 = " \
+                git://github.com/sklnet/e2openplugin-OpenWebif.git \
+        "
 
 python do_package_prepend () {
 	boxtypes = [
