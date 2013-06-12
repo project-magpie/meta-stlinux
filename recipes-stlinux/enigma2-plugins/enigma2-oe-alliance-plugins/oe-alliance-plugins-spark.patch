@@ -1,0 +1,3454 @@
+diff -Naur oe-alliance-plugins/configure.ac oe-alliance-plugins-spark/configure.ac
+--- oe-alliance-plugins/configure.ac	2013-05-29 07:22:51.363444095 +0200
++++ oe-alliance-plugins-spark/configure.ac	2013-05-29 12:15:19.228096271 +0200
+@@ -64,6 +64,8 @@
+ AM_CONDITIONAL(VENTONHDX, test "$BOXTYPE" == ventonhdx)
+ AM_CONDITIONAL(VENTONHDE, test "$BOXTYPE" == ventonhde)
+ AM_CONDITIONAL(XP1000, test "$BOXTYPE" == xp1000)
++AM_CONDITIONAL(SPARK, test "$BOXTYPE" == spark)
++AM_CONDITIONAL(SPARK, test "$BOXTYPE" == spark7162)
+ if test `echo "$BOXTYPE" | cut -b 1-2` == "dm"; then
+ 	AC_DEFINE(DREAMBOX, 1, [Dreambox hardware])
+ fi
+@@ -239,6 +241,10 @@
+ XtrendRemote/meta/Makefile
+ XtrendRemote/po/Makefile
+ 
++SparkVFDControl/Makefile
++SparkVFDControl/src/Makefile
++SparkVFDControl/meta/Makefile
++SparkVFDControl/po/Makefile
+ 
+ ])
+ AC_OUTPUT
+diff -Naur oe-alliance-plugins/Makefile.am oe-alliance-plugins-spark/Makefile.am
+--- oe-alliance-plugins/Makefile.am	2013-05-29 07:22:51.339441267 +0200
++++ oe-alliance-plugins-spark/Makefile.am	2013-05-29 07:25:20.307974855 +0200
+@@ -50,6 +50,10 @@
+ SUBDIRS += XtrendRemote
+ endif
+ 
++if SPARK
++SUBDIRS += SparkVFDControl
++endif
++
+ if HAVE_TEMPFANCONTROL
+ SUBDIRS += TempFanControl
+ endif
+diff -Naur oe-alliance-plugins/SparkVFDControl/CONTROL/control oe-alliance-plugins-spark/SparkVFDControl/CONTROL/control
+--- oe-alliance-plugins/SparkVFDControl/CONTROL/control	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/CONTROL/control	2013-05-29 07:26:23.498519063 +0200
+@@ -0,0 +1,5 @@
++Package: enigma2-plugin-systemplugins-vfdcontrol
++Version: 1.0-r0
++Description: vfd controller
++Maintainer: skl
++Depends: enigma2
+diff -Naur oe-alliance-plugins/SparkVFDControl/Makefile.am oe-alliance-plugins-spark/SparkVFDControl/Makefile.am
+--- oe-alliance-plugins/SparkVFDControl/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/Makefile.am	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1 @@
++SUBDIRS = meta po src
+diff -Naur oe-alliance-plugins/SparkVFDControl/meta/Makefile.am oe-alliance-plugins-spark/SparkVFDControl/meta/Makefile.am
+--- oe-alliance-plugins/SparkVFDControl/meta/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/meta/Makefile.am	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,3 @@
++installdir = $(datadir)/meta
++
++dist_install_DATA = plugin_vfdcontrol.xml
+diff -Naur oe-alliance-plugins/SparkVFDControl/meta/plugin_vfdcontrol.xml oe-alliance-plugins-spark/SparkVFDControl/meta/plugin_vfdcontrol.xml
+--- oe-alliance-plugins/SparkVFDControl/meta/plugin_vfdcontrol.xml	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/meta/plugin_vfdcontrol.xml	2013-05-29 07:26:53.017584891 +0200
+@@ -0,0 +1,16 @@
++<default>
++	  <prerequisites>
++                    <tag type="System" />
++	  </prerequisites>
++          <info>
++                    <author>skl</author>
++                    <name>VFDControl</name>
++                    <packagename>enigma2-plugin-systemplugins-vfdcontrol</packagename>
++                    <shortdescription>vfd controller</shortdescription>
++                    <description>vfd controller</description>
++          </info>
++
++	  <files type="package"> <!-- without version, without .ipk -->
++		<file type="package" name="enigma2-plugin-systemplugins-vfdcontrol" />
++	</files>
++</default>
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/ar.po oe-alliance-plugins-spark/SparkVFDControl/po/ar.po
+--- oe-alliance-plugins/SparkVFDControl/po/ar.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/ar.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,83 @@
++# Arabic translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Arabic <moustafagamal@hotmail.com>\n"
++"Language: ar\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Arabic\n"
++"X-Poedit-Country: EGYPT\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "إلغاء"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "حفظ"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/bg.po oe-alliance-plugins-spark/SparkVFDControl/po/bg.po
+--- oe-alliance-plugins/SparkVFDControl/po/bg.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/bg.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,76 @@
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Bulgarian\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Отказ"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Запази"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/ca.po oe-alliance-plugins-spark/SparkVFDControl/po/ca.po
+--- oe-alliance-plugins/SparkVFDControl/po/ca.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/ca.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,85 @@
++# Catalan translations for Enigma2.
++#
++# Oriol Pellicer i Sabrià <oriol@elsud.org>, 2006, 2007.
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: \n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Catalan\n"
++"X-Poedit-Country: CATALONIA\n"
++"X-Poedit-SourceCharset: iso-8859-1\n"
++"X-Generator: KBabel 1.11.4\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Cancel·lar"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr ""
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/cs.po oe-alliance-plugins-spark/SparkVFDControl/po/cs.po
+--- oe-alliance-plugins/SparkVFDControl/po/cs.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/cs.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,81 @@
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: ims\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-22 01:01+0100\n"
++"Last-Translator: jerry <jerry00@quick.cz>\n"
++"Language-Team: jerry00 <jerry00@quick.cz>\n"
++"Language: Czech\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"X-Poedit-Language: Czech\n"
++"X-Poedit-Country: CZECH REPUBLIC\n"
++"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Zavřít"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Uložit"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/da.po oe-alliance-plugins-spark/SparkVFDControl/po/da.po
+--- oe-alliance-plugins/SparkVFDControl/po/da.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/da.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,83 @@
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: None <tbt_dk@hotmail.com>\n"
++"Language: da\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.2\n"
++"X-Poedit-Language: Danish\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++"X-Poedit-Country: DENMARK\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Fortryd"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Gem"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/de.po oe-alliance-plugins-spark/SparkVFDControl/po/de.po
+--- oe-alliance-plugins/SparkVFDControl/po/de.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/de.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,80 @@
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-20 21:48+0100\n"
++"Last-Translator: Ralf Biedermann <ralf.biedermann@rbsoft.de>\n"
++"Language-Team: Deutsch <> j-ot&Trial\n"
++"Language: de\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n!=1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: German\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++"X-Poedit-Country: GERMANY\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Abbrechen"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Speichern"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/el.po oe-alliance-plugins-spark/SparkVFDControl/po/el.po
+--- oe-alliance-plugins/SparkVFDControl/po/el.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/el.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,84 @@
++# Greek translation for OpenPli.
++# dimfil.sat@gmail.com, 2012.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2_v2.0\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: \n"
++"Language: el\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Greek\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++#
++msgid "Cancel"
++msgstr "Άκυρο "
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++#
++msgid "Save"
++msgstr "Αποθήκευση"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/en_GB.po oe-alliance-plugins-spark/SparkVFDControl/po/en_GB.po
+--- oe-alliance-plugins/SparkVFDControl/po/en_GB.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/en_GB.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,82 @@
++# English translations for enigma2 package.
++# Copyright (C) 2012 THE enigma2'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the enigma2 package.
++# Automatically generated, 2012.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2 3.0.0\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-12-03 17:19-0000\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: ViX\n"
++"Language: en_GB\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Poedit 1.5.4\n"
++
++msgid "Blink Record Led"
++msgstr "Blink Record Led"
++
++msgid "Blue"
++msgstr "Blue"
++
++msgid "Cancel"
++msgstr "Cancel"
++
++msgid "Enable led"
++msgstr "Enable led"
++
++msgid "Led state Deep Standby"
++msgstr "Led state Deep Standby"
++
++msgid "Led state RUN"
++msgstr "Led state RUN"
++
++msgid "Led state Record"
++msgstr "Led state Record"
++
++msgid "Led state Standby"
++msgstr "Led state Standby"
++
++msgid "No"
++msgstr "No"
++
++msgid "None"
++msgstr "None"
++
++msgid "Off"
++msgstr "Off"
++
++msgid "Purple"
++msgstr "Purple"
++
++msgid "Red"
++msgstr "Red"
++
++msgid "Save"
++msgstr "Save"
++
++msgid "Show clock"
++msgstr "Show clock"
++
++msgid "Show clock in Deep Standby"
++msgstr "Show clock in Deep Standby"
++
++msgid "Time mode"
++msgstr "Time mode"
++
++msgid "Update Date/Time"
++msgstr "Update Date/Time"
++
++msgid "VFD_Giga"
++msgstr "VFD_Giga"
++
++msgid "Yes"
++msgstr "Yes"
++
++msgid "in standby: "
++msgstr "in standby: "
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/en.po oe-alliance-plugins-spark/SparkVFDControl/po/en.po
+--- oe-alliance-plugins/SparkVFDControl/po/en.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/en.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,79 @@
++# English translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2 3.0.0\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-12-03 17:21-0000\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: none\n"
++"Language: en\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Poedit 1.5.4\n"
++
++msgid "Blink Record Led"
++msgstr "Blink Record Led"
++
++msgid "Blue"
++msgstr "Blue"
++
++msgid "Cancel"
++msgstr "Cancel"
++
++msgid "Enable led"
++msgstr "Enable led"
++
++msgid "Led state Deep Standby"
++msgstr "Led state Deep Standby"
++
++msgid "Led state RUN"
++msgstr "Led state RUN"
++
++msgid "Led state Record"
++msgstr "Led state Record"
++
++msgid "Led state Standby"
++msgstr "Led state Standby"
++
++msgid "No"
++msgstr "No"
++
++msgid "None"
++msgstr "None"
++
++msgid "Off"
++msgstr "Off"
++
++msgid "Purple"
++msgstr "Purple"
++
++msgid "Red"
++msgstr "Red"
++
++msgid "Save"
++msgstr "Save"
++
++msgid "Show clock"
++msgstr "Show clock"
++
++msgid "Show clock in Deep Standby"
++msgstr "Show clock in Deep Standby"
++
++msgid "Time mode"
++msgstr "Time mode"
++
++msgid "Update Date/Time"
++msgstr "Update Date/Time"
++
++msgid "VFD_Giga"
++msgstr "VFD_Giga"
++
++msgid "Yes"
++msgstr "Yes"
++
++msgid "in standby: "
++msgstr "in standby: "
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/es.po oe-alliance-plugins-spark/SparkVFDControl/po/es.po
+--- oe-alliance-plugins/SparkVFDControl/po/es.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/es.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,84 @@
++# Spanish translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: none\n"
++"Language: es\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Spanish\n"
++"X-Poedit-SourceCharset: iso-8859-1\n"
++"X-Poedit-Country: SPAIN\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Cancelar"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Guardar"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/et.po oe-alliance-plugins-spark/SparkVFDControl/po/et.po
+--- oe-alliance-plugins/SparkVFDControl/po/et.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/et.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,76 @@
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Raivo, Henkka, eesatfan, rimas\n"
++"Language: et\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n!=1);\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Tühista"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Salvesta"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/fa.po oe-alliance-plugins-spark/SparkVFDControl/po/fa.po
+--- oe-alliance-plugins/SparkVFDControl/po/fa.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/fa.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,81 @@
++# Persian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Persian Professionals <persianpros@yahoo.com>\n"
++"Language: fa\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=1; plural=0;\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Persian\n"
++"X-Poedit-Country: IRAN, ISLAMIC REPUBLIC OF\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "انصراف"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "ذخیره"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/fi.po oe-alliance-plugins-spark/SparkVFDControl/po/fi.po
+--- oe-alliance-plugins/SparkVFDControl/po/fi.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/fi.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,83 @@
++# Finnish translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: none\n"
++"Language: fi\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Finnish\n"
++"X-Poedit-Country: FINLAND\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Peruuta"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Tallenna"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/fr.po oe-alliance-plugins-spark/SparkVFDControl/po/fr.po
+--- oe-alliance-plugins/SparkVFDControl/po/fr.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/fr.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,80 @@
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: french\n"
++"Language: fr\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n!=1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: French\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++"X-Poedit-Country: FRANCE\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Annuler"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Sauver"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/fy.po oe-alliance-plugins-spark/SparkVFDControl/po/fy.po
+--- oe-alliance-plugins/SparkVFDControl/po/fy.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/fy.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,86 @@
++# Frisian translations for Enigma2.
++#
++# Gerrit <gerrit@nedlinux.nl>, 2007, 2008.
++# gerrit <gerrit@nedlinux.nl>, 2008.
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: gerrit <fy@li.org>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Nederlands\n"
++"X-Poedit-Country: NEDERLAND\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++"X-Generator: KBabel 1.11.4\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Ôfbrekke"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Opslaan"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/he.po oe-alliance-plugins-spark/SparkVFDControl/po/he.po
+--- oe-alliance-plugins/SparkVFDControl/po/he.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/he.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,86 @@
++# Arabic translations for tuxbox-enigma package.
++# Copyright (C) 2005 THE tuxbox-enigma'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the tuxbox-enigma package.
++# Automatically generated, 2005.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Arabic <moustafagamal@hotmail.com>\n"
++"Language: he\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Arabic\n"
++"X-Poedit-Country: EGYPT\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "בטל"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "שמור"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/hr.po oe-alliance-plugins-spark/SparkVFDControl/po/hr.po
+--- oe-alliance-plugins/SparkVFDControl/po/hr.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/hr.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,81 @@
++# Croatian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:41+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team:  <jurica@dream-multimedia.eu>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"X-Poedit-Language: Croatian\n"
++"X-Poedit-Country: CROATIA\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Odustani"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr ""
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/hu.po oe-alliance-plugins-spark/SparkVFDControl/po/hu.po
+--- oe-alliance-plugins/SparkVFDControl/po/hu.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/hu.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,85 @@
++# English translations for tuxbox-enigma package.
++# Copyright (C) 2005 THE tuxbox-enigma'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the tuxbox-enigma package.
++# Automatically generated, 2005.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Mediavox, robertut <info@mediavox.hu, robertut@yahoo.com>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Hungarian\n"
++"X-Poedit-Country: HUNGARY\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Mégse"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Mentés"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/is.po oe-alliance-plugins-spark/SparkVFDControl/po/is.po
+--- oe-alliance-plugins/SparkVFDControl/po/is.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/is.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,83 @@
++# Icelandic translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Polar Team/LT Team <baddi@oreind.is>\n"
++"Language: is\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Icelandic\n"
++"X-Poedit-SourceCharset: utf-8\n"
++"X-Poedit-Country: ICELAND\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Hætta við"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Vista"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/it.po oe-alliance-plugins-spark/SparkVFDControl/po/it.po
+--- oe-alliance-plugins/SparkVFDControl/po/it.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/it.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,84 @@
++# Italian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: WWW.LINSAT.NET <spaeleus@croci.org>\n"
++"Language: it\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Italian\n"
++"X-Poedit-SourceCharset: iso-8859-1\n"
++"X-Poedit-Country: ITALY\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Annull."
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Salvare"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/lt.po oe-alliance-plugins-spark/SparkVFDControl/po/lt.po
+--- oe-alliance-plugins/SparkVFDControl/po/lt.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/lt.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,79 @@
++# Copyright (C) 2005 THE tuxbox-enigma'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the tuxbox-enigma package.
++# Automatically generated, 2005.
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: \n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"X-Poedit-SourceCharset: utf-8\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Atšaukti"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Saugoti"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/lv.po oe-alliance-plugins-spark/SparkVFDControl/po/lv.po
+--- oe-alliance-plugins/SparkVFDControl/po/lv.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/lv.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,82 @@
++# Latvian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Ivo / enigma2 (c) <ivog@apolllo.lv>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"X-Poedit-Language: Latvian\n"
++"X-Poedit-Country: LATVIA\n"
++"X-Poedit-SourceCharset: utf-8\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Atcelt"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Saglabāt"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/Makefile.am oe-alliance-plugins-spark/SparkVFDControl/po/Makefile.am
+--- oe-alliance-plugins/SparkVFDControl/po/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/Makefile.am	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,4 @@
++PLUGIN = VFDControl
++CATEGORY ?= "SystemPlugins"
++
++include $(top_srcdir)/Rules_noxml-po.mak
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/nl.po oe-alliance-plugins-spark/SparkVFDControl/po/nl.po
+--- oe-alliance-plugins/SparkVFDControl/po/nl.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/nl.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,81 @@
++# Nederlands translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: ViX\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-23 07:43+0100\n"
++"Last-Translator: \n"
++"Language-Team: Andy Blackburn, Rob van der Does\n"
++"Language: Nederlands\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Nederlands\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++"X-Poedit-Country: NEDERLAND\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Annuleren"
++
++msgid "Enable led"
++msgstr "LED ingeschakeld"
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr "LED status RUN"
++
++msgid "Led state Record"
++msgstr "LED status Opname"
++
++msgid "Led state Standby"
++msgstr "LED status Stand-by"
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Opslaan"
++
++msgid "Show clock"
++msgstr "Toon klok"
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr "Tijd modus"
++
++msgid "Update Date/Time"
++msgstr "Update Datum/Tjd"
++
++msgid "VFD_Giga"
++msgstr "VFD_Giga"
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/no.po oe-alliance-plugins-spark/SparkVFDControl/po/no.po
+--- oe-alliance-plugins/SparkVFDControl/po/no.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/no.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,83 @@
++# Norwegian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: none\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Norwegian\n"
++"X-Poedit-Country: NORWAY\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Avbryte"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr ""
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/pl.po oe-alliance-plugins-spark/SparkVFDControl/po/pl.po
+--- oe-alliance-plugins/SparkVFDControl/po/pl.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/pl.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,79 @@
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: \n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: \n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Anuluj"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Zapisz"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/pt.po oe-alliance-plugins-spark/SparkVFDControl/po/pt.po
+--- oe-alliance-plugins/SparkVFDControl/po/pt.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/pt.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,81 @@
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Muaitai <muaitai@gmail.com>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Country: PORTUGAL\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Cancelar"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Guardar"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/ro.po oe-alliance-plugins-spark/SparkVFDControl/po/ro.po
+--- oe-alliance-plugins/SparkVFDControl/po/ro.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/ro.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,81 @@
++# Romanian  translations for tuxbox-enigma package.
++# Copyright (C) 2005 THE tuxbox-enigma'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the tuxbox-enigma package.
++# Automatically generated, 2005.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-17 20:19+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: HDTV ROMANIA(superonic,costel_mbc,neutrin,otheitis,cipy_1982,neutrin,runcanion)\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Anuleaza"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Salvare"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/ru.po oe-alliance-plugins-spark/SparkVFDControl/po/ru.po
+--- oe-alliance-plugins/SparkVFDControl/po/ru.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/ru.po	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,84 @@
++# Russian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Russian / enigma(c) Ukraine, Kiev>\n"
++"Language: ru\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Русский\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++"X-Poedit-Country: RUSSIA\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Отменить"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Сохранить"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/sk.po oe-alliance-plugins-spark/SparkVFDControl/po/sk.po
+--- oe-alliance-plugins/SparkVFDControl/po/sk.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/sk.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,81 @@
++# Slovak translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: none\n"
++"Language: sk\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Slovak\n"
++"X-Poedit-Country: SLOVAKIA\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "Zrušiť"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "Uložiť"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/sl.po oe-alliance-plugins-spark/SparkVFDControl/po/sl.po
+--- oe-alliance-plugins/SparkVFDControl/po/sl.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/sl.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,80 @@
++msgid ""
++msgstr ""
++"Project-Id-Version: ENIGMA 2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: OldSkul from www.linux-sprejemniki.info\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"X-Poedit-Language: Slovenian\n"
++"X-Poedit-Country: SLOVENIA\n"
++"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=2 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Izhod"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Potrditev"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/sr.po oe-alliance-plugins-spark/SparkVFDControl/po/sr.po
+--- oe-alliance-plugins/SparkVFDControl/po/sr.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/sr.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,84 @@
++# Serbian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: veselin & majevica CRNABERZA <jovanovic@gmx.ch>\n"
++"Language: sr\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Serbian\n"
++"X-Poedit-SourceCharset: utf-8\n"
++"X-Poedit-Country: SERBIA\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Odustani"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Sačuvajte"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/sv.po oe-alliance-plugins-spark/SparkVFDControl/po/sv.po
+--- oe-alliance-plugins/SparkVFDControl/po/sv.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/sv.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,84 @@
++# Swedish translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: \n"
++"Language: sv\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-Language: Swedish\n"
++"X-Poedit-SourceCharset: utf-8\n"
++"X-Poedit-Country: SWEDEN\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Avbryt"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Spara"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/th.po oe-alliance-plugins-spark/SparkVFDControl/po/th.po
+--- oe-alliance-plugins/SparkVFDControl/po/th.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/th.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,83 @@
++# English translations for tuxbox-enigma package.
++# Copyright (C) 2005 THE tuxbox-enigma'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the tuxbox-enigma package.
++# Automatically generated, 2005.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: tuxbox-enigma 0.0.1-En-Th\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: Tony @ Thai Dreambox <tonyboyth@gmail.com>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Thai\n"
++"X-Poedit-Country: THAILAND\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++msgid "Cancel"
++msgstr "ยกเลิก"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++msgid "Save"
++msgstr "บันทึก"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/tr.po oe-alliance-plugins-spark/SparkVFDControl/po/tr.po
+--- oe-alliance-plugins/SparkVFDControl/po/tr.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/tr.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,84 @@
++# Turkish translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: CÜNEYT OCAKLILAR <ocaklilar@gmail.com>\n"
++"Language: tr\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=1; plural=0;\n"
++"X-Generator: Pootle 2.0.3\n"
++"X-Poedit-SourceCharset: utf-8\n"
++"X-Poedit-Country: TURKEY\n"
++"X-Poedit-Bookmarks: 2450,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "İptal"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Kaydet"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/uk.po oe-alliance-plugins-spark/SparkVFDControl/po/uk.po
+--- oe-alliance-plugins/SparkVFDControl/po/uk.po	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/uk.po	2013-05-29 07:23:12.509911481 +0200
+@@ -0,0 +1,83 @@
++# Ukrainian translations for Enigma2.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: enigma2\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-12-03 15:01+0000\n"
++"PO-Revision-Date: 2012-05-18 01:40+0100\n"
++"Last-Translator: Andy Blackburn <andyblac@o2.co.uk>\n"
++"Language-Team: http://sat-ukraine.info/\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++"Plural-Forms: nplurals=2; plural=(n != 1);\n"
++"X-Poedit-Language: Українська\n"
++"X-Poedit-Country: UKRAINE\n"
++"X-Poedit-SourceCharset: iso-8859-15\n"
++
++msgid "Blink Record Led"
++msgstr ""
++
++msgid "Blue"
++msgstr ""
++
++#
++msgid "Cancel"
++msgstr "Відмінити"
++
++msgid "Enable led"
++msgstr ""
++
++msgid "Led state Deep Standby"
++msgstr ""
++
++msgid "Led state RUN"
++msgstr ""
++
++msgid "Led state Record"
++msgstr ""
++
++msgid "Led state Standby"
++msgstr ""
++
++msgid "No"
++msgstr ""
++
++msgid "None"
++msgstr ""
++
++msgid "Off"
++msgstr ""
++
++msgid "Purple"
++msgstr ""
++
++msgid "Red"
++msgstr ""
++
++#
++msgid "Save"
++msgstr "Зберегти"
++
++msgid "Show clock"
++msgstr ""
++
++msgid "Show clock in Deep Standby"
++msgstr ""
++
++msgid "Time mode"
++msgstr ""
++
++msgid "Update Date/Time"
++msgstr ""
++
++msgid "VFD_Giga"
++msgstr ""
++
++msgid "Yes"
++msgstr ""
++
++msgid "in standby: "
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/po/VFDControl.pot oe-alliance-plugins-spark/SparkVFDControl/po/VFDControl.pot
+--- oe-alliance-plugins/SparkVFDControl/po/VFDControl.pot	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/po/VFDControl.pot	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,58 @@
++# SOME DESCRIPTIVE TITLE.
++# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
++# This file is distributed under the same license as the PACKAGE package.
++# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
++#
++#, fuzzy
++msgid ""
++msgstr ""
++"Project-Id-Version: PACKAGE VERSION\n"
++"Report-Msgid-Bugs-To: \n"
++"POT-Creation-Date: 2012-06-29 18:20+0100\n"
++"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
++"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
++"Language-Team: LANGUAGE <LL@li.org>\n"
++"Language: \n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++#: ../src/plugin.py:118
++msgid "Cancel"
++msgstr ""
++
++#: ../src/plugin.py:131
++msgid "Enable led"
++msgstr ""
++
++#: ../src/plugin.py:134
++msgid "Led state RUN"
++msgstr ""
++
++#: ../src/plugin.py:136
++msgid "Led state Record"
++msgstr ""
++
++#: ../src/plugin.py:135
++msgid "Led state Standby"
++msgstr ""
++
++#: ../src/plugin.py:119
++msgid "Save"
++msgstr ""
++
++#: ../src/plugin.py:140
++msgid "Show clock"
++msgstr ""
++
++#: ../src/plugin.py:142
++msgid "Time mode"
++msgstr ""
++
++#: ../src/plugin.py:120
++msgid "Update Date/Time"
++msgstr ""
++
++#: ../src/plugin.py:218
++msgid "VFD_Giga"
++msgstr ""
+diff -Naur oe-alliance-plugins/SparkVFDControl/src/__init__.py oe-alliance-plugins-spark/SparkVFDControl/src/__init__.py
+--- oe-alliance-plugins/SparkVFDControl/src/__init__.py	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/src/__init__.py	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,19 @@
++# -*- coding: utf-8 -*-
++from Components.Language import language
++from Tools.Directories import resolveFilename, SCOPE_PLUGINS, SCOPE_LANGUAGE
++import os, gettext
++
++PluginLanguageDomain = "VFDControl"
++PluginLanguagePath = "SystemPlugins/VFDControl/locale"
++
++def localeInit():
++	gettext.bindtextdomain(PluginLanguageDomain, resolveFilename(SCOPE_PLUGINS, PluginLanguagePath))
++
++def _(txt):
++	if gettext.dgettext(PluginLanguageDomain, txt):
++		return gettext.dgettext(PluginLanguageDomain, txt)
++	else:
++		print "[" + PluginLanguageDomain + "] fallback to default translation for " + txt
++		return gettext.gettext(txt)
++
++language.addCallback(localeInit())
+diff -Naur oe-alliance-plugins/SparkVFDControl/src/Makefile.am oe-alliance-plugins-spark/SparkVFDControl/src/Makefile.am
+--- oe-alliance-plugins/SparkVFDControl/src/Makefile.am	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/src/Makefile.am	2013-05-29 07:23:12.505911019 +0200
+@@ -0,0 +1,3 @@
++installdir = $(libdir)/enigma2/python/Plugins/SystemPlugins/VFDControl
++
++install_PYTHON = *.py
+diff -Naur oe-alliance-plugins/SparkVFDControl/src/plugin.py oe-alliance-plugins-spark/SparkVFDControl/src/plugin.py
+--- oe-alliance-plugins/SparkVFDControl/src/plugin.py	1970-01-01 01:00:00.000000000 +0100
++++ oe-alliance-plugins-spark/SparkVFDControl/src/plugin.py	2013-06-08 17:10:57.850164361 +0200
+@@ -0,0 +1,260 @@
++# for localized messages
++from . import _
++
++from Screens.Screen import Screen
++from Components.Console import Console
++from Components.Button import Button
++from Components.ActionMap import ActionMap
++from Components.config import config, configfile, ConfigSubsection, ConfigEnableDisable, getConfigListEntry, ConfigInteger, ConfigSelection, ConfigYesNo
++from Components.ConfigList import ConfigListScreen, ConfigList
++from Tools.Directories import resolveFilename, SCOPE_PLUGINS
++from enigma import iPlayableService, eServiceCenter, eTimer
++from os import system
++from Plugins.Plugin import PluginDescriptor
++from Components.ServiceEventTracker import ServiceEventTracker
++from Components.ServiceList import ServiceList
++from Screens.InfoBar import InfoBar
++from time import localtime, time
++import Screens.Standby
++from enigma import evfd
++
++config.plugins.VFD_spark = ConfigSubsection()
++config.plugins.VFD_spark.ledMode = ConfigSelection(default = "True", choices = [("False",_("Led in Standby off")),("True",_("Led in Standby on"))])
++config.plugins.VFD_spark.textMode = ConfigSelection(default = "ChNumber", choices = [("ChNumber",_("Channel number")),("ChName",_("Channel name"))])
++
++class Channelnumber:
++
++	def __init__(self, session):
++		self.session = session
++		self.updatetime = 1000
++		self.zaPrik = eTimer()
++		self.zaPrik.timeout.get().append(self.vrime)
++		self.zaPrik.start(60*1000, 1)
++		self.onClose = [ ]
++
++		self.__event_tracker = ServiceEventTracker(screen=self,eventmap=
++			{
++				iPlayableService.evUpdatedEventInfo: self.__eventInfoChanged
++			})
++
++	def __eventInfoChanged(self):
++		if Screens.Standby.inStandby:
++			return
++		service = self.session.nav.getCurrentService()
++		info = service and service.info()
++		if info is None:
++			vfdtext = "---"
++		else:
++			if config.plugins.VFD_spark.textMode.value == 'ChNumber':
++				vfdtext = self.getchannelnr()
++			elif config.plugins.VFD_spark.textMode.value == 'ChName':
++				vfdtext = info.getName().replace('\xc2\x86', '').replace('\xc2\x87', '')
++			else:
++				vfdtext = "---"
++		info = None
++		service = None
++		evfd.getInstance().vfd_write_string(vfdtext)
++
++	def getchannelnr(self):
++		if InfoBar.instance is None:
++			chnr = "---"
++			return chnr
++		MYCHANSEL = InfoBar.instance.servicelist
++		markersOffset = 0
++		myRoot = MYCHANSEL.getRoot()
++		mySrv = MYCHANSEL.servicelist.getCurrent()
++		chx = MYCHANSEL.servicelist.l.lookupService(mySrv)
++		if not MYCHANSEL.inBouquet():
++			pass
++		else:
++			serviceHandler = eServiceCenter.getInstance()
++			mySSS = serviceHandler.list(myRoot)
++			SRVList = mySSS and mySSS.getContent("SN", True)
++			for i in range(len(SRVList)):
++				if chx == i:
++					break
++				testlinet = SRVList[i]
++				testline = testlinet[0].split(":")
++				if testline[1] == "64":
++					markersOffset = markersOffset + 1
++		chx = (chx - markersOffset) + 1
++		rx = MYCHANSEL.getBouquetNumOffset(myRoot)
++		chnr = str(chx + rx)
++		########## Center Channel number #################
++		t = len(chnr)
++		if t == 1:
++			CentChnr = "000" + chnr + '\n'
++		elif t == 2:
++			CentChnr = "00" + chnr + '\n'
++		elif t == 3:
++			CentChnr = "0" + chnr + '\n'
++		else:
++			CentChnr = chnr + '\n'
++		#################################################
++		return CentChnr
++
++	def vrime(self):
++		clock=int(time())
++		evfd.getInstance().vfd_set_clock(clock)	
++
++ChannelnumberInstance = None
++
++def leaveStandby():
++	print "[VFD-SPARK] Leave Standby"
++	evfd.getInstance().vfd_write_string("....")
++	if config.plugins.VFD_spark.ledMode.value == 'True':
++		evfd.getInstance().vfd_set_light(0)
++
++def standbyCounterChanged(configElement):
++	print "[VFD-SPARK] In Standby"
++	from Screens.Standby import inStandby
++	inStandby.onClose.append(leaveStandby)
++	evfd.getInstance().vfd_clear_string()
++	if config.plugins.VFD_spark.ledMode.value == 'True':
++		evfd.getInstance().vfd_set_light(1)
++
++def initVFD():
++	print "[VFD-SPARK] initVFD"
++	evfd.getInstance().vfd_write_string("....")
++	clock=int(time())
++	evfd.getInstance().vfd_set_clock(clock)
++	evfd.getInstance().vfd_set_light(0)
++
++class VFD_SparkSetup(ConfigListScreen, Screen):
++	def __init__(self, session, args = None):
++
++		self.skin = """
++			<screen position="100,100" size="500,210" title="VFD Spark Setup" >
++				<widget name="config" position="20,15" size="460,150" scrollbarMode="showOnDemand" />
++				<ePixmap position="40,165" size="140,40" pixmap="skin_default/buttons/green.png" alphatest="on" />
++				<ePixmap position="180,165" size="140,40" pixmap="skin_default/buttons/red.png" alphatest="on" />
++				<widget name="key_green" position="40,165" size="140,40" font="Regular;20" backgroundColor="#1f771f" zPosition="2" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
++				<widget name="key_red" position="180,165" size="140,40" font="Regular;20" backgroundColor="#9f1313" zPosition="2" transparent="1" shadowColor="black" shadowOffset="-1,-1" />
++			</screen>"""
++
++		Screen.__init__(self, session)
++		self.onClose.append(self.abort)
++
++		self.onChangedEntry = [ ]
++		self.list = []
++		ConfigListScreen.__init__(self, self.list, session = self.session, on_change = self.changedEntry)
++
++		self.createSetup()
++
++		self.Console = Console()
++		self["key_red"] = Button(_("Cancel"))
++		self["key_green"] = Button(_("Save"))
++		self["key_yellow"] = Button(_("Update Date/Time"))
++
++		self["setupActions"] = ActionMap(["SetupActions","ColorActions"],
++		{
++			"save": self.save,
++			"cancel": self.cancel,
++			"ok": self.save,
++			"yellow": self.Update,
++		}, -2)
++
++	def createSetup(self):
++		self.editListEntry = None
++		self.list = []
++		self.list.append(getConfigListEntry(_("VFD text"), config.plugins.VFD_spark.textMode))
++		self.list.append(getConfigListEntry(_("VFD led in standby"), config.plugins.VFD_spark.ledMode))
++
++		self["config"].list = self.list
++		self["config"].l.setList(self.list)
++
++	def changedEntry(self):
++		for x in self.onChangedEntry:
++			x()
++		self.newConfig()
++
++	def newConfig(self):
++		print self["config"].getCurrent()[0]
++		if self["config"].getCurrent()[0] == _('VFD text'):
++			self.createSetup()
++
++	def abort(self):
++		print "aborting"
++
++	def save(self):
++		for x in self["config"].list:
++			x[1].save()
++
++		configfile.save()
++		initVFD()
++		self.close()
++
++	def cancel(self):
++		initVFD()
++		for x in self["config"].list:
++			x[1].cancel()
++		self.close()
++
++	def Update(self):
++		self.createSetup()
++		initVFD()
++
++class VFD_Spark:
++	def __init__(self, session):
++		print "[VFD-SPARK] initializing"
++		self.session = session
++		self.service = None
++		self.onClose = [ ]
++
++		self.Console = Console()
++
++		initVFD()
++
++		global ChannelnumberInstance
++		if ChannelnumberInstance is None:
++			ChannelnumberInstance = Channelnumber(session)
++
++	def shutdown(self):
++		self.abort()
++
++	def abort(self):
++		print "[VFD-SPARK] aborting"
++		
++	config.misc.standbyCounter.addNotifier(standbyCounterChanged, initial_call = False)
++
++def main(menuid):
++	if menuid != "system":
++		return [ ]
++	return [(_("VFD_Spark"), startVFD, "VFD_Spark", None)]
++
++def startVFD(session, **kwargs):
++	session.open(VFD_SparkSetup)
++
++sparkVfd = None
++gReason = -1
++mySession = None
++
++def controlsparkVfd():
++	global sparkVfd
++	global gReason
++	global mySession
++
++	if gReason == 0 and mySession != None and sparkVfd == None:
++		print "[VFD-SPARK] Starting !!"
++		sparkVfd = VFD_Spark(mySession)
++	elif gReason == 1 and sparkVfd != None:
++		print "[VFD-SPARK] Stopping !!"
++
++		sparkVfd = None
++
++def sessionstart(reason, **kwargs):
++	print "[VFD-SPARK] sessionstart"
++	global sparkVfd
++	global gReason
++	global mySession
++
++	if kwargs.has_key("session"):
++		mySession = kwargs["session"]
++	else:
++		gReason = reason
++	controlsparkVfd()
++
++def Plugins(**kwargs):
++ 	return [ PluginDescriptor(where=[PluginDescriptor.WHERE_AUTOSTART, PluginDescriptor.WHERE_SESSIONSTART], fnc=sessionstart),
++ 		PluginDescriptor(name="VFD Spark", description="Change VFD display settings",where = PluginDescriptor.WHERE_MENU, fnc = main) ]
++
+
