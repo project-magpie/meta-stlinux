@@ -7,8 +7,6 @@ RDEPENDS_enigma2-plugin-systemplugins-vfdcontrol_spark = ""
 RDEPENDS_enigma2-plugin-systemplugins-vfdcontrol_spark7162 = ""
 RDEPENDS_enigma2-plugin-extensions-webbrowser_spark = ""
 RDEPENDS_enigma2-plugin-extensions-webbrowser_spark7162 = ""
-RDEPENDS_enigma2-plugin-extensions-hbbtv_spark = ""
-RDEPENDS_enigma2-plugin-extensions-hbbtv_spark7162 = ""
 
 DEPENDS_spark = "enigma2 \
 	${@base_contains("MACHINE_FEATURES", "blindscan-dvbc", "virtual/blindscan-dvbc" , "", d)} \
