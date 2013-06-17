@@ -5,8 +5,6 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 # Remove dependencies that cannot be built for sh4
 RDEPENDS_enigma2-plugin-systemplugins-vfdcontrol_spark = ""
 RDEPENDS_enigma2-plugin-systemplugins-vfdcontrol_spark7162 = ""
-RDEPENDS_enigma2-plugin-systemplugins-3gmodemmanager_spark = ""
-RDEPENDS_enigma2-plugin-systemplugins-3gmodemmanager_spark7162 = ""
 RDEPENDS_enigma2-plugin-extensions-webbrowser_spark = ""
 RDEPENDS_enigma2-plugin-extensions-webbrowser_spark7162 = ""
 RDEPENDS_enigma2-plugin-extensions-hbbtv_spark = ""
@@ -16,17 +14,19 @@ DEPENDS_spark = "enigma2 \
 	${@base_contains("MACHINE_FEATURES", "blindscan-dvbc", "virtual/blindscan-dvbc" , "", d)} \
 	${@base_contains("MACHINE_FEATURES", "blindscan-dvbs", "virtual/blindscan-dvbs" , "", d)} \
 	python-dnspython python-beautifulsoup python-lxml python-simplejson python-pyamf \
-	djmount \
-	librtmp \
-	minidlna \
-	hddtemp \
-	ppp \
-	usbmodeswitch \
-	usbmodeswitch-data \
-	usbutils \
-	gmp \
-	tslib \
-	mpfr \
+        djmount \
+        librtmp \
+        minidlna \
+        hddtemp \
+        ppp \
+        usbmodeswitch \
+        usbmodeswitch-data \
+        wvdial \
+        wvstreams \
+        usbutils \
+        gmp \
+        tslib \
+        mpfr \
 	"
 
 DEPENDS_spark7162 = "enigma2 \
@@ -40,6 +40,8 @@ DEPENDS_spark7162 = "enigma2 \
         ppp \
         usbmodeswitch \
         usbmodeswitch-data \
+        wvdial \
+        wvstreams \
         usbutils \
         gmp \
         tslib \
