@@ -27,6 +27,7 @@ DEPENDS_spark = "enigma2 \
         gmp \
         tslib \
         mpfr \
+        vuplus-opera-browser-util \
 	"
 
 DEPENDS_spark7162 = "enigma2 \
@@ -46,6 +47,7 @@ DEPENDS_spark7162 = "enigma2 \
         gmp \
         tslib \
         mpfr \
+        vuplus-opera-browser-util \
         "
 
 SRC_URI_spark="git://github.com/sklnet/oe-alliance-plugins.git;protocol=git"
