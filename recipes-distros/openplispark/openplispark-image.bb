@@ -1,4 +1,4 @@
-require openpli-image.bb
+require openplispark-base-image.bb
 
 WIFI_DRIVERS = " \
 	firmware-carl9170 \
