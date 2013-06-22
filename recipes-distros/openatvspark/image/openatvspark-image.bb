@@ -10,13 +10,32 @@ PV = "${IMAGE_VERSION}"
 PR = "r${DATETIME}"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-IMAGE_INSTALL = "openatvspark-base \
-	${@base_contains("MACHINE_FEATURES", "smallflash", "", \
-	" \
-	task-base-smbfs-client \
-	task-base-smbfs \
-	task-base-nfs \
-	", d)} \
+IMAGE_INSTALL = " \
+	oe-alliance-enigma2 \
+	openatv-version-info \
+	openatv-enigma2 \
+	openatv-bootlogo \
+	openatv-spinner \
+	openatv-feed-config \
+	avahi-daemon \
+	dropbear \
+	early-configure \
+	e2fsprogs-mke2fs \
+	e2fsprogs-e2fsck \
+	e2fsprogs-tune2fs \
+	e2fsprogs-blkid \
+	fakelocale \
+	libavahi-client \
+	ntp \
+	opkg \
+	sdparm \
+	task-base \
+	task-core-boot \
+	tzdata \
+	util-linux-sfdisk \
+	volatile-media \
+	vsftpd \
+	nano \
 	"
 
 export IMAGE_BASENAME = "openatv-image"
