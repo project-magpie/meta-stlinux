@@ -16,6 +16,7 @@ PREFERRED_VERSION_glibc-locale            ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-nativesdk         ?= "2.10"
 PREFERRED_VERSION_glibc-initial           ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
+PREFERRED_VERSION_directfb ?= "1.4.12"
 
 USE_VT = "0"
 MACHINE_FEATURES = "kernel26 ext2 alsa usbhost serial"
