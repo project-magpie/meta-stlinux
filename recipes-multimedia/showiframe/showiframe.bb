@@ -2,7 +2,7 @@ DESCRIPTION = "utility to show an mpeg2/4 iframe on a linuxtv video device"
 SECTION = "base"
 PRIORITY = "optional"
 LICENSE = "PD"
-LIC_FILES_CHKSUM = "file://showiframe.c;firstline=1;endline=1;md5=ff82532823be45b3e523e5031819892f"
+LIC_FILES_CHKSUM = "file://showiframe.c;firstline=1;endline=1;md5=09a0d9c2fb98bb5fe6a1de568344c2f2"
 
 PV = "1.3"
 PR = "r1"
