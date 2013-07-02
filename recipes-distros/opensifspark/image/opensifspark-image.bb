@@ -14,7 +14,7 @@ IMAGE_INSTALL = " \
 	oe-alliance-enigma2 \
 	opensif-version-info \
 	opensif-enigma2 \
-	opensif-bootlogo \
+	opensifspark-bootlogo \
 	avahi-daemon \
 	dropbear \
 	early-configure \
