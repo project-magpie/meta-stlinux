@@ -4,8 +4,6 @@ PRIORITY = "optional"
 DEPENDS = "gstreamer gst-plugins-base libdca"
 LICENSE = "proprietary"
 
-PROVIDES = "gst-plugin-dvbmediasink"
-
 require tdt-tools.inc
 
 PV = "0.10.1+git${SRCPV}"
