@@ -10,7 +10,7 @@ DEPENDS = "virtual/kernel"
 RDEPENDS_lirc-exec = "lirc evremote2"
 RRECOMMENDS_${PN} = "lirc-exec"
 
-PR = "${INCPR}.1"
+PR = "${INCPR}.2"
 
 EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER} --without-x --with-driver=userspace "
 
@@ -20,7 +20,8 @@ SRC_URI_append = " file://lircd.init \
                    file://lircexec.init \
                  "
 
-SPARK_GEN_SRC_URI += " file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
+SPARK_GEN_SRC_URI += "file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
+                      file://lirc-0.9.0-uinput-repeat-fix.diff;patch=1 \
 "
 
 SRC_URI_append_spark += "${SPARK_GEN_SRC_URI} \
