@@ -10,7 +10,7 @@ PV = "${IMAGE_VERSION}"
 PR = "r${DATETIME}"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-IMAGE_INSTALL = "openvix-base"
+IMAGE_INSTALL = "openvixspark-base"
 
 export IMAGE_BASENAME = "openvix-image"
 IMAGE_LINGUAS = ""
