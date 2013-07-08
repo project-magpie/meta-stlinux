@@ -13,13 +13,13 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 inherit gitpkgv
 
 SRCREV = "${AUTOREV}"
-INC_PR = "r2"
-PV = "0.2+git${SRCPV}"
+INC_PR = "r14"
+PV = "0.1+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
 SRC_URI = " \
-	git://gitorious.org/open-duckbox-project-sh4/tdt.git;branch=master \
+	git://gitorious.org/~max10/open-duckbox-project-sh4/max-tdt.git;branch=master \
         file://aotom.sh \
         file://COPYING \
 " 
@@ -49,10 +49,10 @@ do_configure_prepend () {
                 rm multicom 
         fi
 	ln -s ${S}/include/stmfb-3.1_stm24_0104 ${S}/include/stmfb
-	ln -s ${S}/include/player2_179 ${S}/include/player2
-	ln -s ${S}/multicom-3.2.4/include ${S}/include/multicom
+	ln -s ${S}/include/player2_191 ${S}/include/player2
+	ln -s ${S}/multicom-4.0.6/include ${S}/include/multicom
 	ln -s ${S}/player2_191 ${S}/player2
-	ln -s ${S}/multicom-3.2.4 ${S}/multicom
+	ln -s ${S}/multicom-4.0.6 ${S}/multicom
 	ln -s ${S}/stgfb/stmfb-3.1_stm24_0104 ${S}/stgfb/stmfb
 	rm -f .config 
         printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
