@@ -39,8 +39,6 @@ How to use it
             ...
             BUILD_OPTIMIZATION = "-O2 -pipe"
             ...
-    WORKAROUND FOR GLIBC. MUST BE FIXED!!!!
-        Remove TCLIBC definition in <distroname>.conf inside oe-alliance meta
 
 ## create image: 
     MACHINE=spark7162 DISTRO=<distroname> make image
