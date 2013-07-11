@@ -4,7 +4,7 @@ PRIORITY = "optional"
 LICENSE = " GPLv2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882bbe"
 
-DEPENDS = "gstreamer gst-plugins-base libdcai tdt-driver"
+DEPENDS = "gstreamer gst-plugins-base libdca tdt-driver"
 
 SRC_URI = "git://gitorious.org/open-duckbox-project-sh4/tdt.git;protocol=git \
            file://COPYING \
