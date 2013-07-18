@@ -19,6 +19,12 @@ inherit autotools
 
 EXTRA_OECONF = "--enable-silent-rules --enable-maintainer-mode --prefix="
 
+do_patch_append () {
+        os.symlink("${WORKDIR}/git/tdt/cvs/driver/include/stmfb-3.1_stm24_0104","${WORKDIR}/git/tdt/cvs/driver/include/stmfb")
+        os.symlink("${WORKDIR}/git/tdt/cvs/driver/include/player2_179","${WORKDIR}/git/tdt/cvs/driver/include/player2")
+        os.symlink("${WORKDIR}/git/tdt/cvs/driver/multicom-3.2.4/include","${WORKDIR}/git/tdt/cvs/driver/include/multicom")
+}
+
 do_compile() {
 	 oe_runmake  'DESTDIR=${D}' 'SUBDIRS=${@d.getVar('PN',1).replace('-', '_')}' 
 }
