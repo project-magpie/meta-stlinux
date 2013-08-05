@@ -4,14 +4,19 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 DEPENDS = "tdt-driver"
 
-PR = "r3"
+PR = "r8"
 
-SRCREV = "f5159041295774ef5bbb338c7f5d831bc2620d03"
+#SRCREV = "f5159041295774ef5bbb338c7f5d831bc2620d03"
+SRCREV = "${AUTOREV}"
 
 SRC_URI = " \
 	git://gitorious.org/open-duckbox-project-sh4/tdt.git \
 "
-PV = "0.1+git${SRCPV}"
+#SRC_URI = " \
+#	git://gitorious.org/~max10/open-duckbox-sh4/max-tdt.git;brach=enigma2 \
+#	file://configure.max.patch;patch=1 \
+#"
+PV = "0.3+git${SRCPV}"
 
 S = "${WORKDIR}/git/tdt/cvs/apps/misc/tools"
 

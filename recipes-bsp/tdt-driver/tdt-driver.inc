@@ -13,17 +13,21 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 inherit gitpkgv
 
 SRCREV = "${AUTOREV}"
-#SRCREV = "73cbf4aea6e3b6ace7bd95ab8c7a519137ad2018"
-INC_PR = "r6"
-PV = "0.2+git${SRCPV}"
+INC_PR = "r8"
+PV = "0.4+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
 SRC_URI = " \
 	git://gitorious.org/open-duckbox-project-sh4/tdt.git;branch=master \
-        file://aotom.sh \
-        file://COPYING \
+	file://aotom.sh \
+	file://COPYING \
 " 
+#SRC_URI = " \
+#	git://gitorious.org/~max10/open-duckbox-sh4/max-tdt.git;branch=enigma2 \
+#        file://aotom.sh \
+#        file://COPYING \
+#" 
 
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""
