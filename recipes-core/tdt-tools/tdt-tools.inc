@@ -16,7 +16,7 @@ SRC_URI = " \
 #	git://gitorious.org/~max10/open-duckbox-sh4/max-tdt.git;brach=enigma2 \
 #	file://configure.max.patch;patch=1 \
 #"
-PV = "0.3+git${SRCPV}"
+PV = "0.1+git${SRCPV}"
 
 S = "${WORKDIR}/git/tdt/cvs/apps/misc/tools"
 
