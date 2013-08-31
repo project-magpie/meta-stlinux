@@ -1,0 +1,500 @@
+--- libdvdnav-4.1.3.orig/configure.ac	2012-05-10 17:28:37.540182957 +0200
++++ libdvdnav-4.1.3/configure.ac	2012-05-10 17:29:59.452179512 +0200
+@@ -99,7 +99,7 @@
+ AC_DISABLE_STATIC
+ AC_PROG_LIBTOOL
+ AC_SUBST(LIBTOOL_DEPS)
+-if ${CONFIG_SHELL} ./libtool --features | grep "enable static" >/dev/null; then
++if ${CONFIG_SHELL} libtool --features | grep "enable static" >/dev/null; then
+   STATIC="-static"
+ else
+   STATIC=
+--- libdvdnav-4.1.3.orig/debian/rules
++++ libdvdnav-4.1.3/debian/rules
+@@ -0,0 +1,81 @@
++#!/usr/bin/make -f
++
++include /usr/share/quilt/quilt.make
++
++DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
++DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
++
++ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
++	CROSS=CC=$(DEB_HOST_GNU_TYPE)-gcc
++else
++	CROSS=
++endif
++
++clean: unpatch
++	dh_testdir
++	dh_testroot
++	rm -f build-stamp
++	rm -f config.guess config.sub
++
++	[ ! -f config.mak ] || $(MAKE) distclean
++	rm -rf doc/html doc/latex
++
++	dh_clean
++
++config.status: configure2 patch
++	dh_testdir
++
++ifneq "$(wildcard /usr/share/misc/config.guess)" ""
++	cp -f /usr/share/misc/config.guess config.guess
++endif
++ifneq "$(wildcard /usr/share/misc/config.sub)" ""
++	cp -f /usr/share/misc/config.sub config.sub
++endif
++
++	./configure2 $(CROSS) --prefix=/usr --disable-opts --disable-strip --with-dvdread=/usr/include/dvdread CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
++
++build: build-stamp
++build-stamp: config.status
++	dh_testdir
++
++	$(MAKE)
++	cd doc && doxygen doxy.conf
++
++	touch build-stamp
++
++install: build
++	dh_testdir
++	dh_testroot
++	dh_prep
++	dh_installdirs
++
++	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
++
++	install -D -m 0644 m4/dvdnav.m4 debian/libdvdnav-dev/usr/share/aclocal/dvdnav.m4
++
++	install -D -m 0755 debian/bug/libdvdnav4.script debian/libdvdnav4/usr/share/bug/libdvdnav4/script
++	install -D -m 0755 debian/bug/libdvdnav-dev.script debian/libdvdnav-dev/usr/share/bug/libdvdnav-dev/script
++
++binary: binary-arch
++
++binary-arch: install
++	dh_testdir
++	dh_testroot
++	dh_installchangelogs ChangeLog
++	dh_installdocs
++	dh_installexamples
++	dh_install --fail-missing --sourcedir=debian/tmp
++	dh_installman
++	dh_strip --dbg-package=libdvdnav-dbg
++	dh_compress
++	dh_fixperms
++	dh_makeshlibs
++	dh_installdeb
++	dh_shlibdeps
++	dh_gencontrol
++	dh_md5sums
++	dh_builddeb
++
++binary-indep:
++
++.PHONY: clean build install binary binary-arch binary-indep
+--- libdvdnav-4.1.3.orig/debian/compat
++++ libdvdnav-4.1.3/debian/compat
+@@ -0,0 +1 @@
++7
+--- libdvdnav-4.1.3.orig/debian/libdvdnav-dev.docs
++++ libdvdnav-4.1.3/debian/libdvdnav-dev.docs
+@@ -0,0 +1,6 @@
++AUTHORS
++DEVELOPMENT-POLICY.txt
++TODO
++doc/dvd_structures
++doc/html
++doc/library_layout
+--- libdvdnav-4.1.3.orig/debian/control
++++ libdvdnav-4.1.3/debian/control
+@@ -0,0 +1,45 @@
++Source: libdvdnav
++Section: libs
++Priority: optional
++Maintainer: Daniel Baumann <daniel@debian.org>
++Build-Depends: debhelper (>= 7), quilt, autotools-dev, doxygen, libdvdread-dev (>= 4.1.3)
++Standards-Version: 3.8.0
++Vcs-Browser: http://git.debian.net/?p=debian/libdvdnav.git
++Vcs-Git: git://git.debian.net/git/debian/libdvdnav.git
++
++Package: libdvdnav4
++Section: libs
++Architecture: any
++Depends: ${shlibs:Depends}, ${misc:Depends}
++Suggests: libdvdcss2
++Description: DVD navigation library
++ libdvdnav is a DVD navigation library, which provides an interface to the
++ advanced features of DVDs, like menus and naviation. It contains the VM and
++ other parts useful for writing DVD players. It's based on Ogle, but was
++ modified to be used by xine and mplayer.
++
++Package: libdvdnav-dbg
++Section: devel
++Priority: extra
++Architecture: any
++Depends: libdvdnav4 (= ${binary:Version}), libdvdnav-dev (= ${binary:Version})
++Description: DVD navigation library (debug)
++ libdvdnav is a DVD navigation library, which provides an interface to the
++ advanced features of DVDs, like menus and naviation. It contains the VM and
++ other parts useful for writing DVD players. It's based on Ogle, but was
++ modified to be used by xine and mplayer.
++ .
++ This package contains the debugging symbols.
++
++Package: libdvdnav-dev
++Section: libdevel
++Architecture: any
++Depends: libdvdnav4 (= ${binary:Version}), libdvdread-dev, pkg-config
++Suggests: libdvdcss-dev
++Description: DVD navigation library (development)
++ libdvdnav is a DVD navigation library, which provides an interface to the
++ advanced features of DVDs, like menus and naviation. It contains the VM and
++ other parts useful for writing DVD players. It's based on Ogle, but was
++ modified to be used by xine and mplayer.
++ .
++ This package contains the development files.
+--- libdvdnav-4.1.3.orig/debian/libdvdnav4.examples
++++ libdvdnav-4.1.3/debian/libdvdnav4.examples
+@@ -0,0 +1 @@
++src/FELLOWSHIP.map
+--- libdvdnav-4.1.3.orig/debian/libdvdnav4.docs
++++ libdvdnav-4.1.3/debian/libdvdnav4.docs
+@@ -0,0 +1,3 @@
++AUTHORS
++README
++src/README.MAP
+--- libdvdnav-4.1.3.orig/debian/changelog
++++ libdvdnav-4.1.3/debian/changelog
+@@ -0,0 +1,171 @@
++libdvdnav (4.1.3-3) unstable; urgency=low
++
++  * Uploading to unstable.
++
++ -- Daniel Baumann <daniel@debian.org>  Sun, 15 Feb 2009 18:16:00 +0100
++
++libdvdnav (4.1.3-2) experimental; urgency=low
++
++  * Using patch-stamp rather than patch in rules file.
++  * Replacing obsolete dh_clean -k with dh_prep.
++  * Correcting name of manpages sub-directory.
++  * Using quilt rather than dpatch.
++  * Checking for libdvdread4 in bug script.
++  * Updating year in copyright file.
++  * Updating shlibs file.
++  * Updating rules to current state of the art.
++  * Updating rules to install moved changelog (Closes: #512884).
++
++ -- Daniel Baumann <daniel@debian.org>  Sun, 25 Jan 2009 01:32:00 +0100
++
++libdvdnav (4.1.3-1) experimental; urgency=low
++
++  * Adding bug scripts for libdvdnav4 and libdvdnav-dev.
++  * Adding suggests to libdvdcss2.
++  * Updating vcs fields in control file.
++  * Merging upstream version 4.1.3.
++  * Removing 01-version.dpatch, not required anymore.
++  * Removing 03-byte-swapping.dpatch, not needed anymore because libdvdread is
++    in its own package now.
++  * Removing 04-cxx.dpatch, went usptream.
++  * Updating rules to new upstream.
++  * Including pkgconfig files.
++  * Correcting permissions of /usr/share/bug/libdvdnav-dev/script.
++  * Updating debhelper docs file to new upstream.
++  * Updating cross compiling handling in rules.
++  * Build depending on libdvdread 4.1.3.
++
++ -- Daniel Baumann <daniel@debian.org>  Tue,  9 Sep 2008 08:13:00 +0200
++
++libdvdnav (4.1.2-3) unstable; urgency=medium
++
++  * Correcting c++ error in dvdnav.h (Closes: #480066).
++  * Updating to standards 3.8.0.
++  * Adding depends on libdvdread-dev to libdvdnav-dev (Closes: #480065).
++
++ -- Daniel Baumann <daniel@debian.org>  Wed, 16 Jul 2008 09:54:00 +0200
++
++libdvdnav (4.1.2-2) unstable; urgency=low
++
++  * Adding debug package.
++
++ -- Daniel Baumann <daniel@debian.org>  Mon, 28 Apr 2008 15:21:00 +0200
++
++libdvdnav (4.1.2-1) unstable; urgency=low
++
++  * Taking over libdvdnav maintenance from Philipp Matthias Hahn, with thanks
++    for his past contributions.
++  * Redoing debian packaging from scratch.
++  * Merging upstream version 4.1.2.
++
++ -- Daniel Baumann <daniel@debian.org>  Mon, 28 Apr 2008 09:40:00 +0200
++
++libdvdnav (0.1.10-0.2) unstable; urgency=low
++
++  * Porter NMU.
++  * Add byte swapping support for glibc based OS (closes: #272498).
++
++ -- Aurelien Jarno <aurel32@debian.org>  Sun, 11 Mar 2007 19:55:08 +0100
++
++libdvdnav (0.1.10-0.1) unstable; urgency=low
++
++  * Non-maintainer upload to prevent vlc from segfaulting in amd64 and ppc.
++  * New upstream release.
++    - Fixes the code so that it does not segfault (Closes: #303541).
++
++ -- Margarita Manterola <marga@debian.org>  Mon, 14 Aug 2006 19:53:55 -0300
++
++libdvdnav (0.1.9-3) unstable; urgency=low
++
++  * Update config.{sub,guess},ltmain.sh (closes: #249189)
++  * Switch package to use AM_MAINTAINER_MODE.
++  * Standard-Version: 3.6.1.1
++    - No changes.
++
++ -- Philipp Matthias Hahn <pmhahn@debian.org>  Thu, 17 Jun 2004 20:33:49 +0200
++
++libdvdnav (0.1.9-2) unstable; urgency=low
++
++  * Add automake1.7 to Build-Depends, so configure finds aclocal and installs
++    dvdnav.m4 (closes: #195204).
++
++ -- Philipp Matthias Hahn <pmhahn@debian.org>  Thu, 29 May 2003 16:49:39 +0200
++
++libdvdnav (0.1.9-1) unstable; urgency=low
++
++  * New upstream release. (0.1.7 was not released)
++    - Drop dependencies on external libdvdread.
++  * Bump so version number because of incompatible changes.
++  * Get rid of debian/libdvdnav1.* files.
++  * Standard-Version: 3.5.10
++    - No changes.
++
++ -- Philipp Matthias Hahn <pmhahn@debian.org>  Wed, 21 May 2003 10:04:01 +0200
++
++libdvdnav (0.1.7-1) unstable; urgency=low
++
++  * New upstream version (closes: #188071).
++  * Update debian/*
++    - Change email to pmhahn@d.o.
++    - Depend on libdvdread3
++    - Change section to libdevel.
++  * Standard-Version: 3.5.9
++    - Support DEB_BUILD_OPTIONS noopt instead of debug.
++    - Always build with -g.
++    - Build depend on debhelper (>= 4.1.1).
++
++ -- Philipp Matthias Hahn <pmhahn@debian.org>  Fri, 11 Apr 2003 21:41:58 +0200
++
++libdvdnav (0.1.3-1) unstable; urgency=low
++
++  * New upstream version.
++
++ -- Philipp Matthias Hahn <pmhahn@titan.lahn.de>  Fri,  2 Aug 2002 15:30:12 +0200
++
++libdvdnav (0.1.2-1) unstable; urgency=low
++
++  * New upstream version.
++
++ -- Philipp Matthias Hahn <pmhahn@titan.lahn.de>  Sat, 13 Jul 2002 10:17:39 +0200
++
++libdvdnav (0.1.1-1) unstable; urgency=low
++
++  * New upstream version. (closes: #148495)
++  * Include TODO
++
++ -- Philipp Matthias Hahn <pmhahn@titan.lahn.de>  Sat,  1 Jun 2002 17:47:59 +0200
++
++libdvdnav (0.1.0-2) unstable; urgency=low
++
++  * Add manual page dvdnav-config.1
++  * Add bug-presubj on Daniel's request
++  * Get dvdnav.c:1.17 from CVS to fix angle support
++  * Merge patch from Jamie Wilkinson (#146699)
++  * Rerun automake to fix dependencies
++  * Ack NMU from siggi
++  * Fix include in examples/menus.c
++
++ -- Philipp Matthias Hahn <pmhahn@titan.lahn.de>  Thu, 23 May 2002 09:41:15 +0200
++
++libdvdnav (0.1.0-1.1) unstable; urgency=low
++
++  * Prepared for first 'real' release.
++  * Bug fixes
++  * Changes to allow apps to 'roll-their-own' dvdnav_get_next_block functions.
++  * NMU in order to get xine-dvdnav running again
++    - changed package name to libdvdnav0
++      (see patch from Jamie Wilkinson for a better solution)
++
++ -- Siggi Langauf <siggi@debian.org>  Mon, 20 May 2002 15:57:40 +0200
++
++libdvdnav (0.0.1-1) unstable; urgency=low
++
++  * Repackaged using dh-make.
++
++ -- Philipp Matthias Hahn <pmhahn@titan.lahn.de>  Sun,  7 Apr 2002 16:29:35 +0200
++
++libdvdnav (0.0.1) unstable; urgency=low
++
++  * Initial release.
++
++ -- rjw57 <rjw57@hermes.cam.ac.uk>  Tue, 12 Mar 2002 19:41:13 +0000
+--- libdvdnav-4.1.3.orig/debian/libdvdnav4.install
++++ libdvdnav-4.1.3/debian/libdvdnav4.install
+@@ -0,0 +1 @@
++/usr/lib/*.so.*
+--- libdvdnav-4.1.3.orig/debian/copyright
++++ libdvdnav-4.1.3/debian/copyright
+@@ -0,0 +1,48 @@
++Authors:
++ Daniel Caujolle-Bert <segfault@club-internet.fr>
++ Thomas Vander Stichele <thomas@apestaart.org>
++ Rich Wareham <richwareham@users.sourceforge.net>
++ Kees Cook <kees@outflux.net>
++ Michael Roitzsch <mroi@users.sourceforge.net>
++ Frantisek Dvorak <valtri@users.sourceforge.net>
++Download: http://www.mplayerhq.hu/MPlayer/releases/dvdnav/
++
++Files: *
++Copyright: (C) 2002 libdvdnav project
++License: GPL-2+
++ This program is free software; you can redistribute it and/or
++ modify it under the terms of the GNU General Public License
++ as published by the Free Software Foundation; either version 2
++ of the License, or (at your option) any later version.
++ .
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ GNU General Public License for more details.
++ .
++ You should have received a copy of the GNU General Public License
++ along with this program; if not, write to the Free Software
++ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ .
++ On Debian systems, the complete text of the GNU General Public License
++ can be found in /usr/share/common-licenses/GPL-2 file.
++
++Files: debian/*
++Copyright: (C) 2008-2009 Daniel Baumann <daniel@debian.org>
++License: GPL-2+
++ This program is free software; you can redistribute it and/or
++ modify it under the terms of the GNU General Public License
++ as published by the Free Software Foundation; either version 2
++ of the License, or (at your option) any later version.
++ .
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ GNU General Public License for more details.
++ .
++ You should have received a copy of the GNU General Public License
++ along with this program; if not, write to the Free Software
++ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ .
++ On Debian systems, the complete text of the GNU General Public License
++ can be found in /usr/share/common-licenses/GPL-2 file.
+--- libdvdnav-4.1.3.orig/debian/libdvdnav-dev.manpages
++++ libdvdnav-4.1.3/debian/libdvdnav-dev.manpages
+@@ -0,0 +1 @@
++debian/manpages/*
+--- libdvdnav-4.1.3.orig/debian/libdvdnav-dev.install
++++ libdvdnav-4.1.3/debian/libdvdnav-dev.install
+@@ -0,0 +1,5 @@
++/usr/bin
++/usr/include
++/usr/lib/*.a
++/usr/lib/*.so
++/usr/lib/pkgconfig
+--- libdvdnav-4.1.3.orig/debian/libdvdnav-dev.examples
++++ libdvdnav-4.1.3/debian/libdvdnav-dev.examples
+@@ -0,0 +1 @@
++examples/*
+--- libdvdnav-4.1.3.orig/debian/libdvdnav4.shlibs
++++ libdvdnav-4.1.3/debian/libdvdnav4.shlibs
+@@ -0,0 +1,2 @@
++libdvdnav 4 libdvdnav4 (>= 4.1.3)
++libdvdnavmini 4 libdvdnav4 (>= 4.1.3)
+--- libdvdnav-4.1.3.orig/debian/patches/01-inttypes.patch
++++ libdvdnav-4.1.3/debian/patches/01-inttypes.patch
+@@ -0,0 +1,15 @@
++Author: Dominik Mierzejewski <rpm@greysector.net>
++Description: Fixing missing <inttypes.h> include.
++
++diff -Naurp libdvdnav.orig/src/dvd_types.h libdvdnav/src/dvd_types.h
++--- libdvdnav.orig/src/dvd_types.h	2007-04-21 11:08:56.000000000 +0000
+++++ libdvdnav/src/dvd_types.h	2008-04-28 06:55:36.000000000 +0000
++@@ -29,6 +29,8 @@
++ #ifndef DVD_H_INCLUDED
++ #define DVD_H_INCLUDED
++ 
+++#include <inttypes.h>
+++
++ /*
++  * DVD Menu ID
++  * (see dvdnav_menu_call())
+--- libdvdnav-4.1.3.orig/debian/patches/series
++++ libdvdnav-4.1.3/debian/patches/series
+@@ -0,0 +1 @@
++01-inttypes.patch
+--- libdvdnav-4.1.3.orig/debian/bug/libdvdnav4.script
++++ libdvdnav-4.1.3/debian/bug/libdvdnav4.script
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++dpkg -l libdvdread4 libdvdnav4 libdvdcss2
+--- libdvdnav-4.1.3.orig/debian/bug/libdvdnav-dev.script
++++ libdvdnav-4.1.3/debian/bug/libdvdnav-dev.script
+@@ -0,0 +1,3 @@
++#!/bin/sh
++
++dpkg -l libdvdread-dev libdvdnav-dev libdvdcss-dev
+--- libdvdnav-4.1.3.orig/debian/manpages/dvdnav-config.1
++++ libdvdnav-4.1.3/debian/manpages/dvdnav-config.1
+@@ -0,0 +1,47 @@
++.TH DVDNAV 1 "16 May 2002" Version 0.1.0
++.SH NAME
++dvdnav-config - script to get information about the installed version of libdvdnav
++.SH SYNOPSIS
++.B  dvdnav-config [\-\-prefix\fI[=DIR]\fP] [\-\-exec\-prefix\fI[=DIR]\fP] [\-\-version] [\-\-libs] [\-\-cflags]
++.SH DESCRIPTION
++.PP
++\fIdvdnav-config\fP is a tool that is used to configure to determine
++the compiler and linker flags that should be used to compile
++and link programs that use \fIlibdvdnav\fP. It is also used internally
++to the .m4 macros for GNU autoconf that are included with \fIlibdvdnav\fP.
++.
++.SH OPTIONS
++\fIdvdnav-config\fP accepts the following options:
++.TP 8
++.B  \-\-version
++Print the currently installed version of \fIlibdvdnav\fP on the standard output.
++.TP 8
++.B  \-\-libs
++Print the linker flags that are necessary to link a \fIlibdvdnav\fP program.
++.TP 8
++.B  \-\-cflags
++Print the compiler flags that are necessary to compile a \fIlibdvdnav\fP program.
++.TP 8
++.B  \-\-prefix=PREFIX
++If specified, use PREFIX instead of the installation prefix that \fIlibdvdnav\fP
++was built with when computing the output for the \-\-cflags and
++\-\-libs options. This option is also used for the exec prefix
++if \-\-exec\-prefix was not specified. This option must be specified
++before any \-\-libs or \-\-cflags options.
++.TP 8
++.B  \-\-exec\-prefix=PREFIX
++If specified, use PREFIX instead of the installation exec prefix that
++\fIlibdvdnav\fP was built with when computing the output for the \-\-cflags
++and \-\-libs options.  This option must be specified before any
++\-\-libs or \-\-cflags options.
++.SH COPYRIGHT
++Copyright \(co  1998 Owen Taylor
++
++Permission to use, copy, modify, and distribute this software and its
++documentation for any purpose and without fee is hereby granted,
++provided that the above copyright notice appear in all copies and that
++both that copyright notice and this permission notice appear in
++supporting documentation.
++
++This manual page was adapted by Philipp Matthias Hahn <pmhahn@debian.org>,
++for the Debian GNU/Linux system (but may be used by others).

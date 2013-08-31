@@ -20,6 +20,10 @@ SRC_URI = "\
 DEPENDS = "wvstreams"
 RDEPENDS = "ppp"
 
+do_compile () {
+    make -j 1
+}
+
 do_install() {
     install -d ${D}/usr
     install -m 0755 wvdial wvdialconf ${D}/usr

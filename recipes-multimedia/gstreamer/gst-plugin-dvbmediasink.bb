@@ -9,10 +9,6 @@ DEPENDS = "gstreamer gst-plugins-base libdca tdt-driver"
 SRC_URI = "git://gitorious.org/open-duckbox-project-sh4/tdt.git;protocol=git \
            file://COPYING \
 "
-#SRC_URI = " \
-#	git://gitorious.org/~max10/open-duckbox-sh4/max-tdt.git;brach=enigma2 \
-#	file://COPYING \
-#"
 
 S = "${WORKDIR}/git/tdt/cvs/apps/misc/tools/gst-plugins-dvbmediasink"
 
