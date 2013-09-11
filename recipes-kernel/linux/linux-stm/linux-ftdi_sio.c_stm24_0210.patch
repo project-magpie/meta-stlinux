@@ -1,5 +1,5 @@
---- linux-sh4/drivers/usb/serial/ftdi_sio.c	2009-12-03 04:51:21.000000000 +0100
-+++ linux-sh4/drivers/usb/serial/ftdi_sio.c	2011-07-20 18:13:53.000000000 +0200
+--- linux-sh4/drivers/usb/serial/ftdi_sio.c	2012-03-28 19:35:24.000000000 +0200
++++ linux-sh4/drivers/usb/serial/ftdi_sio.c	2012-03-30 17:38:46.332514625 +0200
 @@ -51,7 +51,7 @@
   */
  #define DRIVER_VERSION "v1.5.0"
@@ -9,7 +9,7 @@
  
  static int debug;
  static __u16 vendor = FTDI_VID;
-@@ -1028,7 +1028,7 @@
+@@ -1045,7 +1045,7 @@
  							unsigned int clear)
  {
  	struct ftdi_private *priv = usb_get_serial_port_data(port);
@@ -18,7 +18,7 @@
  	unsigned urb_value;
  	int rv;
  
-@@ -1037,7 +1037,8 @@
+@@ -1054,7 +1054,8 @@
  		return 0;	/* no change */
  	}
  
@@ -28,7 +28,7 @@
  	if (!buf)
  		return -ENOMEM;
  
-@@ -1217,13 +1218,14 @@
+@@ -1234,13 +1235,14 @@
  static int change_speed(struct tty_struct *tty, struct usb_serial_port *port)
  {
  	struct ftdi_private *priv = usb_get_serial_port_data(port);
@@ -45,7 +45,7 @@
  	if (!buf)
  		return -ENOMEM;
  
-@@ -1533,7 +1535,9 @@
+@@ -1549,7 +1551,9 @@
  	struct usb_serial_port *port = to_usb_serial_port(dev);
  	struct ftdi_private *priv = usb_get_serial_port_data(port);
  	struct usb_device *udev = port->serial->dev;
@@ -56,7 +56,7 @@
  	int v = simple_strtoul(valbuf, NULL, 10);
  	int rv = 0;
  
-@@ -1550,7 +1554,7 @@
+@@ -1566,7 +1570,7 @@
  		dbg("Unable to write event character: %i", rv);
  		return -EIO;
  	}
@@ -65,7 +65,16 @@
  	return count;
  }
  
-@@ -1844,9 +1848,9 @@
+@@ -1694,7 +1698,7 @@
+ 
+ 	ftdi_determine_type(port);
+ 	ftdi_set_max_packet_size(port);
+-	read_latency_timer(port);
++//	read_latency_timer(port);
+ 	create_sysfs_attrs(port);
+ 	return 0;
+ }
+@@ -1873,9 +1877,9 @@
  	struct usb_device *dev = port->serial->dev;
  	struct ftdi_private *priv = usb_get_serial_port_data(port);
  	unsigned long flags;
@@ -77,7 +86,7 @@
  
  	dbg("%s", __func__);
  
-@@ -1862,7 +1866,8 @@
+@@ -1891,7 +1895,8 @@
  			FTDI_SIO_RESET_REQUEST, FTDI_SIO_RESET_REQUEST_TYPE,
  			FTDI_SIO_RESET_SIO,
  			priv->interface, buf, 0, WDR_TIMEOUT);
@@ -87,7 +96,7 @@
  	/* Termios defaults are set by usb_serial_init. We don't change
  	   port->tty->termios - this would lose speed settings, etc.
  	   This is same behaviour as serial.c/rs_open() - Kuba */
-@@ -2267,8 +2272,8 @@
+@@ -2298,8 +2303,8 @@
  	struct usb_serial_port *port = tty->driver_data;
  	struct ftdi_private *priv = usb_get_serial_port_data(port);
  	__u16 urb_value = 0;
@@ -98,7 +107,7 @@
  	/* break_state = -1 to turn on break, and 0 to turn off break */
  	/* see drivers/char/tty_io.c to see it used */
  	/* last_set_data_urb_value NEVER has the break bit set in it */
-@@ -2307,13 +2312,14 @@
+@@ -2338,13 +2343,14 @@
  	struct ktermios *termios = tty->termios;
  	unsigned int cflag = termios->c_cflag;
  	__u16 urb_value; /* will hold the new flags */
@@ -114,7 +123,7 @@
  	dbg("%s", __func__);
  
  	/* Force baud rate if this device requires it, unless it is set to
-@@ -2460,6 +2466,7 @@
+@@ -2499,6 +2505,7 @@
  		}
  
  	}
@@ -122,7 +131,7 @@
  	return;
  }
  
-@@ -2467,8 +2474,11 @@
+@@ -2506,8 +2513,11 @@
  {
  	struct usb_serial_port *port = tty->driver_data;
  	struct ftdi_private *priv = usb_get_serial_port_data(port);
@@ -135,7 +144,7 @@
  
  	dbg("%s TIOCMGET", __func__);
  	switch (priv->chip_type) {
-@@ -2503,13 +2513,15 @@
+@@ -2542,13 +2552,15 @@
  		break;
  	default:
  		return -EFAULT;

@@ -6,8 +6,8 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882b
 
 DEPENDS = "gstreamer gst-plugins-base libdca tdt-driver"
 
-SRC_URI = "git://gitorious.org/open-duckbox-project-sh4/tdt.git;protocol=git \
-           file://COPYING \
+SRC_URI = "git://gitorious.org/~max10/open-duckbox-sh4/max-tdt.git;brach=master \
+	file://COPYING \
 "
 
 S = "${WORKDIR}/git/tdt/cvs/apps/misc/tools/gst-plugins-dvbmediasink"
@@ -17,7 +17,7 @@ inherit gitpkgv
 PV = "0.10.1+git${SRCPV}"
 PKGV = "0.10.1+git${GITPKGV}"
 #PR = "r0"
-PR = "r12"
+PR = "r13"
 
 inherit autotools pkgconfig
 
