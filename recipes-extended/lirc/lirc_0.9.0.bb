@@ -7,10 +7,10 @@ PRIORITY = "optional"
 HOMEPAGE = "http://www.lirc.org"
 LICENSE = "GPLv2"
 DEPENDS = "virtual/kernel"
-RDEPENDS_lirc-exec = "lirc evremote2"
+RDEPENDS_lirc-exec = "lirc"
 RRECOMMENDS_${PN} = "lirc-exec"
 
-PR = "${INCPR}.2"
+PR = "${INCPR}.5"
 
 EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER} --without-x --with-driver=userspace "
 
@@ -18,19 +18,8 @@ inherit autotools module-base update-rc.d
 SRC_URI_append = " file://lircd.init \
                    file://lircmd.init \
                    file://lircexec.init \
+                   file://lircd_${MACHINE}.conf \
                  "
-
-SPARK_GEN_SRC_URI += "file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
-                      file://lirc-0.9.0-uinput-repeat-fix.diff;patch=1 \
-"
-
-SRC_URI_append_spark += "${SPARK_GEN_SRC_URI} \
-			file://lircd_spark.conf \
-"
-
-SRC_URI_append_spark7162 += "${SPARK_GEN_SRC_URI} \
-			file://lircd_spark7162.conf \
-"
 
 INITSCRIPT_PACKAGES = "lirc lirc-exec"
 INITSCRIPT_NAME = "lircd"
@@ -47,18 +36,10 @@ do_install_append() {
 	install ${WORKDIR}/lircd.init ${D}${sysconfdir}/init.d/lircd
 	install ${WORKDIR}/lircexec.init ${D}${sysconfdir}/init.d/lircexec
         install -d ${D}${datadir}/lirc/
+	install -m 0644 ${WORKDIR}/lircd_${MACHINE}.conf ${D}${sysconfdir}/lircd.conf
         cp -pPR ${S}/remotes ${D}${datadir}/lirc/
 	rm -rf ${D}/dev
         rm -rf  ${D}/bin/pronto2lirc 
-}
-
-
-do_install_append_spark() {
-	install -m 0644 ${WORKDIR}/lircd_spark.conf ${D}${sysconfdir}/lircd.conf
-}
-
-do_install_append_spark7162() {
-	install -m 0644 ${WORKDIR}/lircd_spark7162.conf ${D}${sysconfdir}/lircd.conf
 }
 
 PACKAGES =+ "lirc-exec lirc-remotes"
