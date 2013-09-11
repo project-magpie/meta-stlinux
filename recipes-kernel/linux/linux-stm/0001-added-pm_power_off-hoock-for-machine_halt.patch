@@ -1,0 +1,29 @@
+From 9a23f2a5a9ad91a01c93bab52c9a34424137fdc5 Mon Sep 17 00:00:00 2001
+From: graugans <k4230r6@gmail.com>
+Date: Fri, 4 Jan 2013 22:05:36 +0100
+Subject: [PATCH] added pm_power_off hoock for machine_halt to inject the
+ power off.
+
+---
+ arch/sh/kernel/process_32.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/sh/kernel/process_32.c b/arch/sh/kernel/process_32.c
+index 8698ada..90ff48b 100644
+--- a/arch/sh/kernel/process_32.c
++++ b/arch/sh/kernel/process_32.c
+@@ -61,6 +61,11 @@ void machine_restart(char * __unused)
+ 
+ void machine_halt(void)
+ {
++
++	printk(KERN_EMERG "System halt with pm_power_off hook %p.\n",pm_power_off);	
++	if (pm_power_off)
++		pm_power_off();
++
+ 	local_irq_disable();
+ 
+ 	while (1)
+-- 
+1.7.9.5
+

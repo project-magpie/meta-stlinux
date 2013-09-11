@@ -1,0 +1,11 @@
+--- linux-sh4/drivers/char/lirc/lirc_stm.c	2012-03-29 14:34:15.000000000 +0200
++++ linux-sh4/drivers/char/lirc/lirc_stm.c	2012-03-29 14:55:10.027208296 +0200
+@@ -137,7 +137,7 @@
+ #define LIRC_STM_MAX_SYMBOLS		100
+ #define LIRC_STM_SCD_MAX_SYMBOLS        32
+ #define LIRC_STM_BUFSIZE		((LIRC_STM_SCD_MAX_SYMBOLS + \
+-					LIRC_STM_MAX_SYMBOLS) * \
++					2*LIRC_STM_MAX_SYMBOLS) * \
+ 					sizeof(lirc_t))
+ 
+ /* Bit settings */
