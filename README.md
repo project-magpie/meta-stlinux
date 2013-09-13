@@ -1,5 +1,5 @@
-OpenEmbedded BSP Layer - For STLinux sh4 based Set-Top-Boxes 
-============================================================
+Yocto BSP Layer - For STLinux sh4 based Set-Top-Boxes
+=====================================================
 
 This is the general hardware specific BSP overlay for STLinux based devices.
 It should be used with openembedded-core (not old-style org.openembedded.dev).
@@ -7,8 +7,8 @@ It should be used with openembedded-core (not old-style org.openembedded.dev).
 
 This layer in its entirety depends on:
 
-    URI: git://git.openembedded.org/openembedded-core
-    branch: denzil 
+    URI: http://git.yoctoproject.org/git/poky
+    branch: dylan
     revision: HEAD
 
 It is preferred that people raise pull requests using GIThub by forking the appropriate tree:
@@ -17,41 +17,25 @@ It is preferred that people raise pull requests using GIThub by forking the appr
                    (More info on achieving this can be found at http://help.github.com/send-pull-requests/)
 
 
-How to use it with yocto (preferred) 
------------------------------------
+How to use it with yocto
+------------------------
 
 ## Clone poky
     git clone http://git.yoctoproject.org/git/poky poky
 
-## Switch to denzil branch
+## Switch to dylan branch
     cd poky 
-    git checkout -b denzil remotes/origin/denzil
+    git checkout -b dylan remotes/origin/dylan
 
 ## Move to top folder
     cd ..
         
-How to use it with openembedded core 
-------------------------------------
-
-## Clone openembedded-core
-    git clone git://git.openembedded.org/openembedded-core oe-core
-
-## Switch to denzil branch
-    cd oe-core
-    git checkout -b denzil remotes/origin/denzil
-
-## Clone bitbake into the oe-core folder
-    git clone git://git.openembedded.org/bitbake bitbake
-    git checkout -b f8bf449 f8bf449
-
-## Move to top folder
-    cd ..
-
 Independent Steps from poky/oe-core
 -----------------------------------
 
 ## Clone meta-stlinux
     git clone https://github.com/project-magpie/meta-stlinux.git meta-stlinux
+    git checkout -b dylan remotes/origin/dylan
     
 ## Initialize the oe-core build environment 
     # Initialize the oe-core build environment and edit configuration files 
