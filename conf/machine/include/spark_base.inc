@@ -11,12 +11,15 @@ PREFERRED_PROVIDER_virtual/kernel = "stlinux24-${MACHINE}"
 PREFERRED_PROVIDER_openssl = "openssl"
 PREFERRED_PROVIDER_libcrypto = "openssl"
 PREFERRED_PROVIDER_libssl = "openssl"
-PREFERRED_VERSION_glibc = "2.10"
-PREFERRED_VERSION_glibc                   ?= "${GLIBCVERSION}"
-PREFERRED_VERSION_glibc-locale            ?= "${GLIBCVERSION}"
-PREFERRED_VERSION_glibc-nativesdk         ?= "2.10"
-PREFERRED_VERSION_glibc-initial           ?= "${GLIBCVERSION}"
-PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
+#PREFERRED_PROVIDER_virtual/nativesdk-libc = "nativesdk-glibc"
+#PREFERRED_PROVIDER_virtual/nativesdk-libiconv = "nativesdk-libiconv"
+#PREFERRED_PROVIDER_virtual/nativesdk-libintl = "nativesdk-gettext"
+#PREFERRED_VERSION_glibc = "2.10"
+#PREFERRED_VERSION_glibc                   ?= "${GLIBCVERSION}"
+#PREFERRED_VERSION_glibc-locale            ?= "${GLIBCVERSION}"
+#PREFERRED_VERSION_glibc-nativesdk         ?= "2.10"
+#PREFERRED_VERSION_glibc-initial           ?= "${GLIBCVERSION}"
+#PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
 
 USE_VT = "0"
 MACHINE_FEATURES = "kernel26 ext2 alsa usbhost serial"
@@ -45,7 +48,7 @@ INITRAMFS_FSTYPES = "ext2.gz spark-updt"
 MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
                                      stlinux24-sh4-stx7111-fdma-firmware \
                                      stlinux24-sh4-stmfb-firmware-stx7111 \
-                                     u-boot-fw-utils \
+                                     u-boot-fw-utils-cross \
                                      stslave-fw \
                                      lirc \
                                      fp-control \
