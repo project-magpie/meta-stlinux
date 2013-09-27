@@ -9,8 +9,8 @@ SRC_URI = "${STLINUX_SH_UPD_SRPMS}/${STLINUX_STSLAVE} \
 "
 
 LOCAL_SRC = "\
-	    file://${WORKDIR}/stslave-0.7.tar.gz \
-	    file://${WORKDIR}/stslave-0.6.udev.patch;patch=1;pnum=1 \
+            file://${WORKDIR}/stslave-0.7.tar.gz \
+            file://${WORKDIR}/stslave-0.6.udev.patch;patch=1;pnum=1 \
             file://${WORKDIR}/stslave-0.7.fix_dump_and_disc_syst.patch;patch=1;pnum=1 \
             file://${WORKDIR}/stslave-0.7-buildfix.patch;patch=1;pnum=1 \
             file://${WORKDIR}/stslave-fix-getenv.patch;patch=1;pnum=1 \
@@ -36,10 +36,10 @@ LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://${S}/main.c;beginline=4;endline=6;md5=42efebf7b210788356068c5ce3c011a4"
 
 do_install () {
-	install -d ${D}${base_bindir}
-	install -m 0644 ${S}/stslave ${D}${base_bindir}
-	install -d  ${D}${sysconfdir}
-	install -m 0644 ${S}/hotplug_example/stslave.conf ${D}${sysconfdir}
+     install -d ${D}${base_bindir}
+     install -m 0644 ${S}/stslave ${D}${base_bindir}
+     install -d  ${D}${sysconfdir}
+     install -m 0644 ${S}/hotplug_example/stslave.conf ${D}${sysconfdir}
 }
 
 
