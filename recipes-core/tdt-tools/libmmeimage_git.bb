@@ -1,6 +1,6 @@
 require tdt-tools.inc
 
-RDEPEND += "libmmeimage"
+DEPENDS += "jpeg"
 
 DESCRIPTION = "MME image library"
 
@@ -13,5 +13,5 @@ do_install_append () {
 	install -m 644 ${WORKDIR}/git/tdt/cvs/apps/misc/tools/libmmeimage/*.h ${D}${includedir}/mmeimage
 }
 
-FILES_libmmeimage-dev += "${includedir}/mmeimage"
+FILES_${PN}-dev += "${includedir}/mmeimage"
 
