@@ -10,14 +10,14 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 
 KEEPUIMAGE = "true"
 KTAG = "stlinux24_${STM_PATCH_STR}"
-INC_PR = "r1"
+INC_PR = "r2"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
 
-KBRANCH = "stmicro"
+KBRANCH = "project-magpie"
 
-SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
+SRC_URI = "git://github.com/project-magpie/linux-sh4-2.6.32.y.git;protocol=https;branch=${KBRANCH} \
            file://${MACHINE}_defconfig \
            file://st-coprocessor.h \
 "
