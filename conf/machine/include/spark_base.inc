@@ -34,8 +34,6 @@ RDEPENDS_kernel-base = ""
 UBI_VOLNAME = "rootfs"
 MKUBIFS_ARGS = "-m 2048 -e 129024 -c 638   -F"
 UBINIZE_ARGS = "-m 2048 -p 128KiB -O 512"
-MKUBIFS_ARGS = "-m 2048 -e 126976 -c 4096 -F"
-UBINIZE_ARGS = "-m 2048 -p 128KiB"
 
 JFFS2_ERASEBLOCK = "0x20000"
 JFFS2_ENDIANNESS = "${@base_conditional('SITEINFO_ENDIANNESS', 'le', '--little-endian', '--big-endian', d)}"
