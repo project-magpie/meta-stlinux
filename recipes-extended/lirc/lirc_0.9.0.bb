@@ -6,16 +6,19 @@ SECTION = "console/network"
 PRIORITY = "optional"
 HOMEPAGE = "http://www.lirc.org"
 LICENSE = "GPLv2"
-DEPENDS = "virtual/kernel"
+DEPENDS = "virtual/kernel libusb"
 RDEPENDS_lirc-exec = "lirc"
 RRECOMMENDS_${PN} = "lirc-exec kernel-module-uinput"
 
-PR = "${INCPR}.0"
+PR = "${INCPR}.3"
 
 
 CFLAGS_append = " -DUINPUT_NEUTRINO_HACK "
 
-EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER} --without-x --with-driver=userspace "
+
+EXTRA_OECONF += "--with-kerneldir=${STAGING_KERNEL_DIR} ${DRIVER} --without-x --with-driver=none --with-driver=userspace "
+
+
 
 inherit autotools module-base update-rc.d
 SRC_URI_append = " file://lircd.init \
@@ -26,6 +29,7 @@ SRC_URI_append = " file://lircd.init \
 SPARK_GEN_SRC_URI += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
 			 file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
 			 file://lirc-0.9.0-uinput-repeat-fix.diff;patch=1 \
+                         file://fix-libusb-config.patch;patch=1 \
                          file://lircd_spark.conf \
                          file://lircd_spark.init \
                          file://98-lirc_spark.rules \
@@ -81,6 +85,6 @@ PACKAGES =+ "lirc-exec lirc-remotes"
 
 FILES_${PN}-dbg += "${bindir}/.debug ${sbindir}/.debug"
 FILES_${PN}-dev += "${libdir}/liblirc_client.so"
-FILES_${PN} = "${bindir} ${sbindir} ${libdir}/lib*.so.* ${sysconfdir} ${exec_prefix}/var"
+FILES_${PN} = "${bindir} ${sbindir} ${libdir}/lib*.so.* ${sysconfdir} /var "
 FILES_lirc-exec = "${bindir}/irexec ${sysconfdir}/init.d/lircexec"
 FILES_lirc-remotes = "${datadir}/lirc/remotes"
