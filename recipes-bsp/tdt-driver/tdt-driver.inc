@@ -133,55 +133,15 @@ do_install() {
     
     cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
  
-        # if a custom pti.ko is present, overwrite the tdt one
-        if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
-                echo "Found custom pti.." 
-                install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
-        fi
-
-
-
+    # if a custom pti.ko is present, overwrite the tdt one
+    if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
+           echo "Found custom pti.." 
+           install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
+    fi
 }
 
 do_install_append_spark7162() {
     find ${D} -name stmcore-display-sti7106.ko | xargs -r rm # we don't have a 7106 chip
-}
-
-pkg_postinst_modules () {
-if [ -z "$D" ]; then
-    depmod -a ${KERNEL_VERSION}
-    update-modules || true
-fi
-}
-
-pkg_postrm_modules () {
-update-modules || true
-}
-
-autoload_postinst_fragment() {
-if [ x"$D" = "x" ]; then
-    modprobe %s || true
-fi
-}
-
-
-pkg_postinst_kernel-modules-tdt () {
-     #!/bin/sh -e
-     if [ x"$D" = "x" ]; then
-          # Actions to carry out on the device go here
-      depmod -a ${KERNEL_VERSION}
-          update-modules || true
-     else
-          exit 1
-     fi
-}
-
-
-do_populate_packages_append () {
-        echo "-------------------------------------------------------------------------------------------------------------"
-        echo "-------------------------------------------------------------------------------------------------------------"
-    echo ${PACKAGES}
-
 }
 
 FILES_${PN}-dev += "${includedir}"
