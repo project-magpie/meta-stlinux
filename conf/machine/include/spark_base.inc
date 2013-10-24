@@ -22,7 +22,7 @@ PREFERRED_PROVIDER_libssl = "openssl"
 #PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
 
 USE_VT = "0"
-MACHINE_FEATURES = "kernel26 ext2 alsa usbhost serial"
+MACHINE_FEATURES = "kernel26 ext2 alsa ext3 usbhost serial"
 
 SERIAL_CONSOLE = "115200 ttyAS0"
 
@@ -45,18 +45,31 @@ IMAGE_FSTYPES ?= "tar.gz ubi ext2 jffs2 spark71xx-usbimg"
 IMAGE_CLASSES += "usb_image-spark71xx"
 INITRAMFS_FSTYPES = "ext2.gz spark-updt"
 
+MACHINE_EXTRA_RRECOMMENDS = "kernel-modules"
+
 MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
                                      stlinux24-sh4-stx7111-fdma-firmware \
                                      stlinux24-sh4-stmfb-firmware-stx7111 \
-                                     u-boot-fw-utils-cross \
                                      stslave-fw \
-                                     lirc \
                                      fp-control \
                                      stfbcontrol \
                                      ustslave \
                                      libmmeimage \
+                                     lirc \
+                                     lrzsz \
+                                     u-boot-fw-utils \
+                                     mtd-utils \
+                                     mtd-utils-jffs2 \
+                                     mtd-utils-ubifs \
+                                     mtd-utils-misc \
                                      tdt-driver \
 "
 
 #Spark Boxes have no hardware clock
 MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
+
+
+#DISTRO_FEATURES_append = " systemd"
+#VIRTUAL-RUNTIME_init_manager = "systemd"
+#DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
+
