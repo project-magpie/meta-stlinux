@@ -65,10 +65,18 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
                                      tdt-driver \
 "
 
+##
+## We have a RTC in aotom thx to seife.
+## I have to check for removale 
+## 
 #Spark Boxes have no hardware clock
 MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
 
 
+##
+## This would not work unless the kernel supports open by handle syscall
+## http://lwn.net/Articles/390863/ 
+##
 #DISTRO_FEATURES_append = " systemd"
 #VIRTUAL-RUNTIME_init_manager = "systemd"
 #DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"

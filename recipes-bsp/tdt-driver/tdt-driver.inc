@@ -10,20 +10,20 @@ inherit module
 PACKAGES = "${PN} ${PN}-dev"
 PACKAGES_DYNAMIC += "kernel-module-*"
 
-SRCREV = "350ce95d04b701b61e91e6aa60d1120a1958ca57"
+SRCREV = "a187619deaf19d8419c3a868b78581fbbc3e7898"
 
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
-# using seifes tdt drivers because this has less overhead
+# using our own tdt drivers because this has less overhead
 SRC_URI = " \
-        git://gitorious.org/neutrino-mp/tdt-driver.git \
-        file://0001-player2_191-silence-kmsg-spam.patch \
+        git://github.com/project-magpie/tdt-driver.git \
+        file://0001-player2_191-silence-kmsg-spam.patch;apply=no \
         file://0002-e2proc-silence-kmsg-spam.patch \
         file://0003-pti-silence-kmsg-spam.patch \
         file://0004-stmfb-silence-kmsg-spam.patch \
         file://0005-frontends-spark_dvbapi5-silence-kmsg-spam.patch \
-        file://0006-frontends-spark7162-silence-kmsg-spam.patch \
+        file://0006-frontends-spark7162-silence-kmsg-spam.patch;apply=yes \
         file://0001-import-cec-from-pinky-s-git.patch \
         file://0002-aotom-fix-include-file.patch \
         file://0003-aotom-add-VFDGETVERSION-ioctl-to-find-FP-type.patch \
@@ -34,9 +34,6 @@ SRC_URI = " \
         file://aotom_udev.rules \
         file://COPYING \
 " 
-
-INC_PR = "r27"
-
 PV = "0.2+git${SRCPV}"
 
 FILES_${PN} = "/etc/udev/rules.d "
