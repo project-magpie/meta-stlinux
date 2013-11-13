@@ -36,6 +36,15 @@ do_install() {
         find ${D}${includedir} -name ..install.cmd | xargs rm -f
 }
 
+do_kernel_configme() {
+}
+ 
+do_patch () {
+}
+ 
+do_kernel_configcheck () {
+}
+ 
 BBCLASSEXTEND = "nativesdk"
 
 #DEPENDS = "cross-linkage"
