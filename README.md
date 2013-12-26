@@ -8,7 +8,7 @@ It should be used with openembedded-core (not old-style org.openembedded.dev).
 This layer in its entirety depends on:
 
     URI: http://git.yoctoproject.org/git/poky
-    branch: dylan
+    branch: dora
     revision: HEAD
 
 It is preferred that people raise pull requests using GIThub by forking the appropriate tree:
@@ -25,7 +25,7 @@ How to use it with yocto
 
 ## Switch to dylan branch
     cd poky 
-    git checkout -b dylan remotes/origin/dylan
+    git checkout -b dora remotes/origin/dora
 
 ## Move to top folder
     cd ..
@@ -35,7 +35,7 @@ Independent Steps from poky/oe-core
 
 ## Clone meta-stlinux
     git clone https://github.com/project-magpie/meta-stlinux.git meta-stlinux
-    git checkout -b dylan remotes/origin/dylan
+    git checkout -b dora remotes/origin/dora
     
 ## Initialize the oe-core build environment 
     # Initialize the oe-core build environment and edit configuration files 
