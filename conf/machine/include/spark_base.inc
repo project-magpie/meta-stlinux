@@ -57,7 +57,6 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
                                      libmmeimage \
                                      lirc \
                                      lrzsz \
-                                     u-boot-fw-utils \
                                      mtd-utils \
                                      mtd-utils-jffs2 \
                                      mtd-utils-ubifs \
@@ -81,3 +80,10 @@ MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
 #VIRTUAL-RUNTIME_init_manager = "systemd"
 #DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
 
+##
+## gcc-4.8 as in dora or newer (yocto-1.5+) will fail compiling the kernel
+## with "error: 'asm' operand requires impossible reload"
+## seems to be http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58314
+## which is not fixed in any released 4.8.x, so just use 4.7 for now:
+##
+GCCVERSION ?= "4.7%"
