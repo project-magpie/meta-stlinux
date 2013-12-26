@@ -10,7 +10,7 @@ DEPENDS = "virtual/kernel libusb"
 RDEPENDS_lirc-exec = "lirc"
 RRECOMMENDS_${PN} = "lirc-exec kernel-module-uinput"
 
-PR = "${INCPR}.3"
+PR = "${INCPR}.4"
 
 
 CFLAGS_append = " -DUINPUT_NEUTRINO_HACK "
@@ -85,6 +85,6 @@ PACKAGES =+ "lirc-exec lirc-remotes"
 
 FILES_${PN}-dbg += "${bindir}/.debug ${sbindir}/.debug"
 FILES_${PN}-dev += "${libdir}/liblirc_client.so"
-FILES_${PN} = "${bindir} ${sbindir} ${libdir}/lib*.so.* ${sysconfdir} /var "
+FILES_${PN} = "${bindir} ${sbindir} ${libdir}/lib*.so.* ${sysconfdir} /var /run "
 FILES_lirc-exec = "${bindir}/irexec ${sysconfdir}/init.d/lircexec"
 FILES_lirc-remotes = "${datadir}/lirc/remotes"
