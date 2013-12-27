@@ -1,20 +1,21 @@
 Upstream-Status: Inappropriate [embedded specific]
 
 8/27/2010 - created by Qing He <qing.he@intel.com>
+2013-12-27 - rebased for stlinux version by Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
 
-diff --git a/src/Makefile b/src/Makefile
-index 8d134cc..df8e5b6 100644
+Index: b/src/Makefile
+===================================================================
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -2,7 +2,6 @@ prefix=/usr
- includedir=$(prefix)/include
+@@ -4,7 +4,6 @@ includedir=$(prefix)/include
  libdir=$(prefix)/lib
+ libdevdir=$(prefix)/lib
  
 -ARCH := $(shell uname -m | sed -e s/i.86/i386/)
- CFLAGS := -nostdlib -nostartfiles -Wall -I. -g -fomit-frame-pointer -O2 -fPIC
- SO_CFLAGS=-shared $(CFLAGS)
- L_CFLAGS=$(CFLAGS)
-@@ -44,8 +43,8 @@ $(libaio_objs) $(libaio_sobjs): libaio.h vsys_def.h
+ BASE_CFLAGS := -nostdlib -nostartfiles -fomit-frame-pointer -fPIC $(CFLAGS)
+ BASE_CPPFLAGS := -I. $(CPPFLAGS)
+ CFLAGS := -Wall -g -O2
+@@ -48,8 +47,8 @@ $(libaio_objs) $(libaio_sobjs): libaio.h
  
  libaio.a: $(libaio_objs)
  	rm -f libaio.a

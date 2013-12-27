@@ -14,34 +14,22 @@ The test-suite logs can be found at:
  4 files changed, 91 insertions(+), 1 deletion(-)
 
 
-Index: libaio-0.3.109/harness/main.c
-===================================================================
---- libaio-0.3.109.orig/harness/main.c
-+++ libaio-0.3.109/harness/main.c
-@@ -11,10 +11,14 @@
- 
- #include <libaio.h>
- 
+--- a/harness/main.c
++++ b/harness/main.c
+@@ -14,7 +14,7 @@
  #if __LP64__ == 0
+ #if defined(__i386__) || defined(__powerpc__) || defined(__mips__)
  #define KERNEL_RW_POINTER	((void *)0xc0010000)
+-#elif defined(__arm__) || defined(__m68k__) || defined(__s390__)
 +#elif defined(__arm__) || defined(__m68k__) || defined(__s390__) || defined(__sh__)
-+#define KERNEL_RW_POINTER	((void *)0x00010000)
-+#elif defined(__hppa__)
-+#define KERNEL_RW_POINTER	((void *)0x10100000)
- #else
- //#warning Not really sure where kernel memory is.  Guessing.
- #define KERNEL_RW_POINTER	((void *)0xffffffff81000000)
- #endif
- 
-Index: libaio-0.3.109/src/libaio.h
-===================================================================
---- libaio-0.3.109.orig/src/libaio.h
-+++ libaio-0.3.109/src/libaio.h
-@@ -115,10 +115,20 @@ typedef enum io_iocb_cmd {
- #  elif defined(__AARCH64EL__) /* little endian, 64 bits */
- #define PADDED(x, y)    x, y
- #define PADDEDptr(x, y) x
- #define PADDEDul(x, y)  unsigned long x
+ #define KERNEL_RW_POINTER	((void *)0x00010000)
+ #elif defined(__hppa__)
+ #define KERNEL_RW_POINTER	((void *)0x10100000)
+--- a/src/libaio.h
++++ b/src/libaio.h
+@@ -113,6 +113,16 @@ typedef enum io_iocb_cmd {
+ #  else
+ #    error "neither mipseb nor mipsel?"
  #  endif
 +#elif defined(__sh__) /* sh3/sh4*/
 +#  if defined (__BIG_ENDIAN__) /* big endian, 32 bits */
@@ -56,12 +44,8 @@ Index: libaio-0.3.109/src/libaio.h
  #else
  #error	endian?
  #endif
- 
- struct io_iocb_poll {
-Index: libaio-0.3.109/src/syscall-sh.h
-===================================================================
 --- /dev/null
-+++ libaio-0.3.109/src/syscall-sh.h
++++ b/src/syscall-sh.h
 @@ -0,0 +1,78 @@
 +/* Copy from ./arch/sh/include/asm/unistd_32.h */
 +#define __NR_io_setup       245
@@ -141,19 +125,14 @@ Index: libaio-0.3.109/src/syscall-sh.h
 +	: "memory" ); \
 +	return (type) __sc0;\
 +}
-Index: libaio-0.3.109/src/syscall.h
-===================================================================
---- libaio-0.3.109.orig/src/syscall.h
-+++ libaio-0.3.109/src/syscall.h
-@@ -30,9 +30,11 @@
- #include "syscall-sparc.h"
- #elif defined(__hppa__)
+--- a/src/syscall.h
++++ b/src/syscall.h
+@@ -32,6 +32,8 @@
  #include "syscall-parisc.h"
  #elif defined(__mips__)
  #include "syscall-mips.h"
 +#elif defined(__sh__)
 +#include "syscall-sh.h"
  #else
- #warning "using generic syscall method"
- #include "syscall-generic.h"
+ #error "add syscall-arch.h"
  #endif

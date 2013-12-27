@@ -1,0 +1,19 @@
+Without this change the symbolic links created as part of the make install point to
+absolute path names, which when cross compiling are for the host not the target.
+Make the links relative so they work in either case.
+
+Signed-off-by: Stuart Menefy <stuart.menefy@st.com>
+
+--- libaio-0.3.109/src/Makefile.orig	2013-02-04 18:10:34.000000000 +0000
++++ libaio-0.3.109/src/Makefile	2013-02-04 18:39:30.000000000 +0000
+@@ -58,8 +58,8 @@
+ 	install -D -m 644 libaio.h $(DESTDIR)$(includedir)/libaio.h
+ 	install -D -m 644 libaio.a $(DESTDIR)$(libdevdir)/libaio.a
+ 	install -D -m 755 $(libname) $(DESTDIR)$(libdir)/$(libname)
+-	ln -sf $(libdir)/$(libname) $(DESTDIR)$(libdir)/$(soname)
+-	ln -sf $(libdir)/$(libname) $(DESTDIR)$(libdevdir)/libaio.so
++	ln -sf $(libname) $(DESTDIR)$(libdir)/$(soname)
++	ln -sf ../..$(libdir)/$(libname) $(DESTDIR)$(libdevdir)/libaio.so
+ 
+ $(libaio_objs): libaio.h
+ 
