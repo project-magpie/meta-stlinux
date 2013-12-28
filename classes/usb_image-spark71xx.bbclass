@@ -30,7 +30,7 @@ IMAGE_BOOTLOADER ?= "u-boot-mkimage"
 BOOTDD_VOLUME_ID ?= "${MACHINE}"
 
 # Boot partition size [in KiB]
-BOOT_SPACE ?= "10240"
+BOOT_SPACE ?= "20480"
 
 # Set alignment to 4MB [in KiB]
 IMAGE_ROOTFS_ALIGNMENT = "4096"
@@ -78,6 +78,9 @@ IMAGE_CMD_spark71xx-usbimg () {
 	BOOT_BLOCKS=$(LC_ALL=C parted -s ${SDIMG} unit b print | awk '/ 1 / { print substr($4, 1, length($4 -1)) / 512 /2 }')
 	mkfs.vfat -n "${BOOTDD_VOLUME_ID}" -S 512 -C ${WORKDIR}/boot.img $BOOT_BLOCKS
 	mcopy -i ${WORKDIR}/boot.img -s ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-${MACHINE}.bin ::uImage
+	if [ -e ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-7162 ]; then
+		mcopy -i ${WORKDIR}/boot.img -s ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-7162 ::uImage-7162
+	fi
 
 	if [ -n ${FATPAYLOAD} ] ; then
 		echo "Copying payload into VFAT"
@@ -87,9 +90,40 @@ IMAGE_CMD_spark71xx-usbimg () {
 		done
 	fi
 
-	echo "fatload usb 0:1 80000000 uImage" > ${WORKDIR}/script.scr
-	echo "setenv bootargs console=ttyAS0,115200 root=/dev/sda2 rootfstype=ext2 rw coprocessor_mem=4m@0x40000000,4m@0x40400000 printk=1 printk.time=1 nwhwconf=device:eth0,hwaddr:00:80:E1:12:40:69 bigphysarea=6000 stmmaceth=msglvl:0,phyaddr:2,watchdog:5000 panic=10 rootwait usb_storage.delay_use=0" >> ${WORKDIR}/script.scr
-	echo "bootm 80000000" >> ${WORKDIR}/script.scr
+	# this is u-boot script code until EOF
+	cat > ${WORKDIR}/script.scr <<EOF
+echo "checking if boot from FLASH is requested..."
+if fatls usb 0:1 spark.run; then
+	echo "...yes, booting SPARK from FLASH"
+	setenv bootargs \${bootargs_spark}
+	if test \${board} = pdk7105; then
+		echo "SPARK7162 -> nboot.i"
+		nboot.i 0x80000000 0 \${kernel_base_spark}
+		bootm 0x80000000
+		# does (should :-) not return
+	fi
+	echo "no SPARK7162 -> direct bootm"
+	bootm \${kernel_base_spark}
+	# we should not reach this...
+	exit
+fi
+if fatls usb 0:1 enigma2.run; then
+	echo "...yes, booting ENIGMA partition from FLASH"
+	setenv bootargs \${bootargs_enigma2}
+	nboot.i 0x80000000 0 \${kernel_base_enigma2}
+	bootm 0x80000000
+	# again, this should not return...
+	exit
+fi
+echo "...no, booting from USB..."
+if test \${board} = pdk7105; then
+	fatload usb 0:1 80000000 uImage-7162
+else
+	fatload usb 0:1 80000000 uImage
+fi
+setenv bootargs console=ttyAS0,115200 root=/dev/sda2 rootfstype=${SDIMG_ROOTFS_TYPE} rw coprocessor_mem=4m@0x40000000,4m@0x40400000 printk=1 printk.time=1 nwhwconf=device:eth0,hwaddr:00:80:E1:12:40:69 bigphysarea=6000 stmmaceth=msglvl:0,phyaddr:2,watchdog:5000 panic=10 rootwait usb_storage.delay_use=0
+bootm 80000000
+EOF
 
 	mkimage -A sh -O linux -T script -C none -a 0 -e 0 -n "autoscript" -d ${WORKDIR}/script.scr ${WORKDIR}/script.img
 	mcopy -i ${WORKDIR}/boot.img -v ${WORKDIR}//script.img ::
