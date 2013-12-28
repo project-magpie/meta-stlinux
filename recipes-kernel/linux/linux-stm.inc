@@ -112,6 +112,17 @@ do_install() {
 	done
 }
 
+do_deploy() {
+	for i in 7162 7111; do
+		bbnote "changing into ${WORKDIR}/git-$i"
+		cd ${WORKDIR}/git-$i
+		kernel_do_deploy
+		[ x$i = x7111 ] && break
+		mv ${DEPLOYDIR}/${KERNEL_IMAGE_BASE_NAME}.bin ${DEPLOYDIR}/${KERNEL_IMAGE_BASE_NAME}.bin-$i
+		ln -sf ${KERNEL_IMAGE_BASE_NAME}.bin-7162 ${DEPLOYDIR}/${KERNEL_IMAGETYPE}-$i
+	done
+}
+
 # hack to override kernel.bbclass...
 # uimages are already built in kernel compile
 do_uboot_mkimage() {
