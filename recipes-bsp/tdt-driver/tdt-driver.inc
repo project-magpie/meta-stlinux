@@ -13,7 +13,7 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 inherit gitpkgv
 
 SRCREV = "${AUTOREV}"
-INC_PR = "r4"
+INC_PR = "r5"
 PV = "0.5+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
