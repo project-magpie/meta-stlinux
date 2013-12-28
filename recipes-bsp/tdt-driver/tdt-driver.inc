@@ -18,7 +18,7 @@ BINARY_PTI_NP_PATH ?= "/data/pti_np"
 # using our own tdt drivers because this has less overhead
 SRC_URI = " \
         git://github.com/project-magpie/tdt-driver.git \
-        file://0001-player2_191-silence-kmsg-spam.patch;apply=no \
+        file://0001-player2_191-silence-kmsg-spam.patch;apply=yes \
         file://0002-e2proc-silence-kmsg-spam.patch \
         file://0003-pti-silence-kmsg-spam.patch \
         file://0004-stmfb-silence-kmsg-spam.patch \
