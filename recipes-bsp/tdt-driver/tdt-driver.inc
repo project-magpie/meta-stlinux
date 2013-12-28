@@ -31,6 +31,7 @@ SRC_URI = " \
         file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
         file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
         file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
+        file://tdt-driver-avoid-buildtime.patch \
         file://aotom_udev.rules \
         file://COPYING \
 " 
