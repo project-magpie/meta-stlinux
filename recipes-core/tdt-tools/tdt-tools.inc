@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 DEPENDS = "tdt-driver"
 
-PR = "r4"
+PR = "r5"
 
 #SRCREV = "f5159041295774ef5bbb338c7f5d831bc2620d03"
 SRCREV = "${AUTOREV}"
@@ -28,6 +28,11 @@ do_patch_append () {
         os.symlink("${WORKDIR}/git/tdt/cvs/driver/include/stmfb-3.1_stm24_0104","${WORKDIR}/git/tdt/cvs/driver/include/stmfb")
         os.symlink("${WORKDIR}/git/tdt/cvs/driver/include/player2_179","${WORKDIR}/git/tdt/cvs/driver/include/player2")
         os.symlink("${WORKDIR}/git/tdt/cvs/driver/multicom-3.2.4/include","${WORKDIR}/git/tdt/cvs/driver/include/multicom")
+}
+
+do_configure() {
+	./autogen.sh
+	oe_runconf
 }
 
 do_compile() {
