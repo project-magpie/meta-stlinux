@@ -9,7 +9,7 @@ How to use it
 -----------------------------------
 
 ## Clone oe-alliance build environment
-    git clone git://github.com/oe-alliance/build-enviroment.git OEA
+    git clone git://github.com/DvbMedia/build-enviroment.git OEA
 
 ## Move to top folder
     cd OEA
@@ -17,28 +17,8 @@ How to use it
 ## Update
     make update
     
-## Clone meta-stlinux
-    git clone git://github.com/sklnet/meta-stlinux.git
-
 ## Initialize the build environment 
     MACHINE=spark7162 DISTRO=<distroname> make init
-
-## Fix configuration files
-
-    Add meta-stlinux in bblayers.conf:
-        vim builds/<distroname>/spark7162/conf/bblayers.conf
-
-            ...
-            BBLAYERS ?= " \
-            ${TOPDIR}/../oe-core/meta \
-            ${TOPDIR}/../meta-stlinux \
-            "
-            ...
-    Remove "-march=native" in site.conf
-        vim builds/<distroname>/spark7162/conf/site.conf
-            ...
-            BUILD_OPTIMIZATION = "-O2 -pipe"
-            ...
 
 ## create image: 
     MACHINE=spark7162 DISTRO=<distroname> make image
