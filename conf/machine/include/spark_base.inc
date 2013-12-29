@@ -87,3 +87,20 @@ MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
 ## which is not fixed in any released 4.8.x, so just use 4.7 for now:
 ##
 GCCVERSION ?= "4.7%"
+
+#####
+##### With eglibc-2.18 / OLDEST_KERNEL=2.6.12 (default), I had strange
+##### problems with user name resolution, apparently libnss_files-2.18.so
+##### was incompatible and could not be used (????!!!)
+#####
+##### I'm actually not sure if it is a eglibc-2.18 problem, solved by
+##### downgrading to 2.17 or if the "OLDEST_KERNEL=2.6.32" solves the
+##### issue, as I have changed both at once, but now my box works fine.
+#####
+##
+## eglibc-2.18 gives me strange results wrt. user name resolution etc.
+##
+EGLIBCVERSION ?= "2.17"
+##
+## stlinux is configured like that:
+OLDEST_KERNEL = "2.6.32"
