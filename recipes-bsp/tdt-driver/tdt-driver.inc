@@ -36,6 +36,8 @@ SRC_URI = " \
         file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
         file://tdt-driver-avoid-buildtime.patch \
         file://aotom_udev.rules \
+        file://tdt-driver.init \
+        file://select_sparkbox.sh \
         file://COPYING \
 " 
 PV = "0.2+git${SRCPV}"
@@ -193,6 +195,17 @@ do_install() {
 		rm $j
 		ln $i $j # hardlink!
 	done
+
+	# select_sparkbox sets the symlink from /lib/modules/{7111,7162}/KVER to /lib/module/KVER
+	# early during boot, additionally it selects the right component.fw in /lib/firmware
+	# TODO: this does belong somewhere else.
+	install -D -m 0755 ${WORKDIR}/select_sparkbox.sh ${D}/etc/init.d/zz_select_sparkbox.sh
+	# needs to come after 02sysfs.sh and before 03udev... => 02zz_select...
+	update-rc.d -r ${D} zz_select_sparkbox.sh start 02 S .
+
+	install -D -m 0755 ${WORKDIR}/tdt-driver.init ${D}/etc/init.d/tdt-driver
+	# drivers seem to be right at about ~ 30
+	update-rc.d -r ${D} tdt-driver start 30 S .
 }
 
 MOD7111 = "/lib/modules/7111/${KERNEL_VERSION}/extra"
@@ -215,8 +228,10 @@ FILES_${PN} += " \
 	${MOD7111}/pti		${MOD7162}/pti \
 	${MOD7111}/smartcard	${MOD7162}/smartcard \
 	${MOD7111}/stgfb	${MOD7162}/stgfb \
-	/etc/modules-load.d \
+	/etc/init.d \
+	/etc/rcS.d \
 "
+
 pkg_postinst_${PN}() {
 #!/bin/sh
 # create the default symlink to 7111 module dir or image build will fail.
