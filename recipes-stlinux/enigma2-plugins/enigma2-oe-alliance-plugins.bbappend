@@ -10,6 +10,6 @@ DEPENDS_enigma2-plugin-extensions-hbbtv_spark7162 = ""
 RDEPENDS_enigma2-plugin-extensions-hbbtv_spark = ""
 RDEPENDS_enigma2-plugin-extensions-hbbtv_spark7162 = ""
 
-SRC_URI_spark="git://github.com/sklnet/oe-alliance-plugins.git;protocol=git"
-SRC_URI_spark7162="git://github.com/sklnet/oe-alliance-plugins.git;protocol=git"
+SRC_URI_spark="git://github.com/DvbMedia/oe-alliance-plugins.git;protocol=git"
+SRC_URI_spark7162="git://github.com/DvbMedia/oe-alliance-plugins.git;protocol=git"
 
