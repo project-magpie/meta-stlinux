@@ -1,12 +1,3 @@
-
-SRC_URI_spark = " \
-		git://github.com/sklnet/e2openplugin-OpenWebif.git \
-	"
-
-SRC_URI_spark7162 = " \
-                git://github.com/sklnet/e2openplugin-OpenWebif.git \
-        "
-
 python do_package_prepend () {
 	boxtypes = [
 		('spark', 'spark.jpg', 'spark.png'),
