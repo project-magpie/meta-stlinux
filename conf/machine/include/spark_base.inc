@@ -66,10 +66,7 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
 
 ##
 ## We have a RTC in aotom thx to seife.
-## I have to check for removale 
-## 
-#Spark Boxes have no hardware clock
-MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
+# MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
 
 
 ##
