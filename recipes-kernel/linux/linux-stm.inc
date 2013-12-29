@@ -21,19 +21,22 @@ SRC_URI = "git://github.com/project-magpie/linux-sh4-2.6.32.y.git;protocol=https
            file://st-coprocessor.h \
            file://linux-sh4-spark7162_setup_stm24_0211-magpie.patch \
 "
+
 S = "${WORKDIR}/git"
+# or get_kernelversion will fail...
+B = "${WORKDIR}/git-7111"
 PARALLEL_MAKEINST = ""
 
 # KERNEL_VERSION = "${@get_kernelversion('${WORKDIR}/git-7111')}"
 
 do_configure() {
-	cd ${WORKDIR}/git
+	cd ${S}
 	if test -e scripts/Makefile.fwinst ; then
 		sed -i -e "s:-m0644:-m 0644:g" scripts/Makefile.fwinst
 	fi
 	# ugly... this has no business in do_configure...
 	rm -fr ${WORKDIR}/git-*
-	ln -s git ${WORKDIR}/git-7111
+	cp -al ${WORKDIR}/git ${WORKDIR}/git-7111
 	cp -al ${WORKDIR}/git ${WORKDIR}/git-7162
 	for i in 7111 7162; do
 		bbnote "changing into ${WORKDIR}/git-$i"
@@ -94,7 +97,6 @@ do_install() {
 		cp include/asm-sh/machtypes.h $kerneldir/include/asm-sh
 	fi
 	oe_runmake headers_install INSTALL_HDR_PATH=${D}${exec_prefix}/src/linux-${KERNEL_VERSION} ARCH=$ARCH
-	cd ${WORKDIR}/git
 
 	install -d ${D}${includedir}/linux	
    	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
