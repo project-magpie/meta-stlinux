@@ -103,9 +103,9 @@
  					ddvd_last_iframe_len = 0;
  				}
 @@ -1262,10 +1295,22 @@
- 					else if ((buf[14 + 3]) == 0xC0 + audio_id) {	// mpeg audio
- 						if (audio_type != DDVD_MPEG) {
- 							//Debug(1, "Switch to MPEG Audio\n");
+					else if ((buf[14 + 3]) == 0xC0 + audio_id) {	// mpeg audio
+						if (audio_type != DDVD_MPEG) {
+							//Debug(1, "Switch to MPEG Audio\n");
 +#ifdef __sh__
 +							//stop audio bevor change encoding
 +							if (ioctl(ddvd_fdaudio, AUDIO_STOP) < 0)
@@ -113,18 +113,18 @@
 +							if (ioctl(ddvd_fdaudio, AUDIO_CLEAR_BUFFER) < 0)
 +								perror("LIBDVD: AUDIO_CLEAR_BUFFER");
 +#endif
- 							if (ioctl(ddvd_fdaudio, AUDIO_SET_AV_SYNC, 1) < 0)
- 								perror("LIBDVD: AUDIO_SET_AV_SYNC");
- 							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, 1) < 0)
- 								perror("LIBDVD: AUDIO_SET_BYPASS_MODE");
+							if (ioctl(ddvd_fdaudio, AUDIO_SET_AV_SYNC, 1) < 0)
+								Perror("AUDIO_SET_AV_SYNC");
+							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, 1) < 0)
+								Perror("AUDIO_SET_BYPASS_MODE");
 +#ifdef __sh__
 +							//start audio after encoding set
 +							if (ioctl(ddvd_fdaudio, AUDIO_PLAY) < 0)
 +								perror("LIBDVD: AUDIO_PLAY");
 +#endif
- 							audio_type = DDVD_MPEG;
- 						}
- 
+							audio_type = DDVD_MPEG;
+						}
+
 @@ -1292,10 +1337,22 @@
  
  						if (audio_type != DDVD_LPCM) {
@@ -136,10 +136,10 @@
 +							if (ioctl(ddvd_fdaudio, AUDIO_CLEAR_BUFFER) < 0)
 +								perror("LIBDVD: AUDIO_CLEAR_BUFFER");
 +#endif
- 							if (ioctl(ddvd_fdaudio, AUDIO_SET_AV_SYNC, 1) < 0)
- 								perror("LIBDVD: AUDIO_SET_AV_SYNC");
- 							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, lpcm_mode) < 0)
- 								perror("LIBDVD: AUDIO_SET_BYPASS_MODE");
+							if (ioctl(ddvd_fdaudio, AUDIO_SET_AV_SYNC, 1) < 0)
+								Perror("AUDIO_SET_AV_SYNC");
+							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, lpcm_mode) < 0)
+								Perror("AUDIO_SET_BYPASS_MODE");
 +#ifdef __sh__
 +							//start audio after encoding set
 +							if (ioctl(ddvd_fdaudio, AUDIO_PLAY) < 0)
@@ -165,7 +165,7 @@
 @@ -1368,6 +1432,11 @@
  							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, 5) < 0)	// DTS VOB
  #endif
- 								perror("LIBDVD: AUDIO_SET_BYPASS_MODE");
+								Perror("AUDIO_SET_BYPASS_MODE");
 +#ifdef __sh__
 +							//start audio after encoding set
 +							if (ioctl(ddvd_fdaudio, AUDIO_PLAY) < 0)
@@ -198,10 +198,10 @@
 +								perror("LIBDVD: AUDIO_CLEAR_BUFFER");
 +#endif
 +
- 							if (ioctl(ddvd_fdaudio, AUDIO_SET_AV_SYNC, 1) < 0)
- 								perror("LIBDVD: AUDIO_SET_AV_SYNC");
- 							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, bypassmode) < 0)
- 									perror("LIBDVD: AUDIO_SET_BYPASS_MODE");
+							if (ioctl(ddvd_fdaudio, AUDIO_SET_AV_SYNC, 1) < 0)
+								Perror("AUDIO_SET_AV_SYNC");
+							if (ioctl(ddvd_fdaudio, AUDIO_SET_BYPASS_MODE, bypassmode) < 0)
+									Perror("AUDIO_SET_BYPASS_MODE");
 +
 +#ifdef __sh__
 +							//start audio after encoding set
