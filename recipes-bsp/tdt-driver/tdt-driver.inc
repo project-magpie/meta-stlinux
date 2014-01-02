@@ -13,13 +13,14 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 inherit gitpkgv
 
 SRCREV = "${AUTOREV}"
-INC_PR = "r5"
+INC_PR = "r6"
 PV = "0.5+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
 SRC_URI = " \
 	git://gitorious.org/open-duckbox-project-sh4/tdt.git;branch=master \
+	file://chipset_proc.patch;patch=1 \
 	file://aotom.sh \
 	file://COPYING \
 " 
