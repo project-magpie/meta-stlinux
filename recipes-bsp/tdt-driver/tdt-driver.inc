@@ -16,6 +16,7 @@ KERNEL_MODULES_META_PACKAGE = "None"
 SRCREV = "a187619deaf19d8419c3a868b78581fbbc3e7898"
 
 
+
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
 # using our own tdt drivers because this has less overhead
@@ -35,6 +36,7 @@ SRC_URI = " \
         file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
         file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
         file://tdt-driver-avoid-buildtime.patch \
+        file://chipset_proc.patch;patch=1 \
         file://aotom_udev.rules \
         file://tdt-driver.init \
         file://COPYING \
