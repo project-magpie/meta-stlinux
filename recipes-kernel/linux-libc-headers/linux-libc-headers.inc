@@ -38,10 +38,6 @@ do_install() {
 
 do_kernel_configme() {
 }
- 
-do_patch () {
-}
- 
 do_kernel_configcheck () {
 }
  
