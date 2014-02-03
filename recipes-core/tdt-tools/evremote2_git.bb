@@ -3,6 +3,7 @@ require tdt-tools.inc
 DESCRIPTION = "A tool for spark remotes"
 
 SRC_URI_append = "file://evremote2.sh \
+                  file://0001-fix-devicename.patch \
 "
 
 LDFLAGS += "-lpthread -lrt"
