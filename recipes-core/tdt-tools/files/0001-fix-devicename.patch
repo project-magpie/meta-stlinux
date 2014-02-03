@@ -1,0 +1,13 @@
+diff --git a/tdt/cvs/apps/misc/tools/evremote2/global.c b/tdt/cvs/apps/misc/tools/evremote2/global.c
+index 86ea041..85be33f 100644
+--- a/evremote2/global.c
++++ b/evremote2/global.c
+@@ -38,7 +38,7 @@
+ 
+ #include "map.h"
+ 
+-#define DEVICENAME "TDT RC event driver"
++#define DEVICENAME "fulan front panel buttons"
+ char eventPath[] = "/dev/input/event0";
+ 
+ //Checks with event device is created by simubutton.ko
