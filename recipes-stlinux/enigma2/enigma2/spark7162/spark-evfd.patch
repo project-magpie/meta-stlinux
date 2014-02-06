@@ -1,0 +1,237 @@
+--- /lib/python/enigma_python.i.org	2012-03-24 13:09:04.062875841 +0100
++++ /lib/python/enigma_python.i	2012-03-24 13:01:04.210891966 +0100
+@@ -98,6 +98,7 @@
+ #include <lib/components/tuxtxtapp.h>
+ #include <lib/driver/avswitch.h>
+ #include <lib/driver/hdmi_cec.h>
++#include <lib/driver/vfd.h>
+ #include <lib/driver/rfmod.h>
+ #include <lib/driver/misc_options.h>
+ #include <lib/driver/etimezone.h>
+@@ -234,6 +235,7 @@
+ %include <lib/components/tuxtxtapp.h>
+ %include <lib/driver/avswitch.h>
+ %include <lib/driver/hdmi_cec.h>
++%include <lib/driver/vfd.h>
+ %include <lib/driver/rfmod.h>
+ %include <lib/driver/misc_options.h>
+ %include <lib/driver/etimezone.h>
+--- /lib/driver/vfd.cpp	2014-01-02 12:30:16.750278866 +0100
++++ /lib/driver/vfd.cpp	2014-01-22 07:28:55.258235899 +0100
+@@ -12,7 +12,65 @@
+ #include <lib/base/eerror.h>
+ #include <lib/driver/vfd.h>
+ 
+-#define VFD_DEVICE "/proc/vfd"
++#define VFD_DEVICE "/dev/vfd"
++#define VFDLENGTH 16
++#define VFDICONDISPLAYONOFF   0xc0425a0a
++#define VFDDISPLAYCHARS       0xc0425a00
++#define VFDBRIGHTNESS         0xc0425a03
++#define VFDSETLED             0xc0425afe
++#define VFDDISPLAYWRITEONOFF  0xc0425a05 //light on off
++#define VFDSETTIME2           0xc0425afd
++
++struct set_mode_s {
++	int compat; /* 0 = compatibility mode to vfd driver; 1 = nuvoton mode */
++};
++
++struct set_brightness_s {
++	int level;
++};
++
++struct set_icon_s {
++	int icon_nr;
++	int on;
++};
++
++struct set_led_s {
++	int led_nr;
++	int on;
++};
++
++/* time must be given as follows:
++ * time[0] & time[1] = mjd ???
++ * time[2] = hour
++ * time[3] = min
++ * time[4] = sec
++ */
++struct set_standby_s {
++	char time[5];
++};
++
++struct set_time_s {
++	char time[5];
++};
++
++struct aotom_ioctl_data {
++	union
++	{
++		struct set_icon_s icon;
++		struct set_led_s led;
++		struct set_brightness_s brightness;
++		struct set_mode_s mode;
++		struct set_standby_s standby;
++		struct set_time_s time;
++	} u;
++};
++
++struct vfd_ioctl_data
++{
++	unsigned char start;
++	unsigned char data[64];
++	unsigned char length;
++};
+ 
+ evfd* evfd::instance = NULL;
+ 
+@@ -32,8 +90,7 @@
+ int vfd_init( void )
+ {
+ 	evfd vfd;
+-	vfd.vfd_led("1");
+-	char str[]="RED";
++	vfd.vfd_write_string("Starting E2");
+ 	return 0;
+ }
+ 
+@@ -47,28 +104,87 @@
+ {
+ }
+ 
+-void evfd::vfd_led(char * led)
++void evfd::vfd_set_led(bool onoff)
+ {
+-	FILE *f;
+-	if((f = fopen("/proc/stb/fp/led0_pattern","w")) == NULL) {
+-		eDebug("cannot open /proc/stb/fp/led0_pattern (%m)");
+-		return;
+-	}
+-	
+-	fprintf(f,"%s", led);
+-	fclose(f);
++	int status;
++	struct aotom_ioctl_data vData;
++	memset(&vData, 0, sizeof(struct aotom_ioctl_data));
++	vData.u.led.led_nr = 0;
++	if (onoff)
++		vData.u.led.on = 1;
++	else
++		vData.u.led.on = 0;
++ 	file_vfd = open (VFD_DEVICE, O_WRONLY);
++	status=ioctl(file_vfd, VFDSETLED, &vData);
++	close (file_vfd);
++	return;
+ }
+ 
+ void evfd::vfd_write_string(char * str)
+ {
+-	FILE *f;
+-	if((f = fopen("/proc/vfd","w")) == NULL) {
+-		eDebug("cannotopen /proc/vfd (%m)");
+-	
+-		return;
++	int i;
++	i = strlen ( str );
++	if ( i > 63 ) i = 63;
++	struct vfd_ioctl_data data;
++	memset ( data.data, ' ', 63 );
++	memcpy ( data.data, str, i );
++	data.start = 0;
++	data.length = i;
++	file_vfd = open (VFD_DEVICE, O_WRONLY);
++	ioctl ( file_vfd, VFDDISPLAYCHARS, &data );
++	close (file_vfd);
++	return;
++}
++
++void evfd::vfd_clear_string()
++{
++	vfd_write_string("                ");
++	return;
++}
++
++void evfd::vfd_set_icon(tvfd_icon id, bool onoff)
++{
++	struct vfd_ioctl_data data;
++	memset(&data, 0, sizeof(struct vfd_ioctl_data));
++	data.start = 0x00;
++	data.data[0] = id;
++	data.data[4] = onoff;
++	data.length = 5;
++	file_vfd = open (VFD_DEVICE, O_WRONLY);
++	ioctl(file_vfd, VFDICONDISPLAYONOFF, &data);
++	close (file_vfd);
++	return;
++}
++
++void evfd::vfd_clear_icons()
++{
++	for (int id = 0x10; id < 0x20; id++)
++	{
++		vfd_set_icon((tvfd_icon)id, false);
+ 	}
+-	
+-	fprintf(f,"%s", str);
+-	
+-	fclose(f);
+-}
+\ Manca newline alla fine del file
++	return;
++}
++
++void evfd::vfd_set_brightness(unsigned char setting)
++{
++	struct vfd_ioctl_data data;
++	memset(&data, 0, sizeof(struct vfd_ioctl_data));
++	data.start = setting & 0x07;
++	data.length = 0;
++	file_vfd = open (VFD_DEVICE, O_WRONLY);
++	ioctl ( file_vfd, VFDBRIGHTNESS, &data );
++	close (file_vfd);
++	return;
++}
++
++void evfd::vfd_set_clock(time_t t)
++{
++	struct tm *tmp;
++	tmp = localtime(&t);
++	t += tmp->tm_gmtoff;
++	file_vfd = open (VFD_DEVICE, O_WRONLY);
++	ioctl(file_vfd, VFDSETTIME2, &t);
++	close (file_vfd);
++	return;
++}
++
+--- /lib/driver/vfd.h	2014-01-02 12:30:16.750278866 +0100
++++ /lib/driver/vfd.h	2014-01-22 07:16:39.565488833 +0100
+@@ -1,6 +1,8 @@
+ #ifndef VFD_H_
+ #define VFD_H_
+ 
++typedef enum { VFD_USB = 0x10, VFD_STANDBY, VFD_SAT, VFD_REC, VFD_TIMESHIFT, VFD_TIMER, VFD_HD, VFD_LOCK, VFD_DD, VFD_MUTE, VFD_TUNER1, VFD_TUNER2, VFD_MP3, VFD_REPEAT, VFD_PLAY, VFD_PAUSE, VFD_TER, VFD_FILE, VFD_480i, VFD_480p, VFD_576i, VFD_576p, VFD_720p, VFD_1080i, VFD_1080p } tvfd_icon;
++
+ class evfd
+ {
+ protected:
+@@ -18,9 +20,18 @@
+ 	void init();
+ 	static evfd* getInstance();
+ 
++	void vfd_set_icon(tvfd_icon id, bool onoff);
++	void vfd_clear_icons();
++
+ 	void vfd_write_string(char * string);
+-	void vfd_led(char * led);
+-};
++	void vfd_clear_string();
++	
++	void vfd_set_brightness(unsigned char setting);
++	void vfd_set_led(bool onoff);
+ 
++	void vfd_set_clock(time_t t);
++
++};
+ 
+ #endif
++

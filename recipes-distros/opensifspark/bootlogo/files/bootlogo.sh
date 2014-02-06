@@ -5,4 +5,4 @@
 
 BOOTLOGO=/usr/share/bootlogo.mvi
 [ -f /etc/enigma2/bootlogo.mvi ] && BOOTLOGO=/etc/enigma2/bootlogo.mvi
-/usr/bin/showiframe -p ${BOOTLOGO} &
+/usr/bin/showiframe ${BOOTLOGO} &

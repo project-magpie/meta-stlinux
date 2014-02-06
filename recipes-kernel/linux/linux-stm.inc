@@ -10,7 +10,7 @@ RPROVIDES_kernel-base = "kernel-${KERNEL_VERSION}"
 
 KEEPUIMAGE = "true"
 KTAG = "stlinux24_${STM_PATCH_STR}"
-INC_PR = "r5"
+INC_PR = "r6"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
@@ -18,6 +18,7 @@ UDEV_GE_141 ?= "0"
 KBRANCH = "stmicro"
 
 SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
+           file://linux-sh4-cpuinfo.patch;patch=1 \
            file://${MACHINE}_defconfig \
            file://st-coprocessor.h \
 "

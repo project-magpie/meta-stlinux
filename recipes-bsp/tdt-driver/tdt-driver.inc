@@ -13,27 +13,21 @@ PACKAGES_DYNAMIC += "kernel-module-*"
 inherit gitpkgv
 
 SRCREV = "${AUTOREV}"
-INC_PR = "r6"
+INC_PR = "r14"
 PV = "0.5+git${SRCPV}"
 
 BINARY_PTI_NP_PATH ?= "/data/pti_np"
 
 SRC_URI = " \
-	git://gitorious.org/open-duckbox-project-sh4/tdt.git;branch=master \
-	file://chipset_proc.patch;patch=1 \
+	git://github.com/sklnet/tdt-driver.git;protocol=git \
 	file://aotom.sh \
 	file://COPYING \
 " 
-#SRC_URI = " \
-#	git://gitorious.org/~max10/open-duckbox-sh4/max-tdt.git;branch=enigma2 \
-#        file://aotom.sh \
-#        file://COPYING \
-#" 
 
 FILES_${PN} = "${sysconfdir}/init.d ${sysconfdir}/rcS.d"
 FILES = ""
 
-S = "${WORKDIR}/git/tdt/cvs/driver"
+S = "${WORKDIR}/git"
 
 do_configure_prepend () {
 	if [ -L include/stmfb ]; then
@@ -55,7 +49,7 @@ do_configure_prepend () {
                 rm multicom 
         fi
 	ln -s ${S}/include/stmfb-3.1_stm24_0104 ${S}/include/stmfb
-	ln -s ${S}/include/player2_179 ${S}/include/player2
+	ln -s ${S}/include/player2_191 ${S}/include/player2
 	ln -s ${S}/multicom-3.2.4/include ${S}/include/multicom
 	ln -s ${S}/player2_191 ${S}/player2
 	ln -s ${S}/multicom-3.2.4 ${S}/multicom
@@ -118,6 +112,8 @@ do_install() {
  	install -m 644 frontcontroller/aotom/aotom_main.h ${D}/${includedir}
  	install -m 644 player2/linux/include/linux/dvb/stm_ioctls.h ${D}/${includedir}/linux/dvb
  	install -m 644 stgfb/stmfb/linux/drivers/video/stmfb.h ${D}/${includedir}/linux
+	install -m 644 multicom/include/mme.h ${D}/${includedir}
+	install -m 644 include/player2/JPEG_VideoTransformerTypes.h ${D}/${includedir}
 
 	#install modutils config
 	install -d ${D}/${sysconfdir}/modules-load.d
