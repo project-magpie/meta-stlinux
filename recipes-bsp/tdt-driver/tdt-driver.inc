@@ -1,6 +1,6 @@
 HOMEPAGE = "http://gitorious.org/open-duckbox-project-sh4"
 SECTION = "kernel/modules"
-RDEPENDS_${PN} = "ustslave"
+RDEPENDS = "ustslave"
 
 LICENSE = " GPLv2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/COPYING;md5=751419260aa954499f7abaabaa882bbe"
@@ -10,36 +10,34 @@ inherit module
 PACKAGES = "${PN} ${PN}-dev"
 PACKAGES_DYNAMIC += "kernel-module-*"
 
+#SRCREV = "54b4849686bcc6a8834c1ed3f3e92994ba1e9d2a"
 SRCREV = "350ce95d04b701b61e91e6aa60d1120a1958ca57"
 
+ST_MULTICOM_MAJOR ?= "3"
+ST_MULTICOM_MINOR ?= "2"
+ST_MULTICOM_BUILD ?= "4"
+#ST_STMFB ?= "stmfb_player131"
+#ST_PLAYER2 ?= "131"
+ST_STMFB ?= "stmfb-3.1_stm24_0102"
+ST_PLAYER2 ?= "191"
 
-BINARY_PTI_NP_PATH ?= "/data/pti_np"
+ST_MULTICOM = "${ST_MULTICOM_MAJOR}${ST_MULTICOM_MINOR}${ST_MULTICOM_BUILD}"
+ST_MULTICOM_VER = "${ST_MULTICOM_MAJOR}.${ST_MULTICOM_MINOR}.${ST_MULTICOM_BUILD}"
+
+TDT_MODULES_EXTRA_FILES ?= "/etc/init.d /etc/rc0.d /etc/rc3.d /etc/rc6.d /etc/rcS.d /etc/udev/rules.d"
 
 # using seifes tdt drivers because this has less overhead
 SRC_URI = " \
 	git://gitorious.org/neutrino-mp/tdt-driver.git \
-        file://0001-player2_191-silence-kmsg-spam.patch \
-        file://0002-e2proc-silence-kmsg-spam.patch \
-        file://0003-pti-silence-kmsg-spam.patch \
-        file://0004-stmfb-silence-kmsg-spam.patch \
-        file://0005-frontends-spark_dvbapi5-silence-kmsg-spam.patch \
-        file://0006-frontends-spark7162-silence-kmsg-spam.patch \
-        file://0001-import-cec-from-pinky-s-git.patch \
-        file://0002-aotom-fix-include-file.patch \
-        file://0003-aotom-add-VFDGETVERSION-ioctl-to-find-FP-type.patch \
-        file://0004-aotom-improve-scrolling-text-code.patch \
-        file://0005-aotom-speed-up-softi2c-lowering-CPU-load-of-aotom-dr.patch \
-        file://0006-aotom-add-additional-chars-for-VFD-fix-missing-chars.patch \
-        file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
-        file://aotom_udev.rules \
         file://COPYING \
+        file://aotom_udev.rules \
+	file://${MACHINE}/tdt-driver_load.conf \
+        file://${MACHINE}/tdt-driver_options.conf \
 " 
 
-INC_PR = "r27"
+PV = "0.1+git${SRCPV}"
 
-PV = "0.2+git${SRCPV}"
-
-FILES_${PN} = "/etc/udev/rules.d "
+FILES_${PN} = ""
 FILES = ""
 
 S = "${WORKDIR}/git"
@@ -63,16 +61,24 @@ do_configure_prepend () {
 	if [ -L multicom ]; then
                 rm multicom 
         fi
-	ln -s ${S}/include/stmfb-3.1_stm24_0102 ${S}/include/stmfb
-	ln -s ${S}/include/player2_179 ${S}/include/player2
-	ln -s ${S}/multicom-3.2.4/include ${S}/include/multicom
-	ln -s ${S}/player2_191 ${S}/player2
-	ln -s ${S}/multicom-3.2.4 ${S}/multicom
-	ln -s ${S}/stgfb/stmfb-3.1_stm24_0102 ${S}/stgfb/stmfb
+	ln -s ${S}/include/${ST_STMFB} ${S}/include/stmfb
+	if [ ${ST_PLAYER2} = "131" ]; then
+		ln -s ${S}/include/player2_131 ${S}/include/player2
+	else
+		ln -s ${S}/include/player2_179 ${S}/include/player2
+	fi
+	if [ ${ST_MULTICOM_VER} = "3.2.4" ]; then
+		ln -s ${S}/multicom-${ST_MULTICOM_VER}/include ${S}/include/multicom
+	else
+		ln -s ${S}/include/multicom-${ST_MULTICOM_VER} ${S}/include/multicom
+	fi
+	ln -s ${S}/player2_${ST_PLAYER2} ${S}/player2
+	ln -s ${S}/multicom-${ST_MULTICOM_VER} ${S}/multicom
+	ln -s ${S}/stgfb/${ST_STMFB} ${S}/stgfb/stmfb
 	rm -f .config 
-        printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
+        printf "export CONFIG_PLAYER_${ST_PLAYER2}=y\nexport CONFIG_MULTICOM${ST_MULTICOM}=y\n" > .config
 	# disable wireless build
-	# sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
+	sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
 	# disable led and button - it's not for spark
 	sed -i 's@^\(obj-y.*+= \(led\|button\)/\)@# \1@' Makefile
 }
@@ -88,13 +94,13 @@ do_compile() {
 	           ${@d.getVar('MACHINE',1).upper()}=1 \
                    M=${S} V=1 \
                    ARCH=sh \
-		   PLAYER191=player191 \
+		   PLAYER${ST_PLAYER2}=player${ST_PLAYER2} \
         	   DRIVER_TOPDIR="${S}" \
 	           KERNEL_LOCATION="${STAGING_KERNEL_DIR}" \
 	           CONFIG_KERNEL_BUILD="${STAGING_KERNEL_DIR}" \
 	           CONFIG_KERNEL_PATH="${STAGING_KERNEL_DIR}" \
 	           CONFIG_MODULES_PATH="${D}" \
-		   CONFIG_PLAYER_191=y \
+		   CONFIG_PLAYER_${ST_PLAYER2}=y \
 		   CCFLAGSY="-I${STAGING_DIR_HOST}/usr/include" \
                    modules 
 }
@@ -108,13 +114,13 @@ do_install() {
 	           ${@d.getVar('MACHINE',1).upper()}=1 \
                    M=${S} V=1 \
                    ARCH=sh \
-		   PLAYER191=player191 \
+		   PLAYER${ST_PLAYER2}=player${ST_PLAYER2} \
         	   DRIVER_TOPDIR="${S}" \
 	           KERNEL_LOCATION="${STAGING_KERNEL_DIR}" \
 	           CONFIG_KERNEL_BUILD="${STAGING_KERNEL_DIR}" \
 	           CONFIG_KERNEL_PATH="${STAGING_KERNEL_DIR}" \
 	           CONFIG_MODULES_PATH="${D}" \
-		   CONFIG_PLAYER_191=y \
+		   CONFIG_PLAYER_${ST_PLAYER2}=y \
 		   CCFLAGSY="-I${STAGING_DIR_HOST}/usr/include" \
 		   INSTALL_MOD_PATH=${D} modules_install
 
@@ -131,20 +137,11 @@ do_install() {
 	install -d ${D}/${sysconfdir}/modprobe.d
 	install -d ${D}/${sysconfdir}/udev/rules.d/
 	
+	cp ${WORKDIR}/${MACHINE}/tdt-driver_load.conf ${D}/${sysconfdir}/modules-load.d/tdt-driver.conf
+	cp ${WORKDIR}/${MACHINE}/tdt-driver_options.conf ${D}/${sysconfdir}/modprobe.d/tdt-driver.conf
 	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
- 
-        # if a custom pti.ko is present, overwrite the tdt one
-        if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
-                echo "Found custom pti.." 
-                install -m 644 ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ${D}/lib/modules/${KERNEL_VERSION}/extra/pti/
-        fi
-
-
-
-}
-
-do_install_append_spark7162() {
-	find ${D} -name stmcore-display-sti7106.ko | xargs -r rm # we don't have a 7106 chip
+	echo ${KERNEL_VERSION}
+	echo "/lib/modules/${KERNEL_VERSION}/extra"
 }
 
 pkg_postinst_modules () {
@@ -332,8 +329,8 @@ python populate_packages_prepend () {
 	import re
 	metapkg = "kernel-modules-tdt"
 	d.setVar('ALLOW_EMPTY_' + metapkg, "1")
-	d.setVar('FILES_' + metapkg, "")
-	blacklist = [ 'tdt-driver-dev', 'kernel-image', 'kernel-base', 'kernel-vmlinux', 'perf', 'perf-dbg' ]
+	d.setVar('FILES_' + metapkg, "${TDT_MODULES_EXTRA_FILES} ")
+	blacklist = [ 'kernel-dev', 'kernel-image', 'kernel-base', 'kernel-vmlinux', 'perf', 'perf-dbg', 'ustslave-dev', 'tdt-driver-dev', '%s-dev' % d.getVar("PN", True) ]
 	for l in module_deps.values():
 		for i in l:
 			pkg = module_pattern % legitimize_package_name(re.match(module_regex, os.path.basename(i)).group(1))

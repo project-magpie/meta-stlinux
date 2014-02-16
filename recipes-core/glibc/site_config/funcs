@@ -56,7 +56,6 @@ ether_hostton
 ether_ntohost
 euidaccess
 execv
-execvpe
 fchdir
 fchmod
 fchmodat

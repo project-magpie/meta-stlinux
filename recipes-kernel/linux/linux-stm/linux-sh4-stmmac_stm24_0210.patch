@@ -95,8 +95,8 @@
 +	printk("ETHADDR: %02X:%02X:%02X:%02X:%02X:%02X\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
  }
   
---- linux-sh4/drivers/net/stmmac/stmmac_main.c	2011-11-24 22:22:25.000000000 +0200
-+++ linux-sh4/drivers/net/stmmac/stmmac_main.c	2011-11-24 23:33:30.868558484 +0200
+--- ../stmmac/stmmac_main.c	2010-11-05 14:33:04.000000000 +0100
++++ linux-sh4/drivers/net/stmmac/stmmac_main.c	2011-03-07 11:14:45.916621500 +0100
 @@ -127,6 +127,8 @@
  module_param(buf_sz, int, S_IRUGO | S_IWUSR);
  MODULE_PARM_DESC(buf_sz, "DMA buffer size");
@@ -115,4 +115,12 @@
  		if  (!is_valid_ether_addr(priv->dev->dev_addr))
  			random_ether_addr(priv->dev->dev_addr);
  	}
-
+@@ -2092,6 +2094,8 @@
+ 					   (unsigned long *)&tmrate))
+ 				goto err;
+ #endif
++		} else if( !strncmp(opt,"ethaddr:", 8)) {
++			memcpy(g_env_mac, opt + 8, 17);
+ 		}
+ 	}
+ 	return 0;
