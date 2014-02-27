@@ -12,6 +12,8 @@ PREFERRED_PROVIDER_openssl = "openssl"
 PREFERRED_PROVIDER_libcrypto = "openssl"
 PREFERRED_PROVIDER_libssl = "openssl"
 PREFERRED_PROVIDER_udev ?= "${@base_contains('DISTRO_FEATURES','systemd','systemd','udev',d)}"
+PREFERRED_PROVIDER_curl ?= "curl"
+
 PREFERRED_VERSION_glibc = "2.10"
 PREFERRED_VERSION_glibc                   ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-locale            ?= "${GLIBCVERSION}"
