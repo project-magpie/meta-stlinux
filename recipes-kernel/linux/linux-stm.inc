@@ -7,6 +7,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 FILESEXTRAPATHS_prepend := "${THISDIR}/linux-stm:"
 
 
+RPROVIDES_kernel-base = "kernel-${KERNEL_VERSION}"
 
 KEEPUIMAGE = "true"
 KTAG = "stlinux24_${STM_PATCH_STR}"
