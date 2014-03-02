@@ -1,0 +1,112 @@
+#!/bin/sh
+#
+# (C) 2012-2013 Stefan Seyfried, License: WTFPLv2
+# based on git://gitorious.org/neutrino-hd/buildsystem-cs.git,
+#          skel-root/spark/etc/init.d/loadmodules
+#
+# script to load the spark driver modules
+# this is the easiest way to ensure correct ordering (easier than
+# /etc/modules-load.d/ or similar)
+# additionally, some things are dependent on the boaard we're
+# booting on...
+#
+[ x$1 = xstart ] || exit 0
+
+im()
+{
+	modname=$1
+	modsane=${1//-/_}
+	params=$(eval echo \$OPT_${modsane})
+	shift
+	file=/lib/modules/${KVER}/${modname}.ko
+	# own built modules are in /lib/modules/$KVER/kernel/... subdirectories
+	# ...but we can override this by putting modules to /lib/modules/$KVER directly
+	if test -e $file; then
+		echo "overriding ${modname}.ko from /lib/modules/$KVER ..."
+		/sbin/insmod $file ${params:-$@}
+	else
+		/sbin/modprobe $modname $@
+	fi
+}
+
+# hack, ugly: we should not need to know about neutrino.conf internals
+get_vidmode()
+{
+	M=$(grep video_Mode= /var/tuxbox/config/neutrino.conf 2>/dev/null)
+	if [ -z "$M" ]; then
+		echo "1280x720-32@50"
+		return
+	fi
+	M=${M#*=}
+	if [ $M = 6 ] || [ $M -gt 7 ]; then
+		echo "1920x1080-32@50"
+		return
+	fi
+	if [ $M -lt 5 ]; then
+		echo "720x576-32@50"
+		return
+	fi
+	echo "1280x720-32@50"
+}
+
+SPARK7162=false
+read a b BOARD < /proc/cpuinfo
+test "$BOARD" = hdk7105 && SPARK7162=true
+if $SPARK7162; then
+	STMCORE_DISP=stmcore-display-sti7105
+	FRONTEND_MOD=spark7162
+	AVS_PARAM="type=avs_pio"
+else
+	STMCORE_DISP=stmcore-display-sti7111
+	FRONTEND_MOD=stv090x
+	AVS_PARAM="type=avs_pio"
+fi
+read KVER < /proc/sys/kernel/osrelease
+grep -q uinput /lib/modules/${KVER}/modules.dep || depmod -a
+# set all "option foo ..." as OPT_foo="..." variables
+eval $(sed -n "/^options\s/{
+	s/^options\s\(\S\+\)\s\(.*\)\$/OPT_\1=\"\2\"/;
+	s/^\(\S\+\)-/\1_/g;
+	s/^\(\S\+\)-/\1_/g;
+	s/^\(\S\+\)-/\1_/g;
+	p }" /etc/modprobe.conf 2>/dev/null)
+
+# check for firmware files
+
+
+
+im aotom
+im uinput
+im e2_proc
+im $STMCORE_DISP
+MEMSIZE=12m	# neutrino now needs 12m for FB scaling backbuffer
+VM=$(get_vidmode)
+im stmfb display0=$VM:$MEMSIZE:pal:yuv:yuv
+# ustslave is handled by udev now
+#ustslave /dev/st231-1 /boot/audio.elf
+#ustslave /dev/st231-0 /boot/video.elf
+im cpu_frequ
+im embxshell
+im embxmailbox mailbox0=0xfe211000:136:set2 mailbox1=0xfe212000:0
+im embxshm mailbox0=shm:0:7:0x60000000:0:256:256:0:512:0x40000000:0x10000000
+im mme_host transport0=shm
+im avs $AVS_PARAM
+im mmelog
+im ksound
+im p2div64
+im stm_v4l2
+im stmvout
+im stmvbi
+im pseudocard
+im $FRONTEND_MOD
+im pti waitMS=20 videoMem=4096
+im stm_monitor
+im stmsysfs
+im stmdvb
+im player2 discardlateframe=0
+im sth264pp
+im stmalloc
+im platform
+im silencegen
+im bpamem
+im smartcard

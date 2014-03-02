@@ -1,4 +1,4 @@
-From 5b7e0abddccc113705c233d736fdd6d3b89a5622 Mon Sep 17 00:00:00 2001
+From 836f7694f1c9d44b907475ffe54512e72fed27fb Mon Sep 17 00:00:00 2001
 From: Stefan Seyfried <seife@tuxbox-git.slipkontur.de>
 Date: Sun, 9 Sep 2012 12:48:48 +0200
 Subject: [PATCH 6/6] frontends/spark7162: silence kmsg spam
@@ -129,7 +129,7 @@ index 2ac57c6..c32b321 100644
  	return 0;
  }
 diff --git a/frontends/base/sharp5469c.c b/frontends/base/sharp5469c.c
-index 3fd2d08..1f71704 100644
+index 68843d0..3b4d034 100644
 --- a/frontends/base/sharp5469c.c
 +++ b/frontends/base/sharp5469c.c
 @@ -8,6 +8,9 @@
@@ -175,7 +175,7 @@ index 3fd2d08..1f71704 100644
  
  	return 0;
 diff --git a/frontends/base/sharp6465.c b/frontends/base/sharp6465.c
-index d381e4c..016aa5b 100644
+index b79ddd6..ff72187 100644
 --- a/frontends/base/sharp6465.c
 +++ b/frontends/base/sharp6465.c
 @@ -8,6 +8,9 @@
@@ -204,7 +204,7 @@ index d381e4c..016aa5b 100644
  		printk(KERN_DEBUG "%s: Tuner Phase Locked\n", __func__);
  		*status = 1;
  	}
-@@ -117,6 +122,7 @@ static	void calculate_mop_divider(u32 freq, int *byte)
+@@ -140,6 +145,7 @@ static	void calculate_mop_divider(u32 freq, int *byte)
  	i64Freq += 5;
  	i64Freq /= 10;
  	data = (long)i64Freq;
@@ -212,7 +212,7 @@ index d381e4c..016aa5b 100644
  	printk(KERN_ERR "%s: data = %ld\n", __func__, data);
  	//data = (long)((freq + calculate_mop_if())/calculate_mop_step(byte) + 0.5);
  	*(byte+1) = (int)((data>>8)&0x7F);		//byte2
-@@ -225,6 +231,7 @@ static int sharp6465_set_params(struct dvb_frontend* fe,
+@@ -248,6 +254,7 @@ static int sharp6465_set_params(struct dvb_frontend* fe,
  	u32 f = params->frequency;
  	struct dvb_ofdm_parameters *op = &params->u.ofdm;
  
@@ -220,7 +220,7 @@ index d381e4c..016aa5b 100644
  	printk(KERN_ERR "%s: f = %d, bandwidth = %d\n", __func__, f, op->bandwidth);
  
  	tuner_SHARP6465_CalWrBuffer(f/1000,
-@@ -255,6 +262,7 @@ static int sharp6465_set_params(struct dvb_frontend* fe,
+@@ -278,6 +285,7 @@ static int sharp6465_set_params(struct dvb_frontend* fe,
  	if (fe->ops.i2c_gate_ctrl(fe, 1) < 0)
  		goto exit;
  	sharp6465_get_status(fe, &status);
@@ -280,7 +280,7 @@ index 39836be..aadb989 100644
  
      // Write fixed value
 diff --git a/frontends/spark7162/D3501.c b/frontends/spark7162/D3501.c
-index d68f0c4..1acc650 100644
+index d5690c6..394216b 100644
 --- a/frontends/spark7162/D3501.c
 +++ b/frontends/spark7162/D3501.c
 @@ -175,6 +175,9 @@
@@ -1089,10 +1089,10 @@ index d68f0c4..1acc650 100644
  
      //priv_mem->tuner_id = Handle; //lwj add important
 diff --git a/frontends/spark7162/spark7162.c b/frontends/spark7162/spark7162.c
-index 5ed9876..54bec0c 100644
+index 8c69104..aa2c089 100644
 --- a/frontends/spark7162/spark7162.c
 +++ b/frontends/spark7162/spark7162.c
-@@ -102,6 +102,7 @@ enum
+@@ -104,6 +104,7 @@ enum
  
  static int eUnionTunerType = UNION_TUNER_T;
  static char *UnionTunerType = "t";
@@ -1100,7 +1100,7 @@ index 5ed9876..54bec0c 100644
  
  /*******************************  数据结构*********************************/
  
-@@ -906,6 +907,9 @@ module_exit(spark_cleanup);
+@@ -956,6 +957,9 @@ module_exit(spark_cleanup);
  module_param(UnionTunerType, charp, 0);
  MODULE_PARM_DESC(UnionTunerType, "Union Tuner Type (t, c)");
  
@@ -1111,7 +1111,7 @@ index 5ed9876..54bec0c 100644
  
  /* BOL-------------------------------------------------------------------*/
 diff --git a/frontends/spark7162/stv0367/D0367cab.c b/frontends/spark7162/stv0367/D0367cab.c
-index ffdd611..cd024b7 100644
+index 6c46cf8..35aabf4 100644
 --- a/frontends/spark7162/stv0367/D0367cab.c
 +++ b/frontends/spark7162/stv0367/D0367cab.c
 @@ -23,6 +23,9 @@
@@ -1196,7 +1196,7 @@ index ffdd611..cd024b7 100644
  }
  
 diff --git a/frontends/spark7162/stv0367/D0367ter.c b/frontends/spark7162/stv0367/D0367ter.c
-index e1972a6..54aa883 100644
+index 0d4b9bc..476feb0 100644
 --- a/frontends/spark7162/stv0367/D0367ter.c
 +++ b/frontends/spark7162/stv0367/D0367ter.c
 @@ -23,6 +23,9 @@
@@ -1230,7 +1230,7 @@ index e1972a6..54aa883 100644
  	pParams.IF_IQ_Mode = FE_TER_NORMAL_IF_TUNER;//FE_TER_IQ_TUNER;	//most tuner is IF mode, stv4100 is I/Q mode
  	pParams.Inv 	   = FE_TER_INVERSION_AUTO; //FE_TER_INVERSION_AUTO
 diff --git a/frontends/spark7162/stv0367/stv0367qam/chip_0367qam.c b/frontends/spark7162/stv0367/stv0367qam/chip_0367qam.c
-index e048096..d626c03 100644
+index f8ccbd0..6456ee8 100644
 --- a/frontends/spark7162/stv0367/stv0367qam/chip_0367qam.c
 +++ b/frontends/spark7162/stv0367/stv0367qam/chip_0367qam.c
 @@ -36,6 +36,9 @@
