@@ -37,7 +37,6 @@ SRC_URI = " \
         file://tdt-driver-avoid-buildtime.patch \
         file://aotom_udev.rules \
         file://tdt-driver.init \
-        file://select_sparkbox.sh \
         file://COPYING \
 " 
 
