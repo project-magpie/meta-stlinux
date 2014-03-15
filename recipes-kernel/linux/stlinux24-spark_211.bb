@@ -1,7 +1,7 @@
 require linux-stm.inc
 
 # INC_PR is defined in the .inc file if something has change here just increase the number after the dot
-PR = "${INC_PR}.13"
+PR = "${INC_PR}.16"
 
 PV = "${LINUX_VERSION}-stm24-0211"
 SRCREV = "3bce06ff873fb5098c8cd21f1d0e8d62c00a4903"
@@ -32,4 +32,5 @@ SRC_URI_append = "\
              file://af901x-NXP-TDA18218.patch;patch=1 \
              file://dvb-as102.patch;patch=1 \
              file://linux-sh4-cifs-unaligned-mem-access-kernel_stm24.patch;patch=1 \
+             file://linux-sh4-fix-crash-usb-reboot_stm24_${STM_PATCH_STR}.diff;patch=1 \
 "
