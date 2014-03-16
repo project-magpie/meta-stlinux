@@ -70,12 +70,12 @@ do_configure() {
     if [ -L multicom ]; then
         rm multicom
     fi
-    ln -s stmfb-3.1_stm24_0102 ${S}/include/stmfb
+    ln -s stmfb-3.1_stm24_0104 ${S}/include/stmfb
     ln -s player2_179 ${S}/include/player2
     ln -s ../multicom-3.2.4/include ${S}/include/multicom
     ln -s player2_191 ${S}/player2
     ln -s multicom-3.2.4 ${S}/multicom
-    ln -s stmfb-3.1_stm24_0102 ${S}/stgfb/stmfb
+    ln -s stmfb-3.1_stm24_0104 ${S}/stgfb/stmfb
     rm -f .config
     printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
     # disable wireless build
