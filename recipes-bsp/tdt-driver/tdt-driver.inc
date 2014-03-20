@@ -38,7 +38,6 @@ SRC_URI = " \
         file://0008-aotom_add_automatic_creation_of_device_file.patch \
         file://tdt-driver-avoid-buildtime.patch \
         file://chipset_proc.patch;patch=1 \
-        file://aotom_udev.rules \
         file://tdt-driver.init \
         file://COPYING \
 " 
