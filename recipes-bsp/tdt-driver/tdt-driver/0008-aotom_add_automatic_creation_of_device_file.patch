@@ -1,0 +1,74 @@
+Index: git/frontcontroller/aotom/aotom_main.c
+===================================================================
+--- git.orig/frontcontroller/aotom/aotom_main.c	2014-03-19 20:59:42.000000000 +0100
++++ git/frontcontroller/aotom/aotom_main.c	2014-03-19 21:50:16.502658880 +0100
+@@ -1050,9 +1050,12 @@
+ 	},
+ };
+ 
++#define DEVICE_NAME "vfd"
++static struct cdev   aotom_cdev;
++static struct class *aotom_class = 0;
+ static int __init aotom_init_module(void)
+ {
+-	int i;
++	int i,result;
+ 
+ 	dprintk(5, "%s >\n", __func__);
+ 
+@@ -1064,12 +1067,39 @@
+ 	}
+ 
+ 	VFD_clr();
+-	
++
+ 	if(button_dev_init() != 0)
+ 		return -1;
+ 
+-	if (register_chrdev(VFD_MAJOR,"VFD",&vfd_fops))
+-		printk("unable to get major %d for VFD\n",VFD_MAJOR);
++	result = register_chrdev_region(MKDEV(VFD_MAJOR, 0), 1, DEVICE_NAME);
++	if (result < 0) {
++		printk( KERN_ALERT "Fulan front panel driver cannot register chrdev region (%d)\n", result);
++		return result;
++	}
++
++	if(NULL == (aotom_class = class_create(THIS_MODULE, DEVICE_NAME))) {
++		printk("Fulan front panel driver couldn't create class '%s' driver\n", DEVICE_NAME);
++		unregister_chrdev_region(MKDEV(VFD_MAJOR, 0), 1);
++		return -1;
++	}
++
++	if(NULL == device_create(aotom_class, NULL, MKDEV(VFD_MAJOR, 0), NULL, "vfd")) {
++		printk("Fulan front panel driver couldn't create device '%s' driver\n", DEVICE_NAME);
++		class_destroy(aotom_class);
++		unregister_chrdev_region(MKDEV(VFD_MAJOR, 0), 1);
++		return -1;
++	}
++
++	cdev_init(&aotom_cdev, &vfd_fops);
++	if (cdev_add(&aotom_cdev, MKDEV(VFD_MAJOR, 0), 1) < 0)
++	{
++		printk("Fulan front panel driver couldn't register '%s' driver\n", DEVICE_NAME);
++		cdev_del(&aotom_cdev);
++		device_destroy(aotom_class, MKDEV(VFD_MAJOR, 0));
++		class_destroy(aotom_class);
++		unregister_chrdev_region(MKDEV(VFD_MAJOR, 0), 1);
++		return -1;
++	}
+ 
+ 	sema_init(&write_sem, 1);
+ 	sema_init(&receive_sem, 1);
+@@ -1137,7 +1167,11 @@
+ 	dprintk(5, "[BTN] unloading ...\n");
+ 	button_dev_exit();
+ 
+-	unregister_chrdev(VFD_MAJOR,"VFD");
++	cdev_del(&aotom_cdev);
++	device_destroy(aotom_class, MKDEV(VFD_MAJOR, 0));
++	class_destroy(aotom_class);
++	unregister_chrdev_region(MKDEV(VFD_MAJOR, 0), 1);
++
+ 	YWPANEL_VFD_Term();
+ 	printk("Fulan front panel module unloading\n");
+ }
