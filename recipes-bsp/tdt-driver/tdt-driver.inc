@@ -136,8 +136,6 @@ do_install() {
 	#install modutils config
 	# install -d ${D}/${sysconfdir}/modules-load.d
 	# install -d ${D}/${sysconfdir}/modprobe.d
-	install -d ${D}/${sysconfdir}/udev/rules.d/
-	cp ${WORKDIR}/aotom_udev.rules ${D}/${sysconfdir}/udev/rules.d/32-aotom.rules
  
         # if a custom pti.ko is present, overwrite the tdt one
         if [ -e ${BINARY_PTI_NP_PATH}/pti_${STM_PATCH_STR}.ko ]; then
