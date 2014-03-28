@@ -13,7 +13,7 @@ PACKAGES = "${PN} ${PN}-dev"
 # (all those modules are in tdt-driver)
 KERNEL_MODULES_META_PACKAGE = "None"
 
-SRCREV = "a187619deaf19d8419c3a868b78581fbbc3e7898"
+SRCREV = "304ce320608f203ca6f3573d981ec7440184d726"
 
 
 
