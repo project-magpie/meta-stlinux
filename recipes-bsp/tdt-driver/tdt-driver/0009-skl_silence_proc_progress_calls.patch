@@ -1,0 +1,31 @@
+Index: git/player2_191/linux/drivers/media/dvb/stm/dvb/e2_proc/e2_proc_progress.c
+===================================================================
+--- git.orig/player2_191/linux/drivers/media/dvb/stm/dvb/e2_proc/e2_proc_progress.c
++++ git/player2_191/linux/drivers/media/dvb/stm/dvb/e2_proc/e2_proc_progress.c
+@@ -24,7 +24,7 @@ int proc_progress_write(struct file *fil
+ 	ssize_t ret = -ENOMEM;
+ 	/* int result; */
+ #if !defined(IPBOX9900) && !defined(IPBOX99) && !defined(IPBOX55)
+-	printk("%s %ld - ", __FUNCTION__, count);
++	/* printk("%s %ld - ", __FUNCTION__, count); */
+ #endif
+ 	page = (char *)__get_free_page(GFP_KERNEL);
+ 	if (page)
+@@ -37,7 +37,7 @@ int proc_progress_write(struct file *fil
+ 		strncpy(myString, page, count);
+ 		myString[count] = '\0';
+ #if !defined(IPBOX9900) && !defined(IPBOX99) && !defined(IPBOX55)
+-		printk("%s\n", myString);
++		/* printk("%s\n", myString); */
+ #endif
+ 		sscanf(myString, "%d", &progress);
+ 
+@@ -55,7 +55,7 @@ int proc_progress_read (char *page, char
+ {
+ 	int len = 0;
+ #if !defined(IPBOX9900) && !defined(IPBOX99) && !defined(IPBOX55)
+-	printk("%s %d\n", __FUNCTION__, count);
++	/* printk("%s %d\n", __FUNCTION__, count); */
+ #endif
+ 	len = sprintf(page, "%d\n", progress);
+ 
