@@ -11,7 +11,7 @@ RPROVIDES_kernel-base = "kernel-${KERNEL_VERSION}"
 
 KEEPUIMAGE = "true"
 KTAG = "stlinux24_${STM_PATCH_STR}"
-INC_PR = "r1"
+INC_PR = "r2"
 
 # Quirk for udev greater or equal 141
 UDEV_GE_141 ?= "0"
