@@ -37,6 +37,7 @@ SRC_URI = " \
         file://0007-aotom-register-reboot_notifier-implement-rtc-driver.patch \
         file://0008-aotom_add_automatic_creation_of_device_file.patch \
         file://0009-skl_silence_proc_progress_calls.patch \
+        file://0010-add_aotom_proc_entry.patch \
         file://tdt-driver-avoid-buildtime.patch \
         file://chipset_proc.patch;patch=1 \
         file://tdt-driver.init \
