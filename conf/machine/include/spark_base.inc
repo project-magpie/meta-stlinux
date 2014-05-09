@@ -62,5 +62,3 @@ MACHINE_EXTRA_RRECOMMENDS = " \
         gst-plugin-dvbmediasink \
         "
 
-#Spark Boxes have no hardware clock
-MACHINE_FEATURES_BACKFILL_CONSIDERED = "rtc"
