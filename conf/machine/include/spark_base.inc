@@ -22,7 +22,7 @@ PREFERRED_VERSION_glibc-initial           ?= "${GLIBCVERSION}"
 PREFERRED_VERSION_glibc-initial-nativesdk ?= "2.10"
 
 USE_VT = "0"
-MACHINE_FEATURES = "kernel26 ext2 alsa usbhost serial"
+MACHINE_FEATURES = "kernel26 ext2 alsa usbhost serial legacykernel wifi wifiusblegacy"
 
 SERIAL_CONSOLE = "115200 ttyAS0"
 
