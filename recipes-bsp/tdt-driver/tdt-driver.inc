@@ -81,7 +81,7 @@ do_configure() {
     rm -f .config
     printf "export CONFIG_PLAYER_191=y\nexport CONFIG_MULTICOM324=y\n" > .config
     # disable wireless build
-    # sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
+    sed -i 's/^\(obj-y.*+= wireless\)/# \1/' Makefile
     # disable useless simu_button
     sed -i 's/^\(obj-y.*+= simu_button\)/# \1/' Makefile
 }
