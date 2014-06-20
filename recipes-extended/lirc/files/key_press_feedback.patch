@@ -1,0 +1,63 @@
+Index: lirc-0.9.0/daemons/lircd.c
+===================================================================
+--- lirc-0.9.0.orig/daemons/lircd.c
++++ lirc-0.9.0/daemons/lircd.c
+@@ -85,6 +85,7 @@
+ #include "hardware.h"
+ #include "hw-types.h"
+ #include "release.h"
++#include <aotom_main.h>
+ 
+ struct ir_remote *remotes;
+ struct ir_remote *free_remotes = NULL;
+@@ -163,6 +164,7 @@ FILE *lf = NULL;
+ 
+ int sockfd, sockinet;
+ static int uinputfd = -1;
++static int aotomfd = -1;
+ int clis[MAX_CLIENTS];
+ 
+ #define CT_LOCAL  1
+@@ -450,6 +452,21 @@ static void setup_repeatrate_uinputfd(in
+     }
+ }
+ 
++int setup_aotomfd(void)
++{
++	int fd = -1;
++	fd = open("/dev/vfd", O_RDWR);
++	if (fd == -1) {
++		fprintf(stderr, "could not open %s\n", "aotom (VFD)");
++        	perror(NULL);
++        	return -1;
++	}
++	else
++	{
++		return fd;
++	}
++
++}
+ 
+ int setup_uinputfd(const char *name)
+ {
+@@ -1000,6 +1017,7 @@ void start_server(mode_t permission, int
+ 	if (useuinput) {
+ 		uinputfd = setup_uinputfd(uinputname);
+ 		setup_repeatrate_uinputfd(uinputfd);
++		aotomfd = setup_aotomfd();
+ 	}
+ 	if (listen_tcpip) {
+ 		int enable = 1;
+@@ -1868,6 +1886,12 @@ void input_message(const char *message,
+ 				logprintf(LOG_ERR, "writing to uinput failed");
+ 				logperror(LOG_ERR, NULL);
+ 			}
++			if (aotomfd != -1 && !release) {
++	        		struct aotom_ioctl_data vfd_data;
++		                vfd_data.u.led.led_nr = 0;
++                		vfd_data.u.led.on = 10;
++                		ioctl(aotomfd, VFDSETLED, &vfd_data);
++            		}
+ 
+ #ifndef UINPUT_NEUTRINO_HACK
+ /* neutrino does not need and/or deal well with the SYN_REPORT events... */

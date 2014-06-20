@@ -26,6 +26,7 @@ SRC_URI_append = " file://lircd.init \
 SPARK_GEN_SRC_URI += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
 			 file://lirc-0.9.0-try_first_last_remote.diff;patch=1 \
 			 file://lirc-0.9.0-uinput-repeat-fix.diff;patch=1 \
+			 file://key_press_feedback.patch;patch=1 \
                          file://lircd_spark.conf \
                          file://lircd_spark.init \
                          file://98-lirc_spark.rules \
