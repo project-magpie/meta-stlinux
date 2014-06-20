@@ -11,14 +11,14 @@ RPROVIDES_kernel-base = "kernel-${KERNEL_VERSION}"
 
 KEEPUIMAGE = "true"
 KTAG = "stlinux24_${STM_PATCH_STR}"
-INC_PR = "r2"
+INC_PR = "r4"
 
 # Quirk for udev greater or equal 141
-UDEV_GE_141 ?= "0"
+UDEV_GE_141 ?= "1"
 
-KBRANCH = "stmicro"
+KBRANCH = "spark71xx-0214"
 
-SRC_URI = "git://git.stlinux.com/stm/linux-sh4-2.6.32.y.git;protocol=git;branch=stmicro \
+SRC_URI = "git://github.com/project-magpie/linux-sh4-2.6.32.y.git;protocol=https;branch=spark71xx \
            file://${MACHINE}_defconfig \
            file://st-coprocessor.h \
 "
@@ -47,6 +47,7 @@ do_install_append() {
 	fi
 	install -d ${D}${includedir}/linux	
    	install -m 644 ${WORKDIR}/st-coprocessor.h ${D}${includedir}/linux
+	install -m 644 drivers/char/aotom/aotom_main.h ${D}/${includedir}
 }
 
 
