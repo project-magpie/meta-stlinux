@@ -60,5 +60,7 @@ MACHINE_ESSENTIAL_EXTRA_RDEPENDS += " \
 
 MACHINE_EXTRA_RRECOMMENDS = " \
         gst-plugin-dvbmediasink \
+        tdt-driver \
+        kernel-modules \
         "
 
