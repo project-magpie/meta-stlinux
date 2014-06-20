@@ -1,0 +1,14 @@
+begin
+     button = KEY_POWER
+     button = KEY_OK
+     button = KEY_OK
+     button = KEY_OK
+     button = KEY_OK
+     prog   = irexec
+     config = shutdown -r now
+     mode   = mode_POWER
+     repeat = 0
+     delay  = 0
+     flags  = mode
+end
+

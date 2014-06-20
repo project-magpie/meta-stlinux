@@ -30,6 +30,7 @@ SPARK_GEN_SRC_URI += " file://lirc-0.9.0-neutrino-uinput-hack.diff;patch=1 \
                          file://lircd_spark.conf \
                          file://lircd_spark.init \
                          file://98-lirc_spark.rules \
+                         file://lircrc \
 "
 SRC_URI_append_spark += "${SPARK_GEN_SRC_URI} \
                          file://lircd_spark.conf.09_00_0A \
@@ -56,6 +57,7 @@ do_install_append() {
         install -m 0644 ${WORKDIR}/98-lirc_spark.rules ${D}${sysconfdir}/udev/rules.d/98-lirc.rules
 	install ${WORKDIR}/lircd.init ${D}${sysconfdir}/init.d/lircd
 	install ${WORKDIR}/lircexec.init ${D}${sysconfdir}/init.d/lircexec
+	install ${WORKDIR}/lircrc ${D}${sysconfdir}/lircrc
         install -d ${D}${datadir}/lirc/
         cp -pPR ${S}/remotes ${D}${datadir}/lirc/
 	rm -rf ${D}/dev
@@ -83,5 +85,5 @@ PACKAGES =+ "lirc-exec lirc-remotes"
 FILES_${PN}-dbg += "${bindir}/.debug ${sbindir}/.debug"
 FILES_${PN}-dev += "${libdir}/liblirc_client.so"
 FILES_${PN} = "${bindir} ${sbindir} ${libdir}/lib*.so.* ${sysconfdir} ${exec_prefix}/var"
-FILES_lirc-exec = "${bindir}/irexec ${sysconfdir}/init.d/lircexec"
+FILES_lirc-exec = "${bindir}/irexec  ${sysconfdir}/lircrc ${sysconfdir}/init.d/lircexec"
 FILES_lirc-remotes = "${datadir}/lirc/remotes"
