@@ -556,7 +556,7 @@ CONFIG_PREVENT_FIRMWARE_BUILD=y
 CONFIG_FW_LOADER=y
 CONFIG_FIRMWARE_IN_KERNEL=y
 CONFIG_EXTRA_FIRMWARE="fdma_STx7111_0.elf fdma_STx7111_1.elf"
-CONFIG_EXTRA_FIRMWARE_DIR="/data/pb/pbnigma3/builds/pbnigma/spark/tmp/sysroots/spark/lib/firmware"
+CONFIG_EXTRA_FIRMWARE_DIR="to_be_filled_in_by_buildsystem"
 # CONFIG_SYS_HYPERVISOR is not set
 # CONFIG_CONNECTOR is not set
 CONFIG_MTD=y
